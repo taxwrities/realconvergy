@@ -1,0 +1,5 @@
+{
+  "name": "ui-theme",
+  "version": "1.0.0",
+  "description": "Astryx gothic re-skin — scanner palette CSS custom-property overrides + shared component styles (cvg.css). Import as raw CSS from apps."
+}

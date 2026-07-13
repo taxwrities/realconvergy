@@ -1,0 +1,7 @@
+{
+  "name": "gematria-core",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "Shared cipher engine + prime/composite index + Jesuit checksum (canonical source: extracted from apps/mlb engine per LAYOUT-SPEC §2 / WNBA-REDESIGN-SPEC §1)"
+}

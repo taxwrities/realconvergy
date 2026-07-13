@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convergence Scanner v2</title>
+<style>
+:root{
+  --bg:#0c0f15; --panel:#141926; --panel2:#1b2233; --line:#28324a;
+  --ink:#e9eefa; --dim:#aab6cf; --faint:#6b7794;
+  --gold:#e8b23a; --amber:#ff9f43; --purple:#b07cff; --green:#4cd08a; --red:#ff6b6b;
+  --mono:'SF Mono',Consolas,'Cascadia Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:14.5px/1.5 -apple-system,'Segoe UI',Roboto,sans-serif;padding:14px;max-width:860px;margin:0 auto}
+h1{font-size:18px;letter-spacing:.4px}
+h1 span{color:var(--purple)}
+.sub{color:var(--faint);font-size:12px;margin-bottom:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+label{display:block;font-size:11px;color:var(--faint);margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+input[type=text],input[type=date]{background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  color:var(--ink);padding:8px 10px;font-family:var(--mono);font-size:13px;width:100%}
+button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:7px;
+  padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600}
+button:hover{border-color:var(--purple)}
+button.primary{background:var(--purple);border-color:var(--purple);color:#0c0f15;font-weight:800}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.row>div{flex:1;min-width:130px}
+#progress{font-family:var(--mono);font-size:12px;color:var(--green);min-height:18px;margin-top:6px}
+#progress.err{color:var(--red)}
+
+/* controls bar */
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);
+  padding:8px 0;z-index:5;border-bottom:1px solid var(--line);margin-bottom:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:6px 12px;font-size:12px;background:var(--panel)}
+.seg button.on{background:var(--purple);color:#0c0f15}
+.bar .lbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px}
+#gameTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+#gameTabs button{padding:5px 10px;font-size:12px;font-family:var(--mono)}
+#gameTabs button.on{border-color:var(--purple);color:var(--purple)}
+#carousel{display:flex;gap:6px;overflow-x:auto;padding:4px 30px 8px;margin-bottom:6px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.car-arrow{position:absolute;top:2px;bottom:8px;width:26px;padding:0;z-index:2;
+  background:linear-gradient(90deg,var(--bg) 55%,transparent);border:none;color:var(--purple);
+  font-size:22px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.car-arrow[style*="right"]{background:linear-gradient(270deg,var(--bg) 55%,transparent)}
+.car-arrow:disabled{color:var(--faint);opacity:.4}
+#carousel::-webkit-scrollbar{height:4px}
+#carousel button{flex:0 0 auto;padding:6px 10px;font-size:12px;display:flex;gap:6px;align-items:center;white-space:nowrap}
+#carousel button.on{border-color:var(--purple);color:var(--purple)}
+#carousel .dcount{font-family:var(--mono);font-weight:800;color:var(--green)}
+#carousel button.zero{opacity:.45}
+#carousel button.zero .dcount{color:var(--faint)}
+#adjPanel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;margin-bottom:10px}
+#adjPanel .adj-title{font-size:12px;color:var(--dim);margin-bottom:8px}
+#adjPanel .adj-title b{color:var(--green)}
+.adj-grid{display:flex;gap:6px;flex-wrap:wrap}
+.adj-item{display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:7px;padding:3px 6px}
+.adj-item .st{font-family:var(--mono);font-size:11px;font-weight:800;color:var(--dim);min-width:24px}
+.adj-item button{padding:2px 8px;font-size:14px;font-weight:800;border:none;background:transparent;color:var(--purple)}
+.adj-item .val{font-family:var(--mono);font-size:13px;font-weight:800;min-width:30px;text-align:center}
+.adj-item .val .plus{color:var(--green);font-size:10px}
+
+/* game group header */
+.game-head{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:1px;
+  margin:16px 0 6px;text-transform:uppercase}
+
+/* STYLE A — sentence */
+.a-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--purple);
+  border-radius:8px;padding:11px 13px;margin-bottom:8px;font-size:14.5px}
+.a-card.gold{border-left-color:var(--gold)}
+.a-card .who{font-weight:800}
+.a-card .meta{color:var(--faint);font-size:12.5px}
+.a-card .stat{color:var(--purple);font-weight:800}
+.a-card.gold .stat{color:var(--gold)}
+.a-card .lanes{color:var(--dim)}
+.a-card .lanes b{color:var(--green);font-family:var(--mono)}
+.a-card .lanes b.amber{color:var(--amber)}
+.a-card .lanes b.goldn{color:var(--gold)}
+
+/* STYLE B — ticket */
+.b-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.b-head{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel2)}
+.b-num{font-family:var(--mono);font-size:28px;font-weight:800;color:var(--purple)}
+.b-card.gold .b-num{color:var(--gold)}
+.b-statline .s1{font-weight:800;font-size:15px}
+.b-statline .s2{color:var(--faint);font-size:12px}
+.b-depth{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700;white-space:nowrap}
+.b-body{padding:8px 14px}
+.b-chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  padding:3px 9px;margin:3px 4px 3px 0;font-size:13px;color:var(--ink)}
+.b-chip b{font-family:var(--mono);color:var(--green)}
+.b-chip.amber{border-color:var(--amber)} .b-chip.amber b{color:var(--amber)}
+.b-chip.goldc{border-color:var(--gold)} .b-chip.goldc b{color:var(--gold)}
+
+/* STYLE C — ledger */
+.c-row{display:grid;grid-template-columns:34px 1fr;border:1px solid var(--line);border-bottom:none;background:var(--panel)}
+.c-row:first-of-type{border-radius:10px 10px 0 0}
+.c-row.last{border-bottom:1px solid var(--line);border-radius:0 0 10px 10px}
+.c-row.only{border-radius:10px}
+.c-count{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:800;
+  background:var(--panel2);color:var(--purple);font-size:16px}
+.c-row.gold .c-count{color:var(--gold)}
+.c-main{padding:9px 12px}
+.c-top{font-size:14px;margin-bottom:2px}
+.c-top b{font-weight:800}
+.c-top .tgt{font-family:var(--mono);color:var(--purple);font-weight:800}
+.c-row.gold .c-top .tgt{color:var(--gold)}
+.c-why{font-family:var(--mono);font-size:12.5px;color:var(--ink);line-height:1.7}
+.c-why em{font-style:normal;color:var(--green);font-weight:700}
+.c-why em.amber{color:var(--amber)} .c-why em.goldn{color:var(--gold)}
+
+/* STYLE D — receipt, full sentences */
+.d-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:10px}
+.d-head{font-size:14px;font-weight:800;margin-bottom:7px}
+.d-head .vs{color:var(--faint);font-weight:400;font-size:12px}
+.d-flag{display:inline-block;background:var(--purple);color:#0c0f15;font-size:10px;font-weight:800;
+  letter-spacing:1px;border-radius:4px;padding:2px 7px;margin-left:8px;vertical-align:2px}
+.d-card.gold .d-flag{background:var(--gold)}
+.d-line{font-size:14px;line-height:1.9;color:var(--ink)}
+.d-line .n{color:var(--purple);font-weight:800;font-family:var(--mono)}
+.d-card.gold .d-line .n{color:var(--gold)}
+.d-line .n.g{color:var(--green)} .d-line .n.a{color:var(--amber)}
+.empty{color:var(--faint);font-size:13px;padding:20px 4px;text-align:center}
+@media(max-width:560px){.b-num{font-size:22px}}
+</style>
+</head>
+<body>
+<h1>CONVERGENCE <span>SCANNER</span> <small style="color:var(--faint);font-weight:400">v2</small></h1>
+<div class="sub">Auto-scans the slate. Only stacked numbers surface.</div>
+
+<div class="panel">
+  <div class="row">
+    <div><label>Date</label><input type="date" id="gameDate"></div>
+    <div style="flex:2"><label>Thread numbers (optional)</label><input type="text" id="threadNums" placeholder="47, 58, 201"></div>
+    <div style="flex:0"><button class="primary" onclick="scanSlate()">SCAN SLATE</button></div>
+    <div style="flex:0"><button onclick="loadDemo()">Demo</button></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:2"><label>Ciphers</label><div class="seg" id="cipherSeg" style="flex-wrap:wrap"></div></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:2"><label>Vocabulary</label><div id="vocabWrap"></div></div>
+    <div><label>&nbsp;</label><input type="text" id="vocabNew" placeholder="Add word + Enter"></div>
+  </div>
+  <div id="progress"></div>
+</div>
+
+<div class="bar" id="controlsBar" style="display:none">
+  <span class="lbl">View</span>
+  <div class="seg" id="viewSeg">
+    <button data-v="A" class="on">A</button><button data-v="B">B</button>
+    <button data-v="C">C</button><button data-v="D">D</button>
+  </div>
+  <span class="lbl">Min lanes</span>
+  <div class="seg" id="thSeg">
+    <button data-t="1">1+</button><button data-t="2">2+</button><button data-t="3" class="on">3+</button><button data-t="4">4+</button>
+  </div>
+  <span class="lbl">Scope</span>
+  <div class="seg" id="scopeSeg">
+    <button data-s="both" class="on">Both</button><button data-s="career">Career</button><button data-s="season">Season</button>
+  </div>
+  <div class="seg" id="statSeg"></div>
+  <span class="lbl">Lanes</span>
+  <div class="seg" id="laneSeg" style="flex-wrap:wrap"></div>
+  <span class="lbl" id="hitCount"></span>
+</div>
+<div id="gameTabs"></div>
+<div id="carouselWrap" style="display:none;position:relative">
+  <button id="carL" class="car-arrow" style="left:0">‹</button>
+  <div id="carousel"></div>
+  <button id="carR" class="car-arrow" style="right:0">›</button>
+</div>
+<div id="adjPanel"></div>
+<div id="out"></div>
+
+<script>
+/* ================================================================
+   ENGINE (identical values to mlb_gematria_ranker_v2 / theme.py)
+================================================================ */
+const CHALDEAN={a:1,b:2,c:3,d:4,e:5,f:8,g:3,h:5,i:1,j:1,k:2,l:3,m:4,n:5,o:7,p:8,q:1,r:2,s:3,t:4,u:6,v:6,w:6,x:5,y:1,z:7};
+const SEPTENARY={a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:6,i:5,j:4,k:3,l:2,m:1,n:1,o:2,p:3,q:4,r:5,s:6,t:7,u:6,v:5,w:4,x:3,y:2,z:1};
+const LATIN={a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:9,k:10,l:20,m:30,n:40,o:50,p:60,q:70,r:80,s:90,t:100,u:200,v:700,x:300,y:400,z:500,j:600,w:900};
+const red1=v=>{while(v>9)v=String(v).split('').reduce((a,d)=>a+ +d,0);return v};
+const letters=s=>s.toLowerCase().split('').filter(c=>c>='a'&&c<='z');
+function calcAll(s){
+  const L=letters(s);
+  const ord=L.reduce((a,c)=>a+(c.charCodeAt(0)-96),0);
+  return{Ord:ord,
+    Red:L.reduce((a,c)=>a+red1(c.charCodeAt(0)-96),0),
+    Rev:L.reduce((a,c)=>a+(27-(c.charCodeAt(0)-96)),0),
+    RR:L.reduce((a,c)=>a+red1(27-(c.charCodeAt(0)-96)),0),
+    Sat:ord+35*L.length,
+    Chal:L.reduce((a,c)=>a+CHALDEAN[c],0),
+    Sept:L.reduce((a,c)=>a+SEPTENARY[c],0),
+    Latin:L.reduce((a,c)=>a+LATIN[c],0)};
+}
+/* sieve to 100k — O(1) prime/composite checks and indices, built once at load */
+const SIEVE_N=100000;
+const _comp=new Uint8Array(SIEVE_N+1);
+for(let i=2;i*i<=SIEVE_N;i++)if(!_comp[i])for(let j=i*i;j<=SIEVE_N;j+=i)_comp[j]=1;
+const _pc=new Int32Array(SIEVE_N+1),_cc=new Int32Array(SIEVE_N+1);
+const _plist=[0],_clist=[0,0,0,0];
+for(let i=2;i<=SIEVE_N;i++){
+  const pr=!_comp[i];
+  _pc[i]=_pc[i-1]+(pr?1:0);_cc[i]=_cc[i-1]+((i>=4&&_comp[i])?1:0);
+  if(pr)_plist.push(i);else if(i>=4)_clist.push(i);
+}
+const CIPHER_LABEL={Ord:"Ord",Red:"most pure",Rev:"Rev",RR:"RR",Sat:"Satanic",Chal:"Chal",Sept:"Sept",Latin:"Jewish"};
+const cl=c=>CIPHER_LABEL[c]||c;
+let CIPHER_ON=new Set(["Ord","Red","Rev","RR","Sat","Chal","Latin"]); /* Sept off by default */
+const cipherPairs=v=>Object.entries(v).filter(([c])=>CIPHER_ON.has(c));
+function isPrime(n){return n>=2&&n<=SIEVE_N&&!_comp[n]}
+function primeIndex(n){return isPrime(n)?_pc[n]:-1}
+function compositeIndex(n){return(n>=4&&n<=SIEVE_N&&_comp[n])?_cc[n]:-1}
+function nthPrime(n){return _plist[n]||0}
+function nthComposite(n){return _clist[n]||0}
+
+const CORE_VALUES={54:"Jesuit Order Red",18:"Baseball Red / MLB RR",162:"Baseball Rev / MLB Rev",
+141:"Baseball Latin",27:"Baseball SR / MLB Ord",20:"Baseball Chal",21:"Baseball Sept",
+96:"Freemason Ord",42:"Freemason Red",147:"Freemason Rev",48:"Freemason RR",51:"Freemason SR",
+40:"Freemason Chal",32:"Freemason Sept",307:"Freemason Latin",
+191:"Society of Jesus Ord",56:"SOJ Red",187:"SOJ Rev",79:"SOJ RR",83:"SOJ SR",57:"SOJ Chal",65:"SOJ Sept",1698:"SOJ Latin",
+144:"Jesuit Order Ord",72:"Jesuit Order RR",153:"Jesuit Order Rev",63:"Jesuit Order SR",1223:"Jesuit Order Latin",529:"Jesuit Order Sat",
+165:"Scottish Rite Ord",78:"Scottish Rite RR",159:"Scottish Rite Rev",75:"Scottish Rite SR",64:"Scottish Rite Sept",
+139:"Freemasonry Ord",58:"Freemasonry Red",158:"Freemasonry Rev",59:"Freemasonry RR",67:"Freemasonry SR",
+43:"Freemasonry Chal",39:"Freemasonry Sept",787:"Freemasonry Latin",
+9:"MLB Red/SR/Chal",5:"MLB Sept",52:"MLB Latin",117:"Major League Baseball RR",351:"Major League Baseball Rev"};
+
+const T_FAMILY=[40,43,57,58,59,62,191,69,84,177,201,1336];
+const SEVEN_FAMILY=[7,13,14,17,28,49];
+
+let VOCAB=["HOME RUN","HOMERUN","HOMER","STRIKEOUT","WALK","SINGLE","DOUBLE","TRIPLE",
+"HIT","TOTAL BASES","GRAND SLAM","STOLEN BASE","RBI","RUN BATTED IN","BASEBALL","MLB"];
+/* which stat columns each vocab word may match; null = any column; unknown words = any.
+   AB/PA columns accept every outcome word (all outcomes advance them). */
+const VOCAB_STAT={"HOME RUN":["HR","TB","RBI"],"HOMERUN":["HR","TB","RBI"],"HOMER":["HR","TB","RBI"],
+"GRAND SLAM":["HR","RBI"],"STRIKEOUT":["SO"],"WALK":["BB"],"SINGLE":["H","TB"],"HIT":["H","TB"],
+"DOUBLE":["2B","H","TB"],"TRIPLE":["3B","H","TB"],"TOTAL BASES":["TB"],
+"RBI":["RBI"],"RUN BATTED IN":["RBI"],"STOLEN BASE":["SB"],"BASEBALL":null,"MLB":null};
+/* how many rungs deep each stat is scanned (multi-advance outcomes) */
+const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,HR:2,BB:2,"2B":2,"3B":1};
+const statOK=(en,stat)=>!en.stat||stat==='AB'||stat==='PA'||en.stat.includes(stat);
+function indexEntries(arr){const m=new Map();arr.forEach(e=>{const a=m.get(e.n);a?a.push(e):m.set(e.n,[e])});return m}
+/* compound word set kept tighter than vocab to control noise */
+const COMPOUND_WORDS=["HOMER","HOME RUN","HOMERUN"];
+
+const TEAM_STATE={109:"Arizona",144:"Georgia",110:"Maryland",111:"Massachusetts",112:"Illinois",
+145:"Illinois",113:"Ohio",114:"Ohio",115:"Colorado",116:"Michigan",117:"Texas",118:"Missouri",
+108:"California",119:"California",146:"Florida",158:"Wisconsin",142:"Minnesota",121:"New York",
+147:"New York",133:"California",143:"Pennsylvania",134:"Pennsylvania",135:"California",137:"California",
+136:"Washington",138:"Missouri",139:"Florida",140:"Texas",141:"Ontario",120:"Washington"};
+
+const RULERS={Sunday:"Sun",Monday:"Moon",Tuesday:"Mars",Wednesday:"Mercury",Thursday:"Jupiter",Friday:"Venus",Saturday:"Saturn"};
+
+/* full admission dates + state order numbers (from Date Decoder) */
+const STATE_DATES={California:"1850-09-09",Texas:"1845-12-29","New York":"1788-07-26",Ohio:"1803-03-01",
+Illinois:"1818-12-03",Georgia:"1788-01-02",Maryland:"1788-04-28",Massachusetts:"1788-02-06",
+Colorado:"1876-08-01",Michigan:"1837-01-26",Missouri:"1821-08-10",Florida:"1845-03-03",
+Wisconsin:"1848-05-29",Minnesota:"1858-05-11",Pennsylvania:"1787-12-12",Washington:"1889-11-11",
+Arizona:"1912-02-14",Ontario:"1867-07-01"};
+const STATE_NUM={Pennsylvania:2,Georgia:4,Massachusetts:6,Maryland:7,"New York":11,Ohio:17,
+Illinois:21,Missouri:24,Michigan:26,Florida:27,Texas:28,Wisconsin:30,California:31,Minnesota:32,
+Colorado:38,Washington:42,Arizona:48};
+
+/* stadium groundbreaking / opening day (from Date Decoder) */
+const STADIUM_DATES={
+"PNC Park":{gb:"1999-04-07",od:"2001-04-09"},
+"Citi Field":{gb:"2006-11-13",od:"2009-04-13"},
+"Tropicana Field":{gb:"1986-11-01",od:"1998-03-31"},
+"Target Field":{gb:"2007-08-30",od:"2010-04-12"},
+"Rate Field":{gb:"1989-05-07",od:"1991-04-18"},
+"Guaranteed Rate Field":{gb:"1989-05-07",od:"1991-04-18"},
+"Oriole Park at Camden Yards":{gb:"1989-06-28",od:"1992-04-06"},
+"Comerica Park":{gb:"1997-10-29",od:"2000-04-11"},
+"loanDepot park":{gb:"2009-07-18",od:"2012-04-04"},
+"Great American Ball Park":{gb:"2000-05-24",od:"2003-03-31"},
+"Busch Stadium":{gb:"2004-01-17",od:"2006-04-10"},
+"Globe Life Field":{gb:"2017-09-28",od:"2020-07-24"},
+"Petco Park":{gb:"2000-10-19",od:"2004-04-08"},
+"Oracle Park":{gb:"1997-12-11",od:"2000-04-11"}};
+
+/* franchise origin + arrival, keyed by MLB team id (from Date Decoder) */
+const FRANCHISE_DATES={
+134:{origin:"1882-05-02"},144:{origin:"1871-05-05",arrived:"1966-04-12"},
+121:{origin:"1962-04-11"},118:{origin:"1969-04-08"},139:{origin:"1998-03-31"},
+147:{origin:"1901-04-26",arrived:"1903-04-22"},142:{origin:"1901-04-26",arrived:"1961-04-21"},
+114:{origin:"1901-04-24"},145:{origin:"1901-04-24"},111:{origin:"1901-04-26"},
+110:{origin:"1901-04-24",arrived:"1954-04-15"},112:{origin:"1876-04-25"},116:{origin:"1901-04-25"},
+133:{origin:"1901-04-26",arrived:"2025-03-27"},146:{origin:"1993-04-05"},136:{origin:"1977-04-06"},
+113:{origin:"1882-05-02"},143:{origin:"1883-05-01"},138:{origin:"1882-05-02"},
+158:{origin:"1969-04-08",arrived:"1970-04-07"},140:{origin:"1961-04-10",arrived:"1972-04-15"},
+108:{origin:"1961-04-11",arrived:"1966-04-19"},135:{origin:"1969-04-08"},109:{origin:"1998-03-31"},
+137:{origin:"1883-05-01",arrived:"1958-04-15"},115:{origin:"1993-04-05"}};
+
+/* general clock: years, days after/before anniversary, total months/weeks/days */
+function clockFrom(originStr,dstr){
+  const o=new Date(originStr+"T12:00:00"),d=new Date(dstr+"T12:00:00");
+  if(d<o)return null;
+  let years=d.getFullYear()-o.getFullYear();
+  let annThis=new Date(d.getFullYear(),o.getMonth(),o.getDate(),12);
+  if(annThis>d){years--;annThis=new Date(d.getFullYear()-1,o.getMonth(),o.getDate(),12)}
+  const annNext=new Date(annThis.getFullYear()+1,o.getMonth(),o.getDate(),12);
+  const since=Math.round((d-annThis)/864e5);
+  const until=Math.round((annNext-d)/864e5);
+  const totalDays=Math.round((d-o)/864e5);
+  let months=(d.getFullYear()-o.getFullYear())*12+(d.getMonth()-o.getMonth());
+  if(d.getDate()<o.getDate())months--;
+  return{years,since,until,totalDays,weeks:Math.floor(totalDays/7),months};
+}
+
+function dateNumerology(dstr){
+  const d=new Date(dstr+"T12:00:00");
+  const M=d.getMonth()+1,DD=d.getDate(),YYYY=d.getFullYear(),YY=YYYY%100,cent=Math.floor(YYYY/100);
+  const dig=n=>String(n).split('').reduce((a,x)=>a+ +x,0);
+  const doy=Math.round((d-new Date(YYYY,0,1))/864e5)+1;
+  const leap=(YYYY%4===0&&(YYYY%100!==0||YYYY%400===0));
+  const left=(leap?366:365)-doy;
+  const dayName=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
+  const vals={};
+  const put=(n,l)=>{if(n>0)vals[n]=vals[n]?vals[n]+" / "+l:l};
+  put(M+DD+YY+cent,"M+DD+YY+cent");put(M+DD+dig(YYYY),"M+DD+Ydig");put(dig(M)+dig(DD)+dig(YYYY),"all-digit");
+  put(M+DD+(YYYY-2000),"M+DD+Y-2000");put(dig(M)+dig(DD)+dig(YY),"Mdig+Ddig+YYdig");
+  put(doy,"day of year");put(left,"days left");put(M+DD,"M+DD");
+  put(dig(M)+dig(DD)+YY+cent,"Mdig+Ddig+YY+cent");put(dig(M)+dig(DD)+(YYYY-2000),"Mdig+Ddig+Y-2000");
+  put(DD,"day #");put(nthPrime(DD),"day prime");
+  put(+(''+M+DD),`date ${M}/${DD}`);put(+(''+DD+M),`date ${DD}\\${M}`);
+  const dg=calcAll(dayName);
+  for(const[c,v]of cipherPairs(dg))put(v,dayName+" "+cl(c));
+  return{vals,dayName,ruler:RULERS[dayName],M,DD};
+}
+
+/* ================================================================
+   SCAN CORE
+================================================================ */
+const STATS=[["HR","homeRuns"],["H","hits"],["2B","doubles"],["3B","triples"],["BB","baseOnBalls"],
+["SO","strikeOuts"],["TB","totalBases"],["RBI","rbi"],["AB","atBats"],["PA","plateAppearances"]];
+const ord2=n=>{const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+
+function daysBetween(a,b){return Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5)}
+
+/* build shared (per-game) + per-player lookup entries; return lane hits for a number */
+function buildGameEntries(game,dn,thread){
+  const e=[];
+  const push=(n,lane,text,cls)=>{if(n>0)e.push({n:+n,lane,text,cls:cls||'g'})};
+  // teams / city / venue / state — both sides
+  const ctx=new Set();
+  [game.home,game.away].forEach(t=>{
+    [t.name,t.teamName,t.locationName].filter(Boolean).forEach(p=>ctx.add(p));
+    const st=TEAM_STATE[t.id]; if(st)ctx.add(st);
+  });
+  if(game.venue)ctx.add(game.venue);
+  ctx.forEach(p=>{const v=calcAll(p);for(const[c,n]of cipherPairs(v))push(n,'CONTEXT',`${p} <b>${n}</b> (${cl(c)})`)});
+  // institution clocks: state admission, stadium, franchise
+  const dstr2=el('gameDate').value;
+  const pushClock=(origin,label)=>{
+    const c=clockFrom(origin,dstr2); if(!c)return;
+    push(c.years,'CLOCK',`${label} clock at <b>${c.years}</b> years`);
+    push(c.since,'CLOCK',`<b>${c.since}</b>d after ${label} anniversary`);
+    push(c.until,'CLOCK',`<b>${c.until}</b>d before ${label} anniversary`);
+    push(c.months,'CLOCK',`${label} clock at <b>${c.months}</b> months`);
+    push(c.weeks,'CLOCK',`${label} clock at <b>${c.weeks}</b> weeks`);
+    push(c.totalDays,'CLOCK',`${label} clock at <b>${c.totalDays}</b> days`);
+  };
+  const states=new Set([game.home,game.away].map(t=>TEAM_STATE[t.id]).filter(Boolean));
+  states.forEach(st=>{
+    if(STATE_DATES[st])pushClock(STATE_DATES[st],st+' admission');
+    if(STATE_NUM[st])push(STATE_NUM[st],'CONTEXT',`${st} is state #<b>${STATE_NUM[st]}</b>`);
+  });
+  if(game.venue&&STADIUM_DATES[game.venue]){
+    const sd=STADIUM_DATES[game.venue];
+    if(sd.gb)pushClock(sd.gb,game.venue+' groundbreaking');
+    if(sd.od)pushClock(sd.od,game.venue+' opening');
+  }
+  [game.home,game.away].forEach(t=>{
+    const f=FRANCHISE_DATES[t.id]; if(!f)return;
+    if(f.origin)pushClock(f.origin,(t.teamName||t.name)+' franchise origin');
+    if(f.arrived)pushClock(f.arrived,(t.teamName||t.name)+' arrival');
+  });
+  for(const[n,l]of Object.entries(dn.vals))push(n,'DN',`${l} = <b>${n}</b>`);
+  const rv=calcAll(dn.ruler);
+  for(const[c,n]of cipherPairs(rv))push(n,'RULER',`${dn.ruler} <b>${n}</b> (day ruler ${cl(c)})`);
+  for(const[n,l]of Object.entries(CORE_VALUES))push(n,'CORE',`${l} <b>${n}</b>`);
+  VOCAB.forEach(p=>{
+    const st=VOCAB_STAT.hasOwnProperty(p)?VOCAB_STAT[p]:null;
+    const v=calcAll(p);
+    for(const[c,n]of cipherPairs(v))if(n>0)e.push({n,lane:'VOCAB',text:`${p} <b>${n}</b> (${cl(c)})`,stat:st});
+  });
+  thread.forEach(n=>push(n,'THREAD',`thread <b>${n}</b>`,'a'));
+  return e;
+}
+
+function buildPlayerEntries(p,gameDateStr,oppPitcher){
+  const e=[];
+  const push=(n,lane,text)=>{if(n>0)e.push({n:+n,lane,text})};
+  const parts=p.fullName.split(' ');
+  const first=parts[0], last=parts.slice(1).join(' ');
+  [[first,first],[last,last],[p.fullName,p.fullName]].forEach(([lbl,s])=>{
+    if(!s)return;const v=calcAll(s);
+    for(const[c,n]of cipherPairs(v))push(n,'NAME',`${lbl} <b>${n}</b> (${cl(c)})`);
+  });
+  COMPOUND_WORDS.forEach(w=>{
+    const v=calcAll(p.fullName+' '+w);
+    for(const[c,n]of cipherPairs(v))if(n>0)e.push({n,lane:'COMPOUND',text:`${p.fullName} ${w} = <b>${n}</b> (${cl(c)})`,stat:["HR","TB","RBI"]});
+  });
+  // legal name (e.g. Jordan Scott Adell) — name + compound lanes
+  if(p.legalName){
+    const v=calcAll(p.legalName);
+    for(const[c,n]of cipherPairs(v))push(n,'NAME',`${p.legalName} <b>${n}</b> (${cl(c)})`);
+    COMPOUND_WORDS.forEach(w=>{
+      const cv=calcAll(p.legalName+' '+w);
+      for(const[c,n]of cipherPairs(cv))if(n>0)e.push({n,lane:'COMPOUND',text:`${p.legalName} ${w} = <b>${n}</b> (${cl(c)})`,stat:["HR","TB","RBI"]});
+    });
+  }
+  // jersey number
+  if(p.jersey)push(p.jersey,'JERSEY',`his #<b>${p.jersey}</b> jersey`);
+  // birthday clocks — exact, leap-aware (same math as stadium/state clocks)
+  const bd=[];
+  if(p.birthDate){
+    const c=clockFrom(p.birthDate,gameDateStr);
+    if(c){
+      bd.push({n:c.since,text:`<b>${c.since}</b>d after his birthday`});
+      bd.push({n:c.until,text:`<b>${c.until}</b>d before his birthday`});
+      bd.push({n:c.years,text:`his age — he is <b>${c.years}</b>`});
+      bd.push({n:c.years+1,text:`he turns <b>${c.years+1}</b> in ${c.until}d`});
+      bd.push({n:c.totalDays,text:`his <b>${c.totalDays}</b>th day alive`});
+      bd.push({n:c.weeks,text:`<b>${c.weeks}</b> weeks since his birth`});
+    }
+  }
+  if(oppPitcher&&oppPitcher.birthDate){
+    const c=clockFrom(oppPitcher.birthDate,gameDateStr);
+    if(c){
+      bd.push({n:c.since,text:`<b>${c.since}</b>d after ${oppPitcher.lastName} (opp SP) birthday`});
+      bd.push({n:c.until,text:`<b>${c.until}</b>d before ${oppPitcher.lastName} (opp SP) birthday`});
+    }
+  }
+  bd.forEach(x=>{if(x.n>0)e.push({n:x.n,lane:'DELTA',text:x.text})});
+  return e;
+}
+
+function scanPlayer(p,gameIdx,playerEntries,side){
+  const pIdx=indexEntries(playerEntries);
+  const look=(n,stat)=>{
+    const out=[];
+    const a=gameIdx.get(n);if(a)a.forEach(en=>{if(statOK(en,stat))out.push(en)});
+    const b=pIdx.get(n);if(b)b.forEach(en=>{if(statOK(en,stat))out.push(en)});
+    return out;
+  };
+  const targets=[];
+  STATS.forEach(([lbl,key])=>{
+    const depth=STAT_DEPTH[lbl]||1;
+    for(let k=1;k<=depth;k++){
+      if(p.career&&p.career[key]!=null)targets.push({col:`career ${lbl}`,stat:lbl,n:p.career[key]+k,cur:p.career[key],off:k});
+      if(p.season&&p.season[key]!=null)targets.push({col:`season ${lbl}`,stat:lbl,n:p.season[key]+k,cur:p.season[key],off:k});
+    }
+  });
+  // home/away HR split — only the side he's actually playing tonight
+  if(side&&p.split){
+    const loc=side==='home'?'home':'away';
+    ['career','season'].forEach(scope=>{
+      const s=p.split[scope+'-'+loc];
+      if(s&&s.homeRuns!=null)for(let k=1;k<=STAT_DEPTH.HR;k++)
+        targets.push({col:`${scope}-${loc} HR`,stat:'HR',n:s.homeRuns+k,cur:s.homeRuns,off:k});
+    });
+  }
+  const hits=[];
+  targets.forEach((t,i)=>{
+    const lanes={};
+    const add=(lane,text,cls,dest)=>{(lanes[lane]=lanes[lane]||[]).push({text,cls,dest})};
+    look(t.n,t.stat).forEach(en=>add(en.lane,en.text,en.cls));
+    if(isPrime(t.n)){
+      const pi=primeIndex(t.n);
+      look(pi,t.stat).forEach(en=>add('PRIME',`${t.n} is the ${ord2(pi)} prime → ${en.text}`,en.cls,en.lane));
+      targets.forEach((o,j)=>{if(j!==i&&o.off===1&&o.n===pi)add('PRIME',`${t.n} is the ${ord2(pi)} prime → his next ${o.col} is the ${ord2(pi)}`,null,'XCOL')});
+    }else if(t.n>3){
+      const ci=compositeIndex(t.n);
+      look(ci,t.stat).forEach(en=>add('COMP',`${t.n} is the ${ord2(ci)} composite → ${en.text}`,en.cls,en.lane));
+    }
+    // reverse bridge: the Nth prime / Nth composite of the milestone ordinal
+    if(t.n>=2&&t.n<=250){
+      const np=nthPrime(t.n);
+      look(np,t.stat).forEach(en=>add('PRIME',`the ${ord2(t.n)} prime is ${np} → ${en.text}`,en.cls,en.lane));
+      const nc=nthComposite(t.n);
+      if(nc)look(nc,t.stat).forEach(en=>add('COMP',`the ${ord2(t.n)} composite is ${nc} → ${en.text}`,en.cls,en.lane));
+    }
+    targets.forEach((o,j)=>{if(j!==i&&o.n===t.n&&o.col!==t.col)
+      add('XCOL',`<b>${t.n}</b> also ${o.off>1?'+'+o.off+' away':'next'} in his ${o.col} column`)});
+    const laneNames=Object.keys(lanes);
+    if(!laneNames.length)return;
+    const depth=laneNames.length;
+    const tFam=T_FAMILY.includes(t.n)||(isPrime(t.n)&&T_FAMILY.includes(primeIndex(t.n)));
+    const threadHit=!!lanes.THREAD;
+    hits.push({col:t.col,n:t.n,cur:t.cur,off:t.off,lanes,depth,tFam,threadHit,seven:SEVEN_FAMILY.includes(t.n)});
+  });
+  return hits.sort((a,b)=>b.depth-a.depth||a.off-b.off);
+}
+
+/* ================================================================
+   MLB STATS API
+================================================================ */
+const API="https://statsapi.mlb.com/api/v1";
+const prog=(m,err)=>{const p=document.getElementById('progress');p.textContent=m;p.className=err?'err':''};
+
+async function jget(url){const r=await fetch(url);if(!r.ok)throw new Error(r.status+' '+url);return r.json()}
+
+async function scanSlate(){
+  const dstr=el('gameDate').value;
+  if(!dstr)return prog('Pick a date.',1);
+  const season=dstr.slice(0,4);
+  try{
+    prog('Fetching schedule…');
+    const sched=await jget(`${API}/schedule?sportId=1&date=${dstr}&hydrate=probablePitcher,lineups,venue`);
+    const rawGames=(sched.dates[0]?.games)||[];
+    if(!rawGames.length)return prog('No games on this date.',1);
+    const games=[];
+    for(const g of rawGames){
+      const game={pk:g.gamePk,
+        home:{id:g.teams.home.team.id,name:g.teams.home.team.name},
+        away:{id:g.teams.away.team.id,name:g.teams.away.team.name},
+        venue:g.venue?.name,
+        homeSP:g.teams.home.probablePitcher?{id:g.teams.home.probablePitcher.id}:null,
+        awaySP:g.teams.away.probablePitcher?{id:g.teams.away.probablePitcher.id}:null,
+        homeIds:(g.lineups?.homePlayers||[]).map(x=>x.id),
+        awayIds:(g.lineups?.awayPlayers||[]).map(x=>x.id),
+        projected:false};
+      games.push(game);
+    }
+    // team detail (teamName/locationName) in one call
+    prog('Fetching team info…');
+    const teamIds=[...new Set(games.flatMap(g=>[g.home.id,g.away.id]))];
+    const tdata=await jget(`${API}/teams?teamIds=${teamIds.join(',')}`);
+    const tmap={}; tdata.teams.forEach(t=>tmap[t.id]={teamName:t.teamName,locationName:t.locationName});
+    games.forEach(g=>{Object.assign(g.home,tmap[g.home.id]||{});Object.assign(g.away,tmap[g.away.id]||{})});
+    // lineup fallback → active roster hitters
+    for(const g of games){
+      for(const side of ['home','away']){
+        if(!g[side+'Ids'].length){
+          prog(`Lineup not posted — pulling ${g[side].teamName} roster…`);
+          const r=await jget(`${API}/teams/${g[side].id}/roster?rosterType=active`);
+          g[side+'Ids']=r.roster.filter(x=>x.position.type!=='Pitcher'||x.position.abbreviation==='TWP').map(x=>x.person.id);
+          g.projected=true;
+        }
+      }
+    }
+    // bulk people: batters + probable pitchers
+    const batterIds=[...new Set(games.flatMap(g=>[...g.homeIds,...g.awayIds]))];
+    const spIds=[...new Set(games.flatMap(g=>[g.homeSP?.id,g.awaySP?.id]).filter(Boolean))];
+    const allIds=[...new Set([...batterIds,...spIds])];
+    const people={};
+    for(let i=0;i<allIds.length;i+=50){
+      prog(`Fetching player stats… ${Math.min(i+50,allIds.length)}/${allIds.length}`);
+      const chunk=allIds.slice(i,i+50);
+      const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a],season=${season})`);
+      d.people.forEach(pp=>{
+        const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,
+          lastName:pp.lastName||pp.fullName.split(' ').slice(-1)[0],split:{},
+          jersey:pp.primaryNumber?+pp.primaryNumber:null,
+          legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null};
+        (pp.stats||[]).forEach(st=>{
+          const tn=st.type.displayName;
+          if(tn==='career'){const s=st.splits?.[0]?.stat;if(s)rec.career=s}
+          else if(tn==='season'){const s=st.splits?.[0]?.stat;if(s)rec.season=s}
+          else if(tn==='careerStatSplits'||tn==='statSplits'){
+            (st.splits||[]).forEach(sp=>{
+              const side=sp.split?.code; if(side!=='h'&&side!=='a')return;
+              const scope=tn==='careerStatSplits'?'career':'season';
+              rec.split[scope+'-'+(side==='h'?'home':'away')]=sp.stat;
+            });
+          }
+        });
+        people[pp.id]=rec;
+      });
+    }
+    runScan(games,people,dstr);
+  }catch(err){prog('Fetch failed: '+err.message+' — MLB API may be blocked here; test in your browser.',1)}
+}
+
+/* ================================================================
+   SCAN + STATE
+================================================================ */
+let RESULTS=[],VIEW='A',THRESH=3,GAME_FILTER='all',SCOPE='both',LAST=null,PLAYER_FILTER=null,PLAYERS_BY_GAME={};
+const LANE_LABEL={CONTEXT:'Team/City',NAME:'Name',COMPOUND:'Name+Word',VOCAB:'Word',DN:'Date',
+RULER:'Ruler',CORE:'Core',THREAD:'Thread',DELTA:'Birthday',CLOCK:'Clocks',JERSEY:'Jersey',
+PRIME:'Prime',COMP:'Composite',XCOL:'Cross-col'};
+const ALL_LANES=Object.keys(LANE_LABEL);
+let LANE_ON=new Set(ALL_LANES);
+function renderLaneSeg(){
+  el('laneSeg').innerHTML=ALL_LANES.map(l=>
+    `<button data-l="${l}" class="${LANE_ON.has(l)?'on':''}">${LANE_LABEL[l]}</button>`).join('');
+}
+function rescan(){if(LAST)runScan(LAST.games,LAST.people,LAST.dstr)}
+function renderCipherSeg(){
+  const seg=el('cipherSeg');
+  const ALLC=["Ord","Red","Rev","RR","Sat","Chal","Sept","Latin"];
+  seg.innerHTML=ALLC.map(c=>`<button data-c="${c}" class="${CIPHER_ON.has(c)?'on':''}">${cl(c)}</button>`).join('');
+}
+function renderVocabWrap(){
+  el('vocabWrap').innerHTML=VOCAB.map((p,i)=>
+    `<span class="b-chip" style="cursor:default">${p} <span style="color:var(--red);cursor:pointer;font-weight:800" data-vx="${i}">×</span></span>`).join('');
+}
+let STAT_ON=new Set(STATS.map(s=>s[0]));
+(function initStatSeg(){
+  const seg=document.getElementById('statSeg');
+  seg.innerHTML=STATS.map(([l])=>`<button data-st="${l}" class="on">${l}</button>`).join('');
+  seg.addEventListener('click',e=>{
+    const st=e.target.dataset.st; if(!st)return;
+    if(STAT_ON.has(st)&&STAT_ON.size===STATS.length){STAT_ON=new Set([st]);}
+    else if(STAT_ON.has(st)){STAT_ON.delete(st);if(!STAT_ON.size)STAT_ON=new Set(STATS.map(s=>s[0]));}
+    else STAT_ON.add(st);
+    [...seg.children].forEach(b=>b.classList.toggle('on',STAT_ON.has(b.dataset.st)));
+    render();
+  });
+})();
+document.getElementById('laneSeg').addEventListener('click',e=>{
+  const l=e.target.dataset.l;if(!l)return;
+  if(LANE_ON.has(l)&&LANE_ON.size===ALL_LANES.length)LANE_ON=new Set([l]);
+  else if(LANE_ON.has(l)){LANE_ON.delete(l);if(!LANE_ON.size)LANE_ON=new Set(ALL_LANES);}
+  else LANE_ON.add(l);
+  renderLaneSeg();render();
+});
+document.getElementById('scopeSeg').addEventListener('click',e=>{
+  if(e.target.dataset.s){SCOPE=e.target.dataset.s;
+    [...scopeSeg.children].forEach(b=>b.classList.toggle('on',b.dataset.s===SCOPE));render()}});
+
+function runScan(games,people,dstr){
+  LAST={games,people,dstr};
+  prog('Scanning…');
+  const dn=dateNumerology(dstr);
+  const thread=el('threadNums').value.split(',').map(s=>+s.trim()).filter(n=>n>0);
+  RESULTS=[];PLAYERS_BY_GAME={};
+  games.forEach(g=>{
+    const gameEntries=buildGameEntries(g,dn,thread);
+    const gameIdx=indexEntries(gameEntries);
+    const label=`${g.away.teamName||g.away.name} @ ${g.home.teamName||g.home.name}`;
+    [['away',g.awayIds,g.homeSP],['home',g.homeIds,g.awaySP]].forEach(([side,ids,oppSPref])=>{
+      const oppSP=oppSPref?people[oppSPref.id]:null;
+      ids.forEach(id=>{
+        const p=people[id]; if(!p||(!p.career&&!p.season))return;
+        const pe=buildPlayerEntries(p,dstr,oppSP);
+        const hits=scanPlayer(p,gameIdx,pe,side);
+        let jerseyTag='';
+        if(p.jersey){
+          if(p.jersey===dn.M||p.jersey===dn.DD)jerseyTag=`#${p.jersey} = ${dn.M}/${dn.DD} date`;
+          else if(dn.vals[p.jersey])jerseyTag=`#${p.jersey} = ${dn.vals[p.jersey]}`;
+        }
+        hits.forEach(h=>RESULTS.push({...h,player:p.fullName,team:(side==='home'?g.home:g.away).teamName,
+          jersey:p.jersey,jerseyTag,game:label,gamePk:g.pk,projected:g.projected}));
+        (PLAYERS_BY_GAME[g.pk]=PLAYERS_BY_GAME[g.pk]||[]).push({name:p.fullName,id:p.id,side,
+          team:(side==='home'?g.home:g.away).teamName,jersey:p.jersey,
+          hits:hits.length,maxDepth:hits.length?hits[0].depth:0});
+      });
+    });
+  });
+  prog(`Done — ${RESULTS.length} raw hits across ${games.length} games.`);
+  el('controlsBar').style.display='flex';
+  buildTabs();
+  buildCarousel();
+  renderAdjPanel();
+  render();
+}
+
+function buildTabs(){
+  const gset=[...new Map(RESULTS.map(r=>[r.gamePk,r.game])).entries()];
+  el('gameTabs').innerHTML=`<button class="${GAME_FILTER==='all'?'on':''}" onclick="setGame('all')">ALL</button>`+
+    gset.map(([pk,lbl])=>`<button class="${GAME_FILTER===pk?'on':''}" onclick="setGame(${pk})">${lbl}</button>`).join('');
+}
+function setGame(pk){GAME_FILTER=pk;PLAYER_FILTER=null;buildTabs();buildCarousel();renderAdjPanel();render()}
+const ADJ={}; // playerId -> {statKey: today's added count}
+function setPlayer(name){PLAYER_FILTER=PLAYER_FILTER===name?null:name;buildCarousel();renderAdjPanel();render()}
+function adjStat(pid,key,d){
+  const p=LAST&&LAST.people[pid]; if(!p)return;
+  const a=ADJ[pid]=ADJ[pid]||{};
+  const cur=a[key]||0;
+  if(cur+d<0)return; // can't remove more than was added live
+  a[key]=cur+d;
+  if(p.season&&p.season[key]!=null)p.season[key]+=d;
+  if(p.career&&p.career[key]!=null)p.career[key]+=d;
+  if(key==='homeRuns'&&p.split){
+    const rec=(PLAYERS_BY_GAME[GAME_FILTER]||[]).find(x=>x.id===pid);
+    const loc=rec&&rec.side==='home'?'home':'away';
+    ['career-','season-'].forEach(s=>{if(p.split[s+loc]&&p.split[s+loc].homeRuns!=null)p.split[s+loc].homeRuns+=d});
+  }
+  rescan();
+  renderAdjPanel();
+}
+function renderAdjPanel(){
+  const host=el('adjPanel');
+  if(GAME_FILTER==='all'||!PLAYER_FILTER){host.style.display='none';host.innerHTML='';return}
+  const rec=(PLAYERS_BY_GAME[GAME_FILTER]||[]).find(x=>x.name===PLAYER_FILTER);
+  if(!rec){host.style.display='none';return}
+  const a=ADJ[rec.id]||{};
+  const p=LAST.people[rec.id];
+  host.style.display='block';
+  host.innerHTML=`<div class="adj-title">LIVE — add today's production for <b>${rec.name}</b> (advances season + career staircases)</div>
+  <div class="adj-grid">`+STATS.map(([lbl,key])=>{
+    const add=a[key]||0;
+    const cur=p.season&&p.season[key]!=null?p.season[key]:'–';
+    return `<div class="adj-item"><span class="st">${lbl}</span>
+      <button onclick="adjStat(${rec.id},'${key}',-1)">−</button>
+      <span class="val">${cur}${add?`<span class="plus"> +${add}</span>`:''}</span>
+      <button onclick="adjStat(${rec.id},'${key}',1)">+</button></div>`;
+  }).join('')+'</div>';
+}
+function updateCarArrows(){
+  const c=el('carousel');
+  el('carL').disabled=c.scrollLeft<=2;
+  el('carR').disabled=c.scrollLeft>=c.scrollWidth-c.clientWidth-2;
+}
+function buildCarousel(){
+  const c=el('carousel'),wrap=el('carouselWrap');
+  if(GAME_FILTER==='all'||!PLAYERS_BY_GAME[GAME_FILTER]){wrap.style.display='none';c.innerHTML='';return}
+  const list=[...PLAYERS_BY_GAME[GAME_FILTER]].sort((a,b)=>b.maxDepth-a.maxDepth||b.hits-a.hits);
+  wrap.style.display='block';
+  c.innerHTML=`<button class="${PLAYER_FILTER===null?'on':''}" onclick="setPlayer(null)">ALL</button>`+
+    list.map(p=>`<button class="${PLAYER_FILTER===p.name?'on':''}${p.hits===0?' zero':''}" onclick="setPlayer('${p.name.replace(/'/g,"\\'")}')">
+      ${p.jersey?'#'+p.jersey+' ':''}${p.name} <span class="dcount">${p.maxDepth||'–'}</span></button>`).join('');
+  setTimeout(updateCarArrows,0);
+}
+document.getElementById('viewSeg').addEventListener('click',e=>{
+  if(e.target.dataset.v){VIEW=e.target.dataset.v;
+    [...viewSeg.children].forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));render()}});
+document.getElementById('thSeg').addEventListener('click',e=>{
+  if(e.target.dataset.t){THRESH=+e.target.dataset.t;
+    [...thSeg.children].forEach(b=>b.classList.toggle('on',+b.dataset.t===THRESH));render()}});
+
+/* ================================================================
+   SENTENCE BUILDERS + RENDER
+================================================================ */
+function mergeRows(rows){
+  const m=new Map();
+  rows.forEach(r=>{
+    const k=r.gamePk+'|'+r.player+'|'+r.n;
+    const ex=m.get(k);
+    if(!ex){
+      m.set(k,{...r,lanes:Object.fromEntries(Object.entries(r.lanes).map(([l,v])=>[l,[...v]])),
+        cols:[{col:r.col,cur:r.cur,off:r.off}]});
+      return;
+    }
+    ex.cols.push({col:r.col,cur:r.cur,off:r.off});
+    for(const[l,arr]of Object.entries(r.lanes)){
+      if(l==='XCOL')continue;
+      const tgt=ex.lanes[l]=ex.lanes[l]||[];
+      arr.forEach(x=>{if(!tgt.some(y=>y.text===x.text))tgt.push(x)});
+    }
+    ex.merged=true;
+    ex.tFam=ex.tFam||r.tFam;ex.threadHit=ex.threadHit||r.threadHit;
+  });
+  const out=[...m.values()];
+  out.forEach(r=>{if(r.merged){delete r.lanes.XCOL;r.depth=Object.keys(r.lanes).length}});
+  return out;
+}
+const colsLabel=h=>h.cols.map(c=>c.col+(c.off>1?' ⚠+'+c.off:'')).join(' + ');
+const sitsLabel=h=>h.cols.map(c=>`${c.col} sits ${c.cur}`).join(' · ');
+const LANE_ORDER=['CONTEXT','NAME','COMPOUND','VOCAB','DN','RULER','CORE','THREAD','DELTA','CLOCK','JERSEY','PRIME','COMP','XCOL'];
+function laneTexts(h){
+  const out=[];
+  LANE_ORDER.forEach(l=>{if(h.lanes[l])h.lanes[l].forEach(x=>out.push({lane:l,text:x.text}))});
+  return out;
+}
+const colorize=(t,h)=>t.replace(/<b>/g,h.tFam?'<b class="goldn">':'<b>');
+
+function render(){
+  const allOn=LANE_ON.size===ALL_LANES.length;
+  const pool=allOn?RESULTS:RESULTS.map(r=>{
+    const lanes={};
+    for(const[l,v]of Object.entries(r.lanes)){
+      if(LANE_ON.has(l)){lanes[l]=v;continue}
+      if(l==='PRIME'||l==='COMP'){
+        const kept=v.filter(x=>x.dest&&LANE_ON.has(x.dest));
+        if(kept.length)lanes[l]=kept;
+      }
+    }
+    const depth=Object.keys(lanes).length;
+    return depth?{...r,lanes,depth,threadHit:!!lanes.THREAD}:null;
+  }).filter(Boolean);
+  const rows=pool.filter(r=>{
+    if(r.depth<THRESH)return false;
+    if(GAME_FILTER!=='all'&&r.gamePk!==GAME_FILTER)return false;
+    if(PLAYER_FILTER&&r.player!==PLAYER_FILTER)return false;
+    const[scope,stat]=r.col.split(' ');
+    if(SCOPE!=='both'&&!scope.startsWith(SCOPE))return false;
+    if(!STAT_ON.has(stat))return false;
+    return true;
+  });
+  const merged=mergeRows(rows).sort((a,b)=>b.depth-a.depth);
+  el('hitCount').textContent=merged.length+' hits'+(merged.length>400?' (top 400 shown)':'');
+  const shown=merged.slice(0,400);
+  if(!merged.length){el('out').innerHTML='<div class="empty">Nothing at this threshold. Drop to 2+ or check another date.</div>';return}
+  // group by game
+  const byGame={};
+  shown.forEach(r=>{(byGame[r.game]=byGame[r.game]||[]).push(r)});
+  let html='';
+  for(const[game,list]of Object.entries(byGame)){
+    html+=`<div class="game-head">${game}${list[0].projected?' · proj lineup':''}</div>`;
+    html+=({A:renderA,B:renderB,C:renderC,D:renderD})[VIEW](list);
+  }
+  el('out').innerHTML=html;
+}
+
+function renderA(list){
+  return list.map(h=>{
+    const lanes=laneTexts(h).map(x=>colorize(x.text,h)).join(' · ');
+    return `<div class="a-card${h.tFam?' gold':''}">${'⭐'.repeat(Math.min(h.depth,5))}
+      <span class="who">${h.player}</span> <span class="meta">${h.team}${h.jerseyTag?' · '+h.jerseyTag:''}</span> —
+      <span class="stat">${ord2(h.n)} ${colsLabel(h)}</span>
+      <span class="lanes">· ${lanes}</span></div>`;
+  }).join('');
+}
+function renderB(list){
+  return list.map(h=>{
+    const chips=laneTexts(h).map(x=>{
+      const cls=x.lane==='THREAD'?'amber':(h.tFam?'goldc':'');
+      return `<span class="b-chip ${cls}">${x.text}</span>`;
+    }).join('');
+    return `<div class="b-card${h.tFam?' gold':''}"><div class="b-head">
+      <div class="b-num">${h.n}</div>
+      <div class="b-statline"><div class="s1">${h.player} — ${colsLabel(h)}</div>
+      <div class="s2">${h.team} · ${sitsLabel(h)}</div></div>
+      <div class="b-depth">${h.depth} LANE${h.depth>1?'S':''}</div></div>
+      <div class="b-body">${chips}</div></div>`;
+  }).join('');
+}
+function renderC(list){
+  return list.map((h,i)=>{
+    const why=laneTexts(h).map(x=>colorize(x.text,h).replace(/<b/g,'<em').replace(/<\/b>/g,'</em>').replace(/class="goldn"/g,'class="goldn"')).join(' · ');
+    const pos=list.length===1?'only':(i===list.length-1?'last':'');
+    return `<div class="c-row ${pos}${h.tFam?' gold':''}"><div class="c-count">${h.depth}</div>
+      <div class="c-main"><div class="c-top"><b>${h.player}</b> ${h.team} — ${colsLabel(h)} <span class="tgt">${h.n}</span></div>
+      <div class="c-why">${why}</div></div></div>`;
+  }).join('');
+}
+function renderD(list){
+  return list.map(h=>{
+    const lines=laneTexts(h).map(x=>sentence(x,h)).map(s=>`<div class="d-line">${s}</div>`).join('');
+    return `<div class="d-card${h.tFam?' gold':''}">
+      <div class="d-head">${h.player.toUpperCase()} <span class="vs">${h.team}${h.jerseyTag?' · '+h.jerseyTag:''}</span>
+      <span class="d-flag">★ ${h.depth}-LANE</span></div>
+      ${h.cols.map(c=>`<div class="d-line">Can get his ${ord2(h.n)} ${expandCol(c.col)} <span class="n g">(sits ${c.cur}${c.off>1?', needs +'+c.off:''})</span></div>`).join('')}${lines}</div>`;
+  }).join('');
+}
+function expandCol(col){
+  const map={HR:'home run',H:'hit','2B':'double','3B':'triple',BB:'walk',SO:'strikeout',
+  TB:'total base',RBI:'RBI',AB:'at-bat',PA:'plate appearance'};
+  const[scope,st]=col.split(' ');
+  const w=map[st]||st;
+  if(scope.includes('-'))
+    return (scope.startsWith('career')?'career ':'')+w+(scope.endsWith('home')?' at home':' on the road')+(scope.startsWith('season')?' this season':'');
+  return (scope==='career'?'career ':'')+w+(scope==='season'?' of the season':'');
+}
+function sentence(x,h){
+  const t=colorize(x.text,h).replace(/<b(.*?)>/g,'<span class="n"$1>').replace(/<\/b>/g,'</span>');
+  switch(x.lane){
+    case 'CONTEXT': return 'It matches '+t;
+    case 'NAME': return 'His name carries it — '+t;
+    case 'COMPOUND': return t;
+    case 'VOCAB': return 'The word lines up — '+t;
+    case 'DN': return 'The date carries it — '+t;
+    case 'RULER': return 'The day ruler carries it — '+t;
+    case 'CORE': return 'Core table — '+t;
+    case 'THREAD': return "In today's thread — "+t;
+    case 'DELTA': return 'He plays '+t;
+    case 'CLOCK': return 'The game falls with the '+t.replace(/^(<span[^>]*>\d+<\/span>d (after|before) )/,'$1');
+    case 'JERSEY': return 'It matches '+t;
+    case 'PRIME': case 'COMP': return t;
+    case 'XCOL': return t;
+    default: return t;
+  }
+}
+
+/* ================================================================
+   DEMO SLATE (mock — for view/design iteration, no network)
+================================================================ */
+function loadDemo(){
+  const y=new Date().getFullYear();
+  el('gameDate').value=`${y}-07-08`;
+  const games=[{pk:1,home:{id:120,name:"Washington Nationals",teamName:"Nationals",locationName:"Washington"},
+    away:{id:117,name:"Houston Astros",teamName:"Astros",locationName:"Houston"},venue:"Nationals Park",
+    homeSP:{id:9001},awaySP:{id:9002},homeIds:[101],awayIds:[102],projected:false},
+   {pk:2,home:{id:137,name:"San Francisco Giants",teamName:"Giants",locationName:"San Francisco"},
+    away:{id:141,name:"Toronto Blue Jays",teamName:"Blue Jays",locationName:"Toronto"},venue:"Oracle Park",
+    homeSP:{id:9003},awaySP:{id:9004},homeIds:[103],awayIds:[104],projected:false}];
+  const people={
+    101:{id:101,fullName:"Luis Garcia Jr",lastName:"Garcia Jr",birthDate:`${y-26}-05-16`,jersey:2,legalName:"Luis Victoriano Garcia",
+      split:{"career-home":{homeRuns:39},"season-home":{homeRuns:11}},
+      career:{homeRuns:77,hits:520,doubles:110,triples:14,baseOnBalls:150,strikeOuts:380,totalBases:840,rbi:260,atBats:1980,plateAppearances:2160},
+      season:{homeRuns:19,hits:88,doubles:19,triples:2,baseOnBalls:25,strikeOuts:60,totalBases:150,rbi:52,atBats:330,plateAppearances:360}},
+    102:{id:102,fullName:"Jose Altuve",lastName:"Altuve",birthDate:`${y-36}-05-06`,jersey:8,legalName:"Jose Carlos Altuve",
+      career:{homeRuns:237,hits:2230,doubles:420,triples:32,baseOnBalls:560,strikeOuts:1100,totalBases:3400,rbi:830,atBats:7300,plateAppearances:8000},
+      season:{homeRuns:14,hits:95,doubles:17,triples:1,baseOnBalls:28,strikeOuts:70,totalBases:160,rbi:45,atBats:340,plateAppearances:375}},
+    103:{id:103,fullName:"Matt Chapman",lastName:"Chapman",birthDate:`${y-33}-04-28`,
+      career:{homeRuns:219,hits:1150,doubles:260,triples:18,baseOnBalls:520,strikeOuts:1350,totalBases:2150,rbi:640,atBats:4400,plateAppearances:5000},
+      season:{homeRuns:15,hits:80,doubles:18,triples:1,baseOnBalls:40,strikeOuts:95,totalBases:145,rbi:48,atBats:320,plateAppearances:365}},
+    104:{id:104,fullName:"George Springer",lastName:"Springer",birthDate:`${y-37}-09-19`,
+      career:{homeRuns:301,hits:1480,doubles:290,triples:22,baseOnBalls:640,strikeOuts:1420,totalBases:2700,rbi:840,atBats:5400,plateAppearances:6200},
+      season:{homeRuns:16,hits:90,doubles:16,triples:1,baseOnBalls:35,strikeOuts:78,totalBases:91,rbi:21,atBats:335,plateAppearances:378}},
+    9001:{id:9001,fullName:"MacKenzie Gore",lastName:"Gore",birthDate:`${y-27}-02-24`},
+    9002:{id:9002,fullName:"Framber Valdez",lastName:"Valdez",birthDate:`${y}-01-02`},
+    9003:{id:9003,fullName:"Logan Webb",lastName:"Webb",birthDate:`${y-29}-11-18`},
+    9004:{id:9004,fullName:"Kevin Gausman",lastName:"Gausman",birthDate:`${y-35}-01-06`}};
+  runScan(games,people,el('gameDate').value);
+  prog('Demo slate loaded — mock stats, real engine. Toggle views + threshold.');
+}
+
+function el(id){return document.getElementById(id)}
+(function(){
+  el('gameDate').value=new Date().toISOString().slice(0,10);
+  renderCipherSeg();renderVocabWrap();renderLaneSeg();
+  el('cipherSeg').addEventListener('click',e=>{
+    const c=e.target.dataset.c;if(!c)return;
+    if(CIPHER_ON.has(c)){if(CIPHER_ON.size>1)CIPHER_ON.delete(c)}else CIPHER_ON.add(c);
+    renderCipherSeg();rescan();
+  });
+  el('vocabWrap').addEventListener('click',e=>{
+    const i=e.target.dataset.vx;if(i===undefined)return;
+    VOCAB.splice(+i,1);renderVocabWrap();rescan();
+  });
+  el('carL').addEventListener('click',()=>{el('carousel').scrollBy({left:-240});});
+  el('carR').addEventListener('click',()=>{el('carousel').scrollBy({left:240});});
+  el('carousel').addEventListener('scroll',updateCarArrows);
+  el('vocabNew').addEventListener('keydown',e=>{
+    if(e.key!=='Enter')return;
+    const t=el('vocabNew').value.trim().toUpperCase();if(!t)return;
+    if(!VOCAB.includes(t))VOCAB.push(t);
+    el('vocabNew').value='';renderVocabWrap();rescan();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "realconvergy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Convergence monorepo — MLB + WNBA four-tab apps, shared gematria engine, static data pipelines",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:mlb": "npm --workspace apps/mlb run dev",
+    "dev:wnba": "npm --workspace apps/wnba run dev",
+    "build:mlb": "npm --workspace apps/mlb run build",
+    "build:wnba": "npm --workspace apps/wnba run build",
+    "test:mlb": "npm --workspace apps/mlb test",
+    "test:wnba": "npm --workspace apps/wnba test",
+    "harvest:h2h": "node scripts/harvest-h2h.mjs"
+  }
+}
