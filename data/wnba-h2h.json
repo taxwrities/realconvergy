@@ -1,0 +1,3472 @@
+{
+ "meta": {
+  "generated": "2026-07-13",
+  "seasons": [
+   1997,
+   2025
+  ],
+  "source": "balldontlie /wnba/v1/games via Netlify proxy; regular season + playoffs; all-star/exhibition excluded",
+  "perSeason": {
+   "1997": {
+    "fetched": 115,
+    "counted": 115,
+    "paired": 115,
+    "src": "bref"
+   },
+   "1998": {
+    "fetched": 158,
+    "counted": 158,
+    "paired": 158,
+    "src": "bref"
+   },
+   "1999": {
+    "fetched": 203,
+    "counted": 203,
+    "paired": 203,
+    "src": "bref"
+   },
+   "2000": {
+    "fetched": 272,
+    "counted": 272,
+    "paired": 272,
+    "src": "bref"
+   },
+   "2001": {
+    "fetched": 274,
+    "counted": 274,
+    "paired": 274,
+    "src": "bref"
+   },
+   "2002": {
+    "fetched": 273,
+    "counted": 273,
+    "paired": 273,
+    "src": "bref"
+   },
+   "2003": {
+    "fetched": 257,
+    "counted": 257,
+    "paired": 257,
+    "src": "bref"
+   },
+   "2004": {
+    "fetched": 240,
+    "counted": 240,
+    "paired": 240,
+    "src": "bref"
+   },
+   "2005": {
+    "fetched": 238,
+    "counted": 238,
+    "paired": 238,
+    "src": "bref"
+   },
+   "2006": {
+    "fetched": 257,
+    "counted": 257,
+    "paired": 257,
+    "src": "bref"
+   },
+   "2007": {
+    "fetched": 242,
+    "counted": 242,
+    "paired": 242,
+    "src": "bref"
+   },
+   "2008": {
+    "fetched": 260,
+    "counted": 260,
+    "paired": 259
+   },
+   "2009": {
+    "fetched": 243,
+    "counted": 242,
+    "paired": 242
+   },
+   "2010": {
+    "fetched": 221,
+    "counted": 220,
+    "paired": 220
+   },
+   "2011": {
+    "fetched": 225,
+    "counted": 224,
+    "paired": 224
+   },
+   "2012": {
+    "fetched": 222,
+    "counted": 222,
+    "paired": 222
+   },
+   "2013": {
+    "fetched": 222,
+    "counted": 221,
+    "paired": 221
+   },
+   "2014": {
+    "fetched": 223,
+    "counted": 222,
+    "paired": 222
+   },
+   "2015": {
+    "fetched": 227,
+    "counted": 226,
+    "paired": 225
+   },
+   "2016": {
+    "fetched": 220,
+    "counted": 220,
+    "paired": 220
+   },
+   "2017": {
+    "fetched": 221,
+    "counted": 220,
+    "paired": 219
+   },
+   "2018": {
+    "fetched": 222,
+    "counted": 221,
+    "paired": 220
+   },
+   "2019": {
+    "fetched": 221,
+    "counted": 220,
+    "paired": 220
+   },
+   "2020": {
+    "fetched": 151,
+    "counted": 151,
+    "paired": 144
+   },
+   "2021": {
+    "fetched": 211,
+    "counted": 210,
+    "paired": 210
+   },
+   "2022": {
+    "fetched": 241,
+    "counted": 240,
+    "paired": 240
+   },
+   "2023": {
+    "fetched": 263,
+    "counted": 262,
+    "paired": 261
+   },
+   "2024": {
+    "fetched": 264,
+    "counted": 263,
+    "paired": 263
+   },
+   "2025": {
+    "fetched": 312,
+    "counted": 311,
+    "paired": 311
+   }
+  },
+  "note": "current season is NOT in this file — apps live-top-up from BDL per matchup (spec §4)"
+ },
+ "lineage": {
+  "1": {
+   "id": "NYL",
+   "identities": [
+    "New York Liberty"
+   ]
+  },
+  "2": {
+   "id": "CON",
+   "identities": [
+    "Orlando Miracle",
+    "Connecticut Sun"
+   ]
+  },
+  "3": {
+   "id": "IND",
+   "identities": [
+    "Indiana Fever"
+   ]
+  },
+  "4": {
+   "id": "ATL",
+   "identities": [
+    "Atlanta Dream"
+   ]
+  },
+  "5": {
+   "id": "WAS",
+   "identities": [
+    "Washington Mystics"
+   ]
+  },
+  "6": {
+   "id": "CHI",
+   "identities": [
+    "Chicago Sky"
+   ]
+  },
+  "7": {
+   "id": "MIN",
+   "identities": [
+    "Minnesota Lynx"
+   ]
+  },
+  "8": {
+   "id": "LVA",
+   "identities": [
+    "Utah Starzz",
+    "San Antonio Silver Stars",
+    "San Antonio Stars",
+    "Las Vegas Aces"
+   ]
+  },
+  "9": {
+   "id": "SEA",
+   "identities": [
+    "Seattle Storm"
+   ]
+  },
+  "10": {
+   "id": "PHO",
+   "identities": [
+    "Phoenix Mercury"
+   ]
+  },
+  "11": {
+   "id": "DAL",
+   "identities": [
+    "Detroit Shock",
+    "Tulsa Shock",
+    "Dallas Wings"
+   ]
+  },
+  "12": {
+   "id": "LAS",
+   "identities": [
+    "Los Angeles Sparks"
+   ]
+  },
+  "13": {
+   "id": "GSV",
+   "identities": [
+    "Golden State Valkyries"
+   ]
+  },
+  "14": {
+   "id": "SAC",
+   "identities": [
+    "Sacramento Monarchs"
+   ],
+   "defunct": true
+  },
+  "15": {
+   "id": "HOU",
+   "identities": [
+    "Houston Comets"
+   ],
+   "defunct": true
+  },
+  "30": {
+   "id": "TOR",
+   "identities": [
+    "Toronto Tempo"
+   ]
+  },
+  "31": {
+   "id": "POR",
+   "identities": [
+    "Portland Fire (2026)"
+   ]
+  },
+  "CLE": {
+   "id": "CLE",
+   "identities": [
+    "Cleveland Rockers"
+   ],
+   "defunct": true
+  },
+  "CHA": {
+   "id": "CHA",
+   "identities": [
+    "Charlotte Sting"
+   ],
+   "defunct": true
+  },
+  "MIA": {
+   "id": "MIA",
+   "identities": [
+    "Miami Sol"
+   ],
+   "defunct": true
+  },
+  "PORF": {
+   "id": "PORF",
+   "identities": [
+    "Portland Fire (2000-2002)"
+   ],
+   "defunct": true,
+   "note": "distinct franchise from the 2026 Portland Fire expansion (POR)"
+  }
+ },
+ "pairs": {
+  "ATL|CHI": {
+   "regularSeason": {
+    "games": 67,
+    "wins": {
+     "ATL": 30,
+     "CHI": 37
+    },
+    "firstMeeting": "2008-06-06",
+    "lastMeeting": "2025-08-08"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "ATL": 1,
+     "CHI": 3
+    },
+    "firstMeeting": "2014-08-22",
+    "lastMeeting": "2016-09-25"
+   }
+  },
+  "ATL|CON": {
+   "regularSeason": {
+    "games": 68,
+    "wins": {
+     "CON": 34,
+     "ATL": 34
+    },
+    "firstMeeting": "2008-05-17",
+    "lastMeeting": "2025-09-10"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "CON": 0,
+     "ATL": 2
+    },
+    "firstMeeting": "2011-09-16",
+    "lastMeeting": "2011-09-18"
+   }
+  },
+  "ATL|DAL": {
+   "regularSeason": {
+    "games": 49,
+    "wins": {
+     "ATL": 29,
+     "DAL": 20
+    },
+    "firstMeeting": "2008-05-23",
+    "lastMeeting": "2025-08-29"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "ATL": 0,
+     "DAL": 4
+    },
+    "firstMeeting": "2009-09-17",
+    "lastMeeting": "2023-09-20"
+   }
+  },
+  "ATL|GSV": {
+   "regularSeason": {
+    "games": 3,
+    "wins": {
+     "ATL": 2,
+     "GSV": 1
+    },
+    "firstMeeting": "2025-07-07",
+    "lastMeeting": "2025-08-18"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "ATL": 0,
+     "GSV": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|HOU": {
+   "regularSeason": {
+    "games": 2,
+    "wins": {
+     "HOU": 2,
+     "ATL": 0
+    },
+    "firstMeeting": "2008-06-17",
+    "lastMeeting": "2008-07-03"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "HOU": 0,
+     "ATL": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|IND": {
+   "regularSeason": {
+    "games": 68,
+    "wins": {
+     "ATL": 35,
+     "IND": 33
+    },
+    "firstMeeting": "2008-06-13",
+    "lastMeeting": "2025-07-11"
+   },
+   "playoffs": {
+    "games": 11,
+    "wins": {
+     "ATL": 6,
+     "IND": 5
+    },
+    "firstMeeting": "2011-09-22",
+    "lastMeeting": "2025-09-18"
+   }
+  },
+  "ATL|LAS": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "ATL": 26,
+     "LAS": 20
+    },
+    "firstMeeting": "2008-05-25",
+    "lastMeeting": "2025-09-05"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "ATL": 0,
+     "LAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|LVA": {
+   "regularSeason": {
+    "games": 44,
+    "wins": {
+     "ATL": 18,
+     "LVA": 26
+    },
+    "firstMeeting": "2008-06-18",
+    "lastMeeting": "2025-08-27"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "ATL": 0,
+     "LVA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|MIN": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "ATL": 14,
+     "MIN": 32
+    },
+    "firstMeeting": "2008-06-03",
+    "lastMeeting": "2025-08-21"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "ATL": 0,
+     "MIN": 6
+    },
+    "firstMeeting": "2011-10-03",
+    "lastMeeting": "2013-10-11"
+   }
+  },
+  "ATL|NYL": {
+   "regularSeason": {
+    "games": 66,
+    "wins": {
+     "ATL": 25,
+     "NYL": 41
+    },
+    "firstMeeting": "2008-06-11",
+    "lastMeeting": "2025-08-23"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "ATL": 2,
+     "NYL": 2
+    },
+    "firstMeeting": "2010-09-05",
+    "lastMeeting": "2024-09-24"
+   }
+  },
+  "ATL|PHO": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "ATL": 17,
+     "PHO": 29
+    },
+    "firstMeeting": "2008-07-01",
+    "lastMeeting": "2025-08-10"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "ATL": 0,
+     "PHO": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|SAC": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "SAC": 2,
+     "ATL": 2
+    },
+    "firstMeeting": "2008-07-19",
+    "lastMeeting": "2009-09-05"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SAC": 0,
+     "ATL": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "ATL|SEA": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "ATL": 20,
+     "SEA": 26
+    },
+    "firstMeeting": "2008-09-02",
+    "lastMeeting": "2025-08-16"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "ATL": 1,
+     "SEA": 3
+    },
+    "firstMeeting": "2010-09-12",
+    "lastMeeting": "2016-09-22"
+   }
+  },
+  "ATL|WAS": {
+   "regularSeason": {
+    "games": 66,
+    "wins": {
+     "WAS": 34,
+     "ATL": 32
+    },
+    "firstMeeting": "2008-05-27",
+    "lastMeeting": "2025-08-03"
+   },
+   "playoffs": {
+    "games": 10,
+    "wins": {
+     "WAS": 4,
+     "ATL": 6
+    },
+    "firstMeeting": "2010-08-25",
+    "lastMeeting": "2018-09-05"
+   }
+  },
+  "CHA|CHI": {
+   "regularSeason": {
+    "games": 3,
+    "wins": {
+     "CHI": 2,
+     "CHA": 1
+    },
+    "firstMeeting": "2006-05-20",
+    "lastMeeting": "2006-08-12"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHI": 0,
+     "CHA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|CLE": {
+   "regularSeason": {
+    "games": 25,
+    "wins": {
+     "CLE": 14,
+     "CHA": 11
+    },
+    "firstMeeting": "1997-06-29",
+    "lastMeeting": "2003-08-25"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "CLE": 1,
+     "CHA": 2
+    },
+    "firstMeeting": "2001-08-16",
+    "lastMeeting": "2001-08-20"
+   }
+  },
+  "CHA|CON": {
+   "regularSeason": {
+    "games": 29,
+    "wins": {
+     "CHA": 11,
+     "CON": 18
+    },
+    "firstMeeting": "1999-07-03",
+    "lastMeeting": "2006-07-06"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "CHA": 0,
+     "CON": 2
+    },
+    "firstMeeting": "2003-08-28",
+    "lastMeeting": "2003-08-30"
+   }
+  },
+  "CHA|DAL": {
+   "regularSeason": {
+    "games": 32,
+    "wins": {
+     "CHA": 17,
+     "DAL": 15
+    },
+    "firstMeeting": "1998-06-13",
+    "lastMeeting": "2006-07-19"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "CHA": 1,
+     "DAL": 0
+    },
+    "firstMeeting": "1999-08-24",
+    "lastMeeting": "1999-08-24"
+   }
+  },
+  "CHA|HOU": {
+   "regularSeason": {
+    "games": 21,
+    "wins": {
+     "CHA": 6,
+     "HOU": 15
+    },
+    "firstMeeting": "1997-07-07",
+    "lastMeeting": "2006-08-08"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "CHA": 0,
+     "HOU": 3
+    },
+    "firstMeeting": "1997-08-28",
+    "lastMeeting": "1998-08-24"
+   }
+  },
+  "CHA|IND": {
+   "regularSeason": {
+    "games": 24,
+    "wins": {
+     "CHA": 12,
+     "IND": 12
+    },
+    "firstMeeting": "2000-07-22",
+    "lastMeeting": "2006-07-15"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHA": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|LAS": {
+   "regularSeason": {
+    "games": 20,
+    "wins": {
+     "CHA": 8,
+     "LAS": 12
+    },
+    "firstMeeting": "1997-06-25",
+    "lastMeeting": "2006-07-08"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "CHA": 0,
+     "LAS": 2
+    },
+    "firstMeeting": "2001-08-30",
+    "lastMeeting": "2001-09-01"
+   }
+  },
+  "CHA|LVA": {
+   "regularSeason": {
+    "games": 21,
+    "wins": {
+     "LVA": 10,
+     "CHA": 11
+    },
+    "firstMeeting": "1997-07-16",
+    "lastMeeting": "2006-08-01"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LVA": 0,
+     "CHA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|MIA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "MIA": 4,
+     "CHA": 5
+    },
+    "firstMeeting": "2000-06-03",
+    "lastMeeting": "2002-07-09"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIA": 0,
+     "CHA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|MIN": {
+   "regularSeason": {
+    "games": 13,
+    "wins": {
+     "MIN": 4,
+     "CHA": 9
+    },
+    "firstMeeting": "1999-07-21",
+    "lastMeeting": "2006-07-27"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIN": 0,
+     "CHA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|NYL": {
+   "regularSeason": {
+    "games": 36,
+    "wins": {
+     "NYL": 21,
+     "CHA": 15
+    },
+    "firstMeeting": "1997-07-09",
+    "lastMeeting": "2006-08-11"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "NYL": 3,
+     "CHA": 3
+    },
+    "firstMeeting": "1999-08-27",
+    "lastMeeting": "2001-08-27"
+   }
+  },
+  "CHA|PHO": {
+   "regularSeason": {
+    "games": 19,
+    "wins": {
+     "CHA": 8,
+     "PHO": 11
+    },
+    "firstMeeting": "1997-06-22",
+    "lastMeeting": "2006-08-03"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHA": 0,
+     "PHO": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "CHA": 2,
+     "PORF": 2
+    },
+    "firstMeeting": "2000-06-20",
+    "lastMeeting": "2002-07-03"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHA": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|SAC": {
+   "regularSeason": {
+    "games": 21,
+    "wins": {
+     "CHA": 7,
+     "SAC": 14
+    },
+    "firstMeeting": "1997-06-26",
+    "lastMeeting": "2006-07-09"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHA": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|SEA": {
+   "regularSeason": {
+    "games": 12,
+    "wins": {
+     "SEA": 9,
+     "CHA": 3
+    },
+    "firstMeeting": "2000-06-09",
+    "lastMeeting": "2006-08-05"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SEA": 0,
+     "CHA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHA|WAS": {
+   "regularSeason": {
+    "games": 33,
+    "wins": {
+     "WAS": 16,
+     "CHA": 17
+    },
+    "firstMeeting": "1998-06-11",
+    "lastMeeting": "2006-07-30"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "WAS": 2,
+     "CHA": 0
+    },
+    "firstMeeting": "2002-08-15",
+    "lastMeeting": "2002-08-17"
+   }
+  },
+  "CHI|CON": {
+   "regularSeason": {
+    "games": 73,
+    "wins": {
+     "CON": 39,
+     "CHI": 34
+    },
+    "firstMeeting": "2006-06-23",
+    "lastMeeting": "2025-09-04"
+   },
+   "playoffs": {
+    "games": 10,
+    "wins": {
+     "CON": 5,
+     "CHI": 5
+    },
+    "firstMeeting": "2020-09-15",
+    "lastMeeting": "2022-09-09"
+   }
+  },
+  "CHI|DAL": {
+   "regularSeason": {
+    "games": 57,
+    "wins": {
+     "DAL": 26,
+     "CHI": 31
+    },
+    "firstMeeting": "2006-06-04",
+    "lastMeeting": "2025-07-10"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "DAL": 0,
+     "CHI": 1
+    },
+    "firstMeeting": "2021-09-24",
+    "lastMeeting": "2021-09-24"
+   }
+  },
+  "CHI|GSV": {
+   "regularSeason": {
+    "games": 3,
+    "wins": {
+     "GSV": 3,
+     "CHI": 0
+    },
+    "firstMeeting": "2025-06-28",
+    "lastMeeting": "2025-08-15"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "CHI": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHI|HOU": {
+   "regularSeason": {
+    "games": 6,
+    "wins": {
+     "CHI": 2,
+     "HOU": 4
+    },
+    "firstMeeting": "2006-06-02",
+    "lastMeeting": "2008-09-14"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHI": 0,
+     "HOU": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHI|IND": {
+   "regularSeason": {
+    "games": 76,
+    "wins": {
+     "IND": 47,
+     "CHI": 29
+    },
+    "firstMeeting": "2006-05-26",
+    "lastMeeting": "2025-09-05"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "IND": 5,
+     "CHI": 3
+    },
+    "firstMeeting": "2013-09-20",
+    "lastMeeting": "2015-09-22"
+   }
+  },
+  "CHI|LAS": {
+   "regularSeason": {
+    "games": 50,
+    "wins": {
+     "LAS": 31,
+     "CHI": 19
+    },
+    "firstMeeting": "2006-05-30",
+    "lastMeeting": "2025-06-29"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "LAS": 3,
+     "CHI": 1
+    },
+    "firstMeeting": "2016-09-29",
+    "lastMeeting": "2016-10-05"
+   }
+  },
+  "CHI|LVA": {
+   "regularSeason": {
+    "games": 51,
+    "wins": {
+     "LVA": 30,
+     "CHI": 21
+    },
+    "firstMeeting": "2006-06-17",
+    "lastMeeting": "2025-09-10"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "LVA": 3,
+     "CHI": 0
+    },
+    "firstMeeting": "2019-09-15",
+    "lastMeeting": "2023-09-17"
+   }
+  },
+  "CHI|MIN": {
+   "regularSeason": {
+    "games": 49,
+    "wins": {
+     "CHI": 19,
+     "MIN": 30
+    },
+    "firstMeeting": "2006-07-19",
+    "lastMeeting": "2025-07-23"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "CHI": 1,
+     "MIN": 0
+    },
+    "firstMeeting": "2021-09-26",
+    "lastMeeting": "2021-09-26"
+   }
+  },
+  "CHI|NYL": {
+   "regularSeason": {
+    "games": 74,
+    "wins": {
+     "NYL": 38,
+     "CHI": 36
+    },
+    "firstMeeting": "2006-07-07",
+    "lastMeeting": "2025-09-12"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "NYL": 1,
+     "CHI": 2
+    },
+    "firstMeeting": "2022-08-18",
+    "lastMeeting": "2022-08-24"
+   }
+  },
+  "CHI|PHO": {
+   "regularSeason": {
+    "games": 50,
+    "wins": {
+     "CHI": 18,
+     "PHO": 32
+    },
+    "firstMeeting": "2006-06-25",
+    "lastMeeting": "2025-08-29"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "CHI": 4,
+     "PHO": 4
+    },
+    "firstMeeting": "2014-09-07",
+    "lastMeeting": "2021-10-17"
+   }
+  },
+  "CHI|SAC": {
+   "regularSeason": {
+    "games": 8,
+    "wins": {
+     "SAC": 5,
+     "CHI": 3
+    },
+    "firstMeeting": "2006-05-23",
+    "lastMeeting": "2009-07-08"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SAC": 0,
+     "CHI": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHI|SEA": {
+   "regularSeason": {
+    "games": 50,
+    "wins": {
+     "CHI": 21,
+     "SEA": 29
+    },
+    "firstMeeting": "2006-06-07",
+    "lastMeeting": "2025-08-31"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHI": 0,
+     "SEA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CHI|WAS": {
+   "regularSeason": {
+    "games": 75,
+    "wins": {
+     "CHI": 35,
+     "WAS": 40
+    },
+    "firstMeeting": "2006-07-09",
+    "lastMeeting": "2025-08-06"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CHI": 0,
+     "WAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|CON": {
+   "regularSeason": {
+    "games": 17,
+    "wins": {
+     "CON": 11,
+     "CLE": 6
+    },
+    "firstMeeting": "1999-06-22",
+    "lastMeeting": "2003-08-19"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "CON": 1,
+     "CLE": 2
+    },
+    "firstMeeting": "2000-08-11",
+    "lastMeeting": "2000-08-15"
+   }
+  },
+  "CLE|DAL": {
+   "regularSeason": {
+    "games": 21,
+    "wins": {
+     "CLE": 9,
+     "DAL": 12
+    },
+    "firstMeeting": "1998-06-15",
+    "lastMeeting": "2003-08-21"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "CLE": 1,
+     "DAL": 2
+    },
+    "firstMeeting": "2003-08-29",
+    "lastMeeting": "2003-09-02"
+   }
+  },
+  "CLE|HOU": {
+   "regularSeason": {
+    "games": 14,
+    "wins": {
+     "HOU": 10,
+     "CLE": 4
+    },
+    "firstMeeting": "1997-06-21",
+    "lastMeeting": "2003-06-21"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "HOU": 0,
+     "CLE": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|IND": {
+   "regularSeason": {
+    "games": 13,
+    "wins": {
+     "CLE": 8,
+     "IND": 5
+    },
+    "firstMeeting": "2000-06-12",
+    "lastMeeting": "2003-08-23"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CLE": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|LAS": {
+   "regularSeason": {
+    "games": 14,
+    "wins": {
+     "LAS": 10,
+     "CLE": 4
+    },
+    "firstMeeting": "1997-07-03",
+    "lastMeeting": "2003-07-07"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LAS": 0,
+     "CLE": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|LVA": {
+   "regularSeason": {
+    "games": 14,
+    "wins": {
+     "LVA": 6,
+     "CLE": 8
+    },
+    "firstMeeting": "1997-06-26",
+    "lastMeeting": "2003-07-27"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LVA": 0,
+     "CLE": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|MIA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "CLE": 5,
+     "MIA": 4
+    },
+    "firstMeeting": "2000-06-17",
+    "lastMeeting": "2002-08-09"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CLE": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|MIN": {
+   "regularSeason": {
+    "games": 8,
+    "wins": {
+     "MIN": 3,
+     "CLE": 5
+    },
+    "firstMeeting": "1999-07-12",
+    "lastMeeting": "2003-07-17"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIN": 0,
+     "CLE": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|NYL": {
+   "regularSeason": {
+    "games": 25,
+    "wins": {
+     "NYL": 13,
+     "CLE": 12
+    },
+    "firstMeeting": "1997-07-14",
+    "lastMeeting": "2003-08-17"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "NYL": 2,
+     "CLE": 1
+    },
+    "firstMeeting": "2000-08-17",
+    "lastMeeting": "2000-08-21"
+   }
+  },
+  "CLE|PHO": {
+   "regularSeason": {
+    "games": 15,
+    "wins": {
+     "PHO": 8,
+     "CLE": 7
+    },
+    "firstMeeting": "1997-06-28",
+    "lastMeeting": "2003-08-01"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "PHO": 2,
+     "CLE": 1
+    },
+    "firstMeeting": "1998-08-22",
+    "lastMeeting": "1998-08-25"
+   }
+  },
+  "CLE|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "CLE": 1,
+     "PORF": 3
+    },
+    "firstMeeting": "2000-06-28",
+    "lastMeeting": "2002-07-02"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CLE": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|SAC": {
+   "regularSeason": {
+    "games": 14,
+    "wins": {
+     "CLE": 7,
+     "SAC": 7
+    },
+    "firstMeeting": "1997-07-06",
+    "lastMeeting": "2003-07-15"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CLE": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|SEA": {
+   "regularSeason": {
+    "games": 6,
+    "wins": {
+     "SEA": 2,
+     "CLE": 4
+    },
+    "firstMeeting": "2000-06-10",
+    "lastMeeting": "2003-06-27"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SEA": 0,
+     "CLE": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CLE|WAS": {
+   "regularSeason": {
+    "games": 21,
+    "wins": {
+     "CLE": 14,
+     "WAS": 7
+    },
+    "firstMeeting": "1998-07-01",
+    "lastMeeting": "2003-08-16"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CLE": 0,
+     "WAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CON|DAL": {
+   "regularSeason": {
+    "games": 81,
+    "wins": {
+     "CON": 46,
+     "DAL": 35
+    },
+    "firstMeeting": "1999-06-17",
+    "lastMeeting": "2025-08-28"
+   },
+   "playoffs": {
+    "games": 10,
+    "wins": {
+     "CON": 5,
+     "DAL": 5
+    },
+    "firstMeeting": "2003-09-05",
+    "lastMeeting": "2022-08-25"
+   }
+  },
+  "CON|GSV": {
+   "regularSeason": {
+    "games": 3,
+    "wins": {
+     "GSV": 2,
+     "CON": 1
+    },
+    "firstMeeting": "2025-06-23",
+    "lastMeeting": "2025-08-12"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "CON": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CON|HOU": {
+   "regularSeason": {
+    "games": 18,
+    "wins": {
+     "HOU": 7,
+     "CON": 11
+    },
+    "firstMeeting": "1999-06-10",
+    "lastMeeting": "2008-09-10"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "HOU": 0,
+     "CON": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CON|IND": {
+   "regularSeason": {
+    "games": 93,
+    "wins": {
+     "CON": 58,
+     "IND": 35
+    },
+    "firstMeeting": "2000-06-03",
+    "lastMeeting": "2025-08-17"
+   },
+   "playoffs": {
+    "games": 10,
+    "wins": {
+     "CON": 6,
+     "IND": 4
+    },
+    "firstMeeting": "2005-09-08",
+    "lastMeeting": "2024-09-25"
+   }
+  },
+  "CON|LAS": {
+   "regularSeason": {
+    "games": 62,
+    "wins": {
+     "LAS": 31,
+     "CON": 31
+    },
+    "firstMeeting": "1999-06-15",
+    "lastMeeting": "2025-08-08"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "LAS": 0,
+     "CON": 4
+    },
+    "firstMeeting": "2019-09-17",
+    "lastMeeting": "2020-09-18"
+   }
+  },
+  "CON|LVA": {
+   "regularSeason": {
+    "games": 61,
+    "wins": {
+     "CON": 33,
+     "LVA": 28
+    },
+    "firstMeeting": "1999-06-12",
+    "lastMeeting": "2025-08-11"
+   },
+   "playoffs": {
+    "games": 9,
+    "wins": {
+     "CON": 3,
+     "LVA": 6
+    },
+    "firstMeeting": "2020-09-20",
+    "lastMeeting": "2022-09-18"
+   }
+  },
+  "CON|MIA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "MIA": 6,
+     "CON": 3
+    },
+    "firstMeeting": "2000-06-28",
+    "lastMeeting": "2002-07-13"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIA": 0,
+     "CON": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CON|MIN": {
+   "regularSeason": {
+    "games": 62,
+    "wins": {
+     "MIN": 30,
+     "CON": 32
+    },
+    "firstMeeting": "1999-07-07",
+    "lastMeeting": "2025-08-30"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "MIN": 4,
+     "CON": 4
+    },
+    "firstMeeting": "2023-09-14",
+    "lastMeeting": "2024-10-09"
+   }
+  },
+  "CON|NYL": {
+   "regularSeason": {
+    "games": 101,
+    "wins": {
+     "CON": 50,
+     "NYL": 51
+    },
+    "firstMeeting": "1999-07-20",
+    "lastMeeting": "2025-08-25"
+   },
+   "playoffs": {
+    "games": 11,
+    "wins": {
+     "CON": 6,
+     "NYL": 5
+    },
+    "firstMeeting": "2004-10-01",
+    "lastMeeting": "2023-10-01"
+   }
+  },
+  "CON|PHO": {
+   "regularSeason": {
+    "games": 61,
+    "wins": {
+     "PHO": 26,
+     "CON": 35
+    },
+    "firstMeeting": "1999-06-21",
+    "lastMeeting": "2025-09-06"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "PHO": 2,
+     "CON": 0
+    },
+    "firstMeeting": "2017-09-10",
+    "lastMeeting": "2018-08-24"
+   }
+  },
+  "CON|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "CON": 2,
+     "PORF": 2
+    },
+    "firstMeeting": "2000-07-30",
+    "lastMeeting": "2002-08-04"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "CON": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "CON|SAC": {
+   "regularSeason": {
+    "games": 20,
+    "wins": {
+     "SAC": 9,
+     "CON": 11
+    },
+    "firstMeeting": "1999-07-17",
+    "lastMeeting": "2009-09-02"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "SAC": 3,
+     "CON": 1
+    },
+    "firstMeeting": "2005-09-14",
+    "lastMeeting": "2005-09-20"
+   }
+  },
+  "CON|SEA": {
+   "regularSeason": {
+    "games": 59,
+    "wins": {
+     "SEA": 27,
+     "CON": 32
+    },
+    "firstMeeting": "2000-07-08",
+    "lastMeeting": "2025-07-28"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "SEA": 2,
+     "CON": 1
+    },
+    "firstMeeting": "2004-10-08",
+    "lastMeeting": "2004-10-12"
+   }
+  },
+  "CON|WAS": {
+   "regularSeason": {
+    "games": 99,
+    "wins": {
+     "WAS": 37,
+     "CON": 62
+    },
+    "firstMeeting": "1999-06-19",
+    "lastMeeting": "2025-08-21"
+   },
+   "playoffs": {
+    "games": 10,
+    "wins": {
+     "WAS": 4,
+     "CON": 6
+    },
+    "firstMeeting": "2004-09-25",
+    "lastMeeting": "2019-10-11"
+   }
+  },
+  "DAL|GSV": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "DAL": 1,
+     "GSV": 3
+    },
+    "firstMeeting": "2025-06-18",
+    "lastMeeting": "2025-09-05"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "DAL": 0,
+     "GSV": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|HOU": {
+   "regularSeason": {
+    "games": 19,
+    "wins": {
+     "DAL": 5,
+     "HOU": 14
+    },
+    "firstMeeting": "1998-07-09",
+    "lastMeeting": "2008-07-25"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "DAL": 0,
+     "HOU": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|IND": {
+   "regularSeason": {
+    "games": 77,
+    "wins": {
+     "IND": 41,
+     "DAL": 36
+    },
+    "firstMeeting": "2000-06-09",
+    "lastMeeting": "2025-08-12"
+   },
+   "playoffs": {
+    "games": 11,
+    "wins": {
+     "IND": 4,
+     "DAL": 7
+    },
+    "firstMeeting": "2006-08-17",
+    "lastMeeting": "2009-09-26"
+   }
+  },
+  "DAL|LAS": {
+   "regularSeason": {
+    "games": 83,
+    "wins": {
+     "LAS": 51,
+     "DAL": 32
+    },
+    "firstMeeting": "1998-07-25",
+    "lastMeeting": "2025-09-07"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "LAS": 1,
+     "DAL": 2
+    },
+    "firstMeeting": "2003-09-12",
+    "lastMeeting": "2003-09-16"
+   }
+  },
+  "DAL|LVA": {
+   "regularSeason": {
+    "games": 82,
+    "wins": {
+     "DAL": 36,
+     "LVA": 46
+    },
+    "firstMeeting": "1998-07-13",
+    "lastMeeting": "2025-08-17"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "DAL": 3,
+     "LVA": 3
+    },
+    "firstMeeting": "2008-10-01",
+    "lastMeeting": "2023-09-30"
+   }
+  },
+  "DAL|MIA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "DAL": 4,
+     "MIA": 5
+    },
+    "firstMeeting": "2000-06-13",
+    "lastMeeting": "2002-08-13"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "DAL": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|MIN": {
+   "regularSeason": {
+    "games": 78,
+    "wins": {
+     "DAL": 21,
+     "MIN": 57
+    },
+    "firstMeeting": "1999-06-12",
+    "lastMeeting": "2025-09-02"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "DAL": 0,
+     "MIN": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|NYL": {
+   "regularSeason": {
+    "games": 85,
+    "wins": {
+     "NYL": 43,
+     "DAL": 42
+    },
+    "firstMeeting": "1998-07-01",
+    "lastMeeting": "2025-08-08"
+   },
+   "playoffs": {
+    "games": 9,
+    "wins": {
+     "NYL": 4,
+     "DAL": 5
+    },
+    "firstMeeting": "2004-09-24",
+    "lastMeeting": "2008-09-29"
+   }
+  },
+  "DAL|PHO": {
+   "regularSeason": {
+    "games": 84,
+    "wins": {
+     "PHO": 50,
+     "DAL": 34
+    },
+    "firstMeeting": "1998-07-08",
+    "lastMeeting": "2025-09-12"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "PHO": 6,
+     "DAL": 2
+    },
+    "firstMeeting": "2007-09-05",
+    "lastMeeting": "2018-08-22"
+   }
+  },
+  "DAL|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PORF": 2,
+     "DAL": 2
+    },
+    "firstMeeting": "2000-07-24",
+    "lastMeeting": "2002-06-15"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "DAL": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|SAC": {
+   "regularSeason": {
+    "games": 22,
+    "wins": {
+     "SAC": 11,
+     "DAL": 11
+    },
+    "firstMeeting": "1998-06-23",
+    "lastMeeting": "2009-07-20"
+   },
+   "playoffs": {
+    "games": 5,
+    "wins": {
+     "SAC": 2,
+     "DAL": 3
+    },
+    "firstMeeting": "2006-08-30",
+    "lastMeeting": "2006-09-09"
+   }
+  },
+  "DAL|SEA": {
+   "regularSeason": {
+    "games": 78,
+    "wins": {
+     "DAL": 29,
+     "SEA": 49
+    },
+    "firstMeeting": "2000-06-28",
+    "lastMeeting": "2025-08-22"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "DAL": 0,
+     "SEA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "DAL|WAS": {
+   "regularSeason": {
+    "games": 85,
+    "wins": {
+     "DAL": 41,
+     "WAS": 44
+    },
+    "firstMeeting": "1998-06-21",
+    "lastMeeting": "2025-08-10"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "DAL": 0,
+     "WAS": 1
+    },
+    "firstMeeting": "2017-09-07",
+    "lastMeeting": "2017-09-07"
+   }
+  },
+  "GSV|IND": {
+   "regularSeason": {
+    "games": 3,
+    "wins": {
+     "GSV": 3,
+     "IND": 0
+    },
+    "firstMeeting": "2025-06-20",
+    "lastMeeting": "2025-09-01"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|LAS": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "GSV": 3,
+     "LAS": 1
+    },
+    "firstMeeting": "2025-05-17",
+    "lastMeeting": "2025-08-10"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "LAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|LVA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "GSV": 1,
+     "LVA": 3
+    },
+    "firstMeeting": "2025-06-07",
+    "lastMeeting": "2025-08-07"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "LVA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|MIN": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "GSV": 0,
+     "MIN": 4
+    },
+    "firstMeeting": "2025-06-02",
+    "lastMeeting": "2025-09-12"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "GSV": 0,
+     "MIN": 2
+    },
+    "firstMeeting": "2025-09-14",
+    "lastMeeting": "2025-09-18"
+   }
+  },
+  "GSV|NYL": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "NYL": 3,
+     "GSV": 1
+    },
+    "firstMeeting": "2025-05-27",
+    "lastMeeting": "2025-09-03"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "NYL": 0,
+     "GSV": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|PHO": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PHO": 4,
+     "GSV": 0
+    },
+    "firstMeeting": "2025-06-06",
+    "lastMeeting": "2025-08-23"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PHO": 0,
+     "GSV": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|SEA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "GSV": 2,
+     "SEA": 2
+    },
+    "firstMeeting": "2025-06-15",
+    "lastMeeting": "2025-09-10"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "SEA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "GSV|WAS": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "GSV": 4,
+     "WAS": 0
+    },
+    "firstMeeting": "2025-05-22",
+    "lastMeeting": "2025-08-31"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "GSV": 0,
+     "WAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "HOU|IND": {
+   "regularSeason": {
+    "games": 16,
+    "wins": {
+     "IND": 5,
+     "HOU": 11
+    },
+    "firstMeeting": "2000-06-24",
+    "lastMeeting": "2008-06-29"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "IND": 0,
+     "HOU": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "HOU|LAS": {
+   "regularSeason": {
+    "games": 42,
+    "wins": {
+     "LAS": 23,
+     "HOU": 19
+    },
+    "firstMeeting": "1997-06-30",
+    "lastMeeting": "2008-09-07"
+   },
+   "playoffs": {
+    "games": 7,
+    "wins": {
+     "LAS": 3,
+     "HOU": 4
+    },
+    "firstMeeting": "1999-08-26",
+    "lastMeeting": "2001-08-20"
+   }
+  },
+  "HOU|LVA": {
+   "regularSeason": {
+    "games": 43,
+    "wins": {
+     "HOU": 29,
+     "LVA": 14
+    },
+    "firstMeeting": "1997-06-28",
+    "lastMeeting": "2008-06-27"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "HOU": 1,
+     "LVA": 2
+    },
+    "firstMeeting": "2002-08-16",
+    "lastMeeting": "2002-08-20"
+   }
+  },
+  "HOU|MIA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "MIA": 1,
+     "HOU": 3
+    },
+    "firstMeeting": "2000-06-15",
+    "lastMeeting": "2002-07-25"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIA": 0,
+     "HOU": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "HOU|MIN": {
+   "regularSeason": {
+    "games": 35,
+    "wins": {
+     "HOU": 26,
+     "MIN": 9
+    },
+    "firstMeeting": "1999-06-19",
+    "lastMeeting": "2008-07-17"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "HOU": 0,
+     "MIN": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "HOU|NYL": {
+   "regularSeason": {
+    "games": 25,
+    "wins": {
+     "NYL": 15,
+     "HOU": 10
+    },
+    "firstMeeting": "1997-06-26",
+    "lastMeeting": "2008-09-03"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "NYL": 1,
+     "HOU": 5
+    },
+    "firstMeeting": "1997-08-30",
+    "lastMeeting": "2000-08-26"
+   }
+  },
+  "HOU|PHO": {
+   "regularSeason": {
+    "games": 42,
+    "wins": {
+     "PHO": 18,
+     "HOU": 24
+    },
+    "firstMeeting": "1997-06-24",
+    "lastMeeting": "2008-09-08"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "PHO": 1,
+     "HOU": 2
+    },
+    "firstMeeting": "1998-08-27",
+    "lastMeeting": "1998-09-01"
+   }
+  },
+  "HOU|PORF": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "HOU": 8,
+     "PORF": 1
+    },
+    "firstMeeting": "2000-05-31",
+    "lastMeeting": "2002-07-30"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "HOU": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "HOU|SAC": {
+   "regularSeason": {
+    "games": 43,
+    "wins": {
+     "SAC": 16,
+     "HOU": 27
+    },
+    "firstMeeting": "1997-07-12",
+    "lastMeeting": "2008-09-16"
+   },
+   "playoffs": {
+    "games": 9,
+    "wins": {
+     "SAC": 6,
+     "HOU": 3
+    },
+    "firstMeeting": "2000-08-12",
+    "lastMeeting": "2006-08-19"
+   }
+  },
+  "HOU|SEA": {
+   "regularSeason": {
+    "games": 31,
+    "wins": {
+     "HOU": 19,
+     "SEA": 12
+    },
+    "firstMeeting": "2000-06-01",
+    "lastMeeting": "2008-08-29"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "HOU": 2,
+     "SEA": 1
+    },
+    "firstMeeting": "2005-08-30",
+    "lastMeeting": "2005-09-03"
+   }
+  },
+  "HOU|WAS": {
+   "regularSeason": {
+    "games": 20,
+    "wins": {
+     "WAS": 7,
+     "HOU": 13
+    },
+    "firstMeeting": "1998-06-29",
+    "lastMeeting": "2008-06-19"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "WAS": 0,
+     "HOU": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|LAS": {
+   "regularSeason": {
+    "games": 59,
+    "wins": {
+     "LAS": 42,
+     "IND": 17
+    },
+    "firstMeeting": "2000-06-28",
+    "lastMeeting": "2025-08-30"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LAS": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|LVA": {
+   "regularSeason": {
+    "games": 60,
+    "wins": {
+     "IND": 21,
+     "LVA": 39
+    },
+    "firstMeeting": "2000-07-29",
+    "lastMeeting": "2025-07-24"
+   },
+   "playoffs": {
+    "games": 5,
+    "wins": {
+     "IND": 2,
+     "LVA": 3
+    },
+    "firstMeeting": "2025-09-21",
+    "lastMeeting": "2025-10-01"
+   }
+  },
+  "IND|MIA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "IND": 3,
+     "MIA": 6
+    },
+    "firstMeeting": "2000-06-01",
+    "lastMeeting": "2002-08-11"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "IND": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|MIN": {
+   "regularSeason": {
+    "games": 61,
+    "wins": {
+     "IND": 23,
+     "MIN": 38
+    },
+    "firstMeeting": "2000-08-06",
+    "lastMeeting": "2025-09-09"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "IND": 4,
+     "MIN": 4
+    },
+    "firstMeeting": "2012-10-15",
+    "lastMeeting": "2015-10-15"
+   }
+  },
+  "IND|NYL": {
+   "regularSeason": {
+    "games": 95,
+    "wins": {
+     "NYL": 44,
+     "IND": 51
+    },
+    "firstMeeting": "2000-06-10",
+    "lastMeeting": "2025-07-23"
+   },
+   "playoffs": {
+    "games": 14,
+    "wins": {
+     "NYL": 6,
+     "IND": 8
+    },
+    "firstMeeting": "2002-08-16",
+    "lastMeeting": "2015-09-29"
+   }
+  },
+  "IND|PHO": {
+   "regularSeason": {
+    "games": 59,
+    "wins": {
+     "PHO": 31,
+     "IND": 28
+    },
+    "firstMeeting": "2000-07-08",
+    "lastMeeting": "2025-09-03"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "PHO": 4,
+     "IND": 2
+    },
+    "firstMeeting": "2009-09-30",
+    "lastMeeting": "2016-09-21"
+   }
+  },
+  "IND|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PORF": 2,
+     "IND": 2
+    },
+    "firstMeeting": "2000-07-03",
+    "lastMeeting": "2002-06-20"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|SAC": {
+   "regularSeason": {
+    "games": 17,
+    "wins": {
+     "SAC": 10,
+     "IND": 7
+    },
+    "firstMeeting": "2000-06-21",
+    "lastMeeting": "2009-08-29"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SAC": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|SEA": {
+   "regularSeason": {
+    "games": 60,
+    "wins": {
+     "SEA": 33,
+     "IND": 27
+    },
+    "firstMeeting": "2000-07-14",
+    "lastMeeting": "2025-08-26"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SEA": 0,
+     "IND": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "IND|WAS": {
+   "regularSeason": {
+    "games": 95,
+    "wins": {
+     "IND": 48,
+     "WAS": 47
+    },
+    "firstMeeting": "2000-07-12",
+    "lastMeeting": "2025-09-07"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "IND": 4,
+     "WAS": 0
+    },
+    "firstMeeting": "2009-09-17",
+    "lastMeeting": "2014-08-23"
+   }
+  },
+  "LAS|LVA": {
+   "regularSeason": {
+    "games": 107,
+    "wins": {
+     "LAS": 57,
+     "LVA": 50
+    },
+    "firstMeeting": "1997-06-23",
+    "lastMeeting": "2025-09-12"
+   },
+   "playoffs": {
+    "games": 7,
+    "wins": {
+     "LAS": 5,
+     "LVA": 2
+    },
+    "firstMeeting": "2002-08-22",
+    "lastMeeting": "2012-09-29"
+   }
+  },
+  "LAS|MIA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "LAS": 3,
+     "MIA": 1
+    },
+    "firstMeeting": "2000-06-23",
+    "lastMeeting": "2002-07-30"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LAS": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "LAS|MIN": {
+   "regularSeason": {
+    "games": 97,
+    "wins": {
+     "MIN": 44,
+     "LAS": 53
+    },
+    "firstMeeting": "1999-06-24",
+    "lastMeeting": "2025-07-10"
+   },
+   "playoffs": {
+    "games": 19,
+    "wins": {
+     "MIN": 10,
+     "LAS": 9
+    },
+    "firstMeeting": "2003-08-28",
+    "lastMeeting": "2018-08-22"
+   }
+  },
+  "LAS|NYL": {
+   "regularSeason": {
+    "games": 68,
+    "wins": {
+     "NYL": 35,
+     "LAS": 33
+    },
+    "firstMeeting": "1997-06-21",
+    "lastMeeting": "2025-08-13"
+   },
+   "playoffs": {
+    "games": 2,
+    "wins": {
+     "NYL": 0,
+     "LAS": 2
+    },
+    "firstMeeting": "2002-08-29",
+    "lastMeeting": "2002-08-31"
+   }
+  },
+  "LAS|PHO": {
+   "regularSeason": {
+    "games": 107,
+    "wins": {
+     "PHO": 46,
+     "LAS": 61
+    },
+    "firstMeeting": "1997-07-13",
+    "lastMeeting": "2025-09-10"
+   },
+   "playoffs": {
+    "games": 13,
+    "wins": {
+     "PHO": 6,
+     "LAS": 7
+    },
+    "firstMeeting": "2000-08-11",
+    "lastMeeting": "2017-09-17"
+   }
+  },
+  "LAS|PORF": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "PORF": 1,
+     "LAS": 8
+    },
+    "firstMeeting": "2000-06-06",
+    "lastMeeting": "2002-07-24"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "LAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "LAS|SAC": {
+   "regularSeason": {
+    "games": 47,
+    "wins": {
+     "SAC": 18,
+     "LAS": 29
+    },
+    "firstMeeting": "1997-06-27",
+    "lastMeeting": "2009-08-16"
+   },
+   "playoffs": {
+    "games": 14,
+    "wins": {
+     "SAC": 8,
+     "LAS": 6
+    },
+    "firstMeeting": "1999-08-24",
+    "lastMeeting": "2006-08-26"
+   }
+  },
+  "LAS|SEA": {
+   "regularSeason": {
+    "games": 94,
+    "wins": {
+     "LAS": 45,
+     "SEA": 49
+    },
+    "firstMeeting": "2000-06-13",
+    "lastMeeting": "2025-09-02"
+   },
+   "playoffs": {
+    "games": 14,
+    "wins": {
+     "LAS": 9,
+     "SEA": 5
+    },
+    "firstMeeting": "2002-08-15",
+    "lastMeeting": "2019-09-15"
+   }
+  },
+  "LAS|WAS": {
+   "regularSeason": {
+    "games": 65,
+    "wins": {
+     "LAS": 41,
+     "WAS": 24
+    },
+    "firstMeeting": "1998-07-29",
+    "lastMeeting": "2025-09-01"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "LAS": 0,
+     "WAS": 1
+    },
+    "firstMeeting": "2018-08-23",
+    "lastMeeting": "2018-08-23"
+   }
+  },
+  "LVA|MIA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "LVA": 2,
+     "MIA": 2
+    },
+    "firstMeeting": "2000-07-21",
+    "lastMeeting": "2002-07-31"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LVA": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "LVA|MIN": {
+   "regularSeason": {
+    "games": 99,
+    "wins": {
+     "LVA": 36,
+     "MIN": 63
+    },
+    "firstMeeting": "1999-06-14",
+    "lastMeeting": "2025-09-05"
+   },
+   "playoffs": {
+    "games": 5,
+    "wins": {
+     "LVA": 1,
+     "MIN": 4
+    },
+    "firstMeeting": "2011-09-17",
+    "lastMeeting": "2014-08-23"
+   }
+  },
+  "LVA|NYL": {
+   "regularSeason": {
+    "games": 68,
+    "wins": {
+     "NYL": 35,
+     "LVA": 33
+    },
+    "firstMeeting": "1997-07-05",
+    "lastMeeting": "2025-08-14"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "NYL": 4,
+     "LVA": 4
+    },
+    "firstMeeting": "2023-10-08",
+    "lastMeeting": "2024-10-06"
+   }
+  },
+  "LVA|PHO": {
+   "regularSeason": {
+    "games": 106,
+    "wins": {
+     "PHO": 55,
+     "LVA": 51
+    },
+    "firstMeeting": "1997-07-03",
+    "lastMeeting": "2025-08-22"
+   },
+   "playoffs": {
+    "games": 18,
+    "wins": {
+     "PHO": 9,
+     "LVA": 9
+    },
+    "firstMeeting": "2007-08-30",
+    "lastMeeting": "2025-10-11"
+   }
+  },
+  "LVA|PORF": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "LVA": 8,
+     "PORF": 1
+    },
+    "firstMeeting": "2000-06-08",
+    "lastMeeting": "2002-08-06"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "LVA": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "LVA|SAC": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "SAC": 26,
+     "LVA": 20
+    },
+    "firstMeeting": "1997-06-21",
+    "lastMeeting": "2009-09-11"
+   },
+   "playoffs": {
+    "games": 8,
+    "wins": {
+     "SAC": 4,
+     "LVA": 4
+    },
+    "firstMeeting": "2001-08-17",
+    "lastMeeting": "2008-09-23"
+   }
+  },
+  "LVA|SEA": {
+   "regularSeason": {
+    "games": 95,
+    "wins": {
+     "LVA": 49,
+     "SEA": 46
+    },
+    "firstMeeting": "2000-06-18",
+    "lastMeeting": "2025-08-09"
+   },
+   "playoffs": {
+    "games": 12,
+    "wins": {
+     "LVA": 7,
+     "SEA": 5
+    },
+    "firstMeeting": "2020-10-02",
+    "lastMeeting": "2025-09-19"
+   }
+  },
+  "LVA|WAS": {
+   "regularSeason": {
+    "games": 64,
+    "wins": {
+     "WAS": 30,
+     "LVA": 34
+    },
+    "firstMeeting": "1998-06-13",
+    "lastMeeting": "2025-08-23"
+   },
+   "playoffs": {
+    "games": 4,
+    "wins": {
+     "WAS": 3,
+     "LVA": 1
+    },
+    "firstMeeting": "2019-09-18",
+    "lastMeeting": "2019-09-25"
+   }
+  },
+  "MIA|MIN": {
+   "regularSeason": {
+    "games": 5,
+    "wins": {
+     "MIN": 4,
+     "MIA": 1
+    },
+    "firstMeeting": "2000-06-10",
+    "lastMeeting": "2002-07-19"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIN": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIA|NYL": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "MIA": 4,
+     "NYL": 5
+    },
+    "firstMeeting": "2000-06-18",
+    "lastMeeting": "2002-08-02"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "MIA": 1,
+     "NYL": 2
+    },
+    "firstMeeting": "2001-08-17",
+    "lastMeeting": "2001-08-21"
+   }
+  },
+  "MIA|PHO": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PHO": 2,
+     "MIA": 2
+    },
+    "firstMeeting": "2000-06-24",
+    "lastMeeting": "2002-07-03"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PHO": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIA|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PORF": 3,
+     "MIA": 1
+    },
+    "firstMeeting": "2000-07-19",
+    "lastMeeting": "2002-07-27"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIA|SAC": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "MIA": 2,
+     "SAC": 2
+    },
+    "firstMeeting": "2000-08-02",
+    "lastMeeting": "2002-07-17"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIA": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIA|SEA": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "SEA": 0,
+     "MIA": 4
+    },
+    "firstMeeting": "2000-07-10",
+    "lastMeeting": "2002-07-07"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SEA": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIA|WAS": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "WAS": 4,
+     "MIA": 5
+    },
+    "firstMeeting": "2000-06-08",
+    "lastMeeting": "2002-08-04"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "WAS": 0,
+     "MIA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIN|NYL": {
+   "regularSeason": {
+    "games": 62,
+    "wins": {
+     "MIN": 36,
+     "NYL": 26
+    },
+    "firstMeeting": "1999-07-11",
+    "lastMeeting": "2025-08-19"
+   },
+   "playoffs": {
+    "games": 5,
+    "wins": {
+     "MIN": 2,
+     "NYL": 3
+    },
+    "firstMeeting": "2024-10-11",
+    "lastMeeting": "2024-10-21"
+   }
+  },
+  "MIN|PHO": {
+   "regularSeason": {
+    "games": 100,
+    "wins": {
+     "PHO": 39,
+     "MIN": 61
+    },
+    "firstMeeting": "1999-07-03",
+    "lastMeeting": "2025-07-16"
+   },
+   "playoffs": {
+    "games": 19,
+    "wins": {
+     "PHO": 5,
+     "MIN": 14
+    },
+    "firstMeeting": "2011-09-23",
+    "lastMeeting": "2025-09-29"
+   }
+  },
+  "MIN|PORF": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "PORF": 3,
+     "MIN": 6
+    },
+    "firstMeeting": "2000-07-02",
+    "lastMeeting": "2002-07-10"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "MIN": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIN|SAC": {
+   "regularSeason": {
+    "games": 39,
+    "wins": {
+     "MIN": 14,
+     "SAC": 25
+    },
+    "firstMeeting": "1999-06-22",
+    "lastMeeting": "2009-09-14"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "MIN": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "MIN|SEA": {
+   "regularSeason": {
+    "games": 94,
+    "wins": {
+     "MIN": 48,
+     "SEA": 46
+    },
+    "firstMeeting": "2000-06-30",
+    "lastMeeting": "2025-08-29"
+   },
+   "playoffs": {
+    "games": 11,
+    "wins": {
+     "MIN": 4,
+     "SEA": 7
+    },
+    "firstMeeting": "2004-09-25",
+    "lastMeeting": "2020-09-27"
+   }
+  },
+  "MIN|WAS": {
+   "regularSeason": {
+    "games": 61,
+    "wins": {
+     "WAS": 27,
+     "MIN": 34
+    },
+    "firstMeeting": "1999-07-23",
+    "lastMeeting": "2025-08-08"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "WAS": 0,
+     "MIN": 3
+    },
+    "firstMeeting": "2017-09-13",
+    "lastMeeting": "2017-09-17"
+   }
+  },
+  "NYL|PHO": {
+   "regularSeason": {
+    "games": 68,
+    "wins": {
+     "PHO": 33,
+     "NYL": 35
+    },
+    "firstMeeting": "1997-06-29",
+    "lastMeeting": "2025-08-31"
+   },
+   "playoffs": {
+    "games": 6,
+    "wins": {
+     "PHO": 4,
+     "NYL": 2
+    },
+    "firstMeeting": "1997-08-28",
+    "lastMeeting": "2025-09-20"
+   }
+  },
+  "NYL|PORF": {
+   "regularSeason": {
+    "games": 4,
+    "wins": {
+     "PORF": 2,
+     "NYL": 2
+    },
+    "firstMeeting": "2000-07-05",
+    "lastMeeting": "2002-06-30"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "NYL": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "NYL|SAC": {
+   "regularSeason": {
+    "games": 27,
+    "wins": {
+     "NYL": 13,
+     "SAC": 14
+    },
+    "firstMeeting": "1997-06-23",
+    "lastMeeting": "2009-08-08"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "NYL": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "NYL|SEA": {
+   "regularSeason": {
+    "games": 59,
+    "wins": {
+     "NYL": 29,
+     "SEA": 30
+    },
+    "firstMeeting": "2000-07-19",
+    "lastMeeting": "2025-09-06"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "NYL": 0,
+     "SEA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "NYL|WAS": {
+   "regularSeason": {
+    "games": 103,
+    "wins": {
+     "WAS": 42,
+     "NYL": 61
+    },
+    "firstMeeting": "1998-07-03",
+    "lastMeeting": "2025-09-09"
+   },
+   "playoffs": {
+    "games": 11,
+    "wins": {
+     "WAS": 3,
+     "NYL": 8
+    },
+    "firstMeeting": "2000-08-12",
+    "lastMeeting": "2023-09-19"
+   }
+  },
+  "PHO|PORF": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "PHO": 6,
+     "PORF": 3
+    },
+    "firstMeeting": "2000-06-13",
+    "lastMeeting": "2002-08-11"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PHO": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "PHO|SAC": {
+   "regularSeason": {
+    "games": 46,
+    "wins": {
+     "SAC": 22,
+     "PHO": 24
+    },
+    "firstMeeting": "1997-07-16",
+    "lastMeeting": "2009-07-15"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SAC": 0,
+     "PHO": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "PHO|SEA": {
+   "regularSeason": {
+    "games": 94,
+    "wins": {
+     "SEA": 56,
+     "PHO": 38
+    },
+    "firstMeeting": "2000-06-07",
+    "lastMeeting": "2025-08-17"
+   },
+   "playoffs": {
+    "games": 14,
+    "wins": {
+     "SEA": 6,
+     "PHO": 8
+    },
+    "firstMeeting": "2007-08-24",
+    "lastMeeting": "2021-09-26"
+   }
+  },
+  "PHO|WAS": {
+   "regularSeason": {
+    "games": 63,
+    "wins": {
+     "WAS": 21,
+     "PHO": 42
+    },
+    "firstMeeting": "1998-06-15",
+    "lastMeeting": "2025-09-04"
+   },
+   "playoffs": {
+    "games": 1,
+    "wins": {
+     "WAS": 0,
+     "PHO": 1
+    },
+    "firstMeeting": "2020-09-16",
+    "lastMeeting": "2020-09-16"
+   }
+  },
+  "PORF|SAC": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "PORF": 3,
+     "SAC": 6
+    },
+    "firstMeeting": "2000-06-25",
+    "lastMeeting": "2002-07-25"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "SAC": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "PORF|SEA": {
+   "regularSeason": {
+    "games": 9,
+    "wins": {
+     "PORF": 5,
+     "SEA": 4
+    },
+    "firstMeeting": "2000-06-03",
+    "lastMeeting": "2002-08-09"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "PORF": 0,
+     "SEA": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "PORF|WAS": {
+   "regularSeason": {
+    "games": 5,
+    "wins": {
+     "WAS": 1,
+     "PORF": 4
+    },
+    "firstMeeting": "2000-07-09",
+    "lastMeeting": "2002-08-02"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "WAS": 0,
+     "PORF": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "SAC|SEA": {
+   "regularSeason": {
+    "games": 35,
+    "wins": {
+     "SEA": 16,
+     "SAC": 19
+    },
+    "firstMeeting": "2000-05-31",
+    "lastMeeting": "2009-07-18"
+   },
+   "playoffs": {
+    "games": 3,
+    "wins": {
+     "SEA": 2,
+     "SAC": 1
+    },
+    "firstMeeting": "2004-10-01",
+    "lastMeeting": "2004-10-05"
+   }
+  },
+  "SAC|WAS": {
+   "regularSeason": {
+    "games": 22,
+    "wins": {
+     "SAC": 18,
+     "WAS": 4
+    },
+    "firstMeeting": "1998-07-26",
+    "lastMeeting": "2009-08-23"
+   },
+   "playoffs": {
+    "games": 0,
+    "wins": {
+     "SAC": 0,
+     "WAS": 0
+    },
+    "firstMeeting": null,
+    "lastMeeting": null
+   }
+  },
+  "SEA|WAS": {
+   "regularSeason": {
+    "games": 59,
+    "wins": {
+     "WAS": 27,
+     "SEA": 32
+    },
+    "firstMeeting": "2000-07-03",
+    "lastMeeting": "2025-08-24"
+   },
+   "playoffs": {
+    "games": 5,
+    "wins": {
+     "WAS": 0,
+     "SEA": 5
+    },
+    "firstMeeting": "2018-09-08",
+    "lastMeeting": "2022-08-21"
+   }
+  }
+ }
+}
