@@ -38,10 +38,7 @@ function DateStrip(){
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
         <div className="dn-vals">
           {dateFigures(date).map((f,i)=>(
-            <span key={i} className="dn-fig" title={f.calc}>
-              <b className={f.top?'v-gold':'v-cyan'}>{f.n}</b>
-              <em className="dn-calc">{f.calc}</em>
-            </span>
+            <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>{f.n}</b>
           ))}
         </div>
       </div>

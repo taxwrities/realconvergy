@@ -106,11 +106,9 @@ body { background: #101319; overscroll-behavior-y: none; }
 .date-strip { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-bottom: 10px; }
 .date-strip .panel { margin-bottom: 0; }
 .date-strip .big { font-size: 22px; font-weight: 800; font-family: var(--cvg-mono); }
-.dn-vals { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px 12px; font-family: var(--cvg-mono); font-size: 12px; }
-.dn-fig { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
-.dn-fig b { font-size: 15px; line-height: 1.1; }
-.dn-fig .v-gold { font-weight: 800; }
-.dn-calc { font-style: normal; font-size: 9px; line-height: 1.1; color: #8a90a0; white-space: nowrap; letter-spacing: .2px; }
+.dn-vals { display: flex; flex-wrap: nowrap; align-items: baseline; gap: 6px 10px; font-family: var(--cvg-mono); font-size: 15px; }
+.dn-vals b { line-height: 1.1; }
+.dn-vals .v-gold { font-weight: 800; }
 
 /* refine box */
 .refine { position: sticky; top: 0; z-index: 20; background: #101319; padding: 4px 0 6px; }
