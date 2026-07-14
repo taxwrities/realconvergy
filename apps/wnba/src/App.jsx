@@ -27,7 +27,7 @@ export default function App(){
       <header className="shell-header">
         <div>
           <div className="shell-title">CON<em>VERGENCE</em></div>
-          <div className="shell-sub">{date} · MLB</div>
+          <div className="shell-sub">{date} · WNBA</div>
         </div>
         <div className="shell-actions">
           <button className="icon-btn" aria-label="Search" onClick={()=>setSheet('search')}>⌕</button>

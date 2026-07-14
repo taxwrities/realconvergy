@@ -75,59 +75,66 @@ const CIPHERS_ON={Ord:true,Red:true,Rev:true,RR:true,Sat:true,Chal:true,Sept:fal
 const mkCtx=over=>({
   ciphers:CIPHERS_ON,templates:[],themeNames:[],
   dn:dateNumerology('2026-07-08'),
-  gameNumber:95,teamStats:{R:516,AB:3373,PA:3821,TB:1437},
-  teamName:'Pirates',oppTeamName:'Braves',stadium:'PNC Park',
+  gameNumber:22,h2hGameNo:95,teamStats:{PTS:2036,FG:742,REB:872,AST:456},
+  teamName:'Sun',oppTeamName:'Lynx',stadium:'Mohegan Sun Arena',
   oppPitcherName:'',oppPitcherVals:[],
   sources:{core:[],theme:[],loadedAll:[],
     dateThread:Object.entries(dateNumerology('2026-07-08').vals).map(([n,l])=>({n:+n,label:l}))},
-  batter:{p:{id:1,fullName:'Luis Garcia',lastName:'Garcia',
-    season:{homeRuns:77,totalBases:150,plateAppearances:360,gamesPlayed:90,hits:88,atBats:330,strikeOuts:60,baseOnBalls:25,doubles:19,triples:2},
-    career:{homeRuns:120}},side:'home',nameVals:[],ageFigures:[]},
+  batter:{p:{id:1,fullName:'Leila Lacan',lastName:'Lacan',
+    season:{PTS:77,FG:56,REB:40,AST:31,'3PM':11,FT:20,PRA:148,GP:14,gamesPlayed:14},
+    career:{PTS:225,FG:150}},side:'home',nameVals:[],ageFigures:[]},
   ...over});
 
-/* season HR sits 77 → 78 = the 7/8 date concat (dateThread) */
-let r=evalCondition({counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},mkCtx());
-eq('grammar: HR+1=78 hits date',r.pass,true);
+/* season PTS sits 77 → 78 = the 7/8 date concat (dateThread) */
+let r=evalCondition({counter:'rung:PTS',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},mkCtx());
+eq('grammar: PTS+1=78 hits date',r.pass,true);
 eq('grammar: match n is 78',r.matches[0].n,78);
 
 /* prime-index modifier: 60+1=61 → prime #18 = "R" Ord 18 */
-r=evalCondition({counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'primeIdx',rmod:'',source:'word',sourceArg:'R',hard:true},
-  mkCtx({batter:{p:{id:2,fullName:'X Y',lastName:'Y',season:{homeRuns:60}},side:'home',nameVals:[],ageFigures:[]}}));
+r=evalCondition({counter:'rung:PTS',counterArg:{off:1},scope:'season',lmod:'primeIdx',rmod:'',source:'word',sourceArg:'R',hard:true},
+  mkCtx({batter:{p:{id:2,fullName:'X Y',lastName:'Y',season:{PTS:60}},side:'home',nameVals:[],ageFigures:[]}}));
 eq('grammar: primeIdx bridge 61→18=R Ord',r.pass,true);
 
 /* chain-to: 78 chains to 6 = "F" Ord 6 */
-r=evalCondition({counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'chain',rmod:'',source:'word',sourceArg:'F',hard:true},mkCtx());
+r=evalCondition({counter:'rung:PTS',counterArg:{off:1},scope:'season',lmod:'chain',rmod:'',source:'word',sourceArg:'F',hard:true},mkCtx());
 eq('grammar: chain-to 78~6',r.pass,true);
 
-/* team game # counter */
+/* franchise H2H game # counter (teamGame → h2hGameNo; seasonGame → gameNumber) */
 r=evalCondition({counter:'teamGame',scope:'season',lmod:'',rmod:'',source:'word',sourceArg:'Homerun',hard:true},mkCtx());
-eq('grammar: game #95 = Homerun Rev 95',r.pass,true);
+eq('grammar: H2H #95 = word Rev 95',r.pass,true);
+r=evalCondition({counter:'seasonGame',scope:'season',lmod:'',rmod:'',source:'word',sourceArg:'V',hard:true},mkCtx());
+eq('grammar: season game #22 = V Ord 22',r.pass,true);
 
-/* team staircase counter: next TB values 1438..1447 vs word? use dn instead —
-   staircase +N window resolves values */
-r=evalCondition({counter:'stair:TB',scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},mkCtx());
+/* team staircase counter emits a +1..+10 window */
+r=evalCondition({counter:'stair:PTS',scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},mkCtx());
 eq('grammar: stair emits candidates',r.leftCount,10);
 
+/* venue scope reads the season-home split */
+r=evalCondition({counter:'rung:FG',counterArg:{off:1},scope:'venue',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},
+  mkCtx({batter:{p:{id:3,fullName:'A B',lastName:'B',split:{'season-home':{FG:77}}},side:'home',nameVals:[],ageFigures:[]}}));
+eq('grammar: venue FG+1=78 hits date',r.pass,true);
+
 /* soft never blocks; hard gates */
-const pat={id:'t',name:'t',lane:'HR',enabled:true,conditions:[
-  {counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},
-  {counter:'rung:3B',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'word',sourceArg:'ZZZZZ',hard:false},
+const pat={id:'t',name:'t',lane:'PTS',enabled:true,conditions:[
+  {counter:'rung:PTS',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'dateThread',sourceArg:'',hard:true},
+  {counter:'rung:3PM',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'word',sourceArg:'ZZZZZ',hard:false},
 ]};
 let pr=evalPattern(pat,mkCtx());
 eq('pattern: hard pass + soft fail still matches',pr.match,true);
 eq('pattern: hardPass 1/1',pr.hardPass,1);
 
 /* seeds: shapes + date-dependence */
-eq('seeds: 4 shipped',SEED_PATTERNS.length,4);
-eq('seeds: HR Convergence not date-dependent',isDateDependent(SEED_PATTERNS[0]),false);
+eq('seeds: 5 shipped',SEED_PATTERNS.length,5);
+eq('seeds: FB Convergence not date-dependent',isDateDependent(SEED_PATTERNS[0]),false);
+eq('seeds: FB Convergence lane',SEED_PATTERNS[0].lane,'FB');
 eq('date-dependence detected',isDateDependent({conditions:[{counter:'dn'}]}),true);
 eq('dow counter date-dependent',isDateDependent({conditions:[{counter:'dow'}]}),true);
 
 /* forecast helpers */
 eq('addDays',addDays('2026-07-13',1),'2026-07-14');
-const proj=projectStats({season:{homeRuns:10,gamesPlayed:50,hits:100,totalBases:200,atBats:300,plateAppearances:330,strikeOuts:50,baseOnBalls:30,doubles:20,triples:2},career:{homeRuns:100,hits:500}},5);
-eq('project: hits 100→110 over 5g',proj.season.hits,110);
-eq('project: career advances by accrual',proj.career.hits,510);
+const proj=projectStats({season:{PTS:100,gamesPlayed:50,GP:50,FG:40,REB:30,AST:20,'3PM':10,FT:15,PRA:150},career:{PTS:500,FG:200}},5);
+eq('project: PTS 100→110 over 5g',proj.season.PTS,110);
+eq('project: career advances by accrual',proj.career.PTS,510);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

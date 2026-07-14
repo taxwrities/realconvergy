@@ -1,52 +1,62 @@
 /* ================================================================
-   defaults — seed vocab (MLB profile: baseball/Masonic ONLY, house
-   rule), outcome words, stat config, T-family, default color rules.
+   defaults — WNBA profile seed vocab (basketball/Masonic ONLY —
+   cross-sport lock: MLB values are banned here and vice versa),
+   outcome words, stat config, lanes, T-family, color rules.
+   WNBA-REDESIGN-SPEC §2.
 ================================================================ */
 
-/* Core table seed: words, values computed by the engine at load.
-   MLB scope — never basketball vocab (§2 house rules). */
-export const CORE_WORDS_MLB=[
-  'JESUIT ORDER','SOCIETY OF JESUS','FREEMASON','FREEMASONRY','SCOTTISH RITE',
-  'BASEBALL','MLB','MAJOR LEAGUE BASEBALL',
+/* Core table seed. Rows may carry enabled:false + a seasonal tag —
+   PLAY IN re-enables each April (vocab is data, not comments). */
+export const CORE_WORDS_WNBA=[
+  {word:'JESUIT ORDER'},
+  {word:'SOCIETY OF JESUS'},
+  {word:'FREEMASON'},
+  {word:'FREEMASONRY'},
+  {word:'SCOTTISH RITE'},
+  {word:'BASKETBALL'},
+  {word:'WNBA'},
+  {word:'NBA'},
+  {word:'WOMENS BASKETBALL'},
+  {word:'FIRST BASKET'},
+  {word:'PLAY IN',enabled:false,seasonal:'april-playin'},
 ];
 
-/* Outcome vocabulary — stat-tagged like the scanner's VOCAB_STAT. */
+/* Outcome vocabulary — stat-tagged. */
 export const OUTCOME_WORDS=[
-  {word:'HOME RUN',stats:['HR','TB','RBI']},
-  {word:'HOMERUN',stats:['HR','TB','RBI']},
-  {word:'HOMER',stats:['HR','TB','RBI']},
-  {word:'GRAND SLAM',stats:['HR','RBI']},
-  {word:'STRIKEOUT',stats:['SO']},
-  {word:'WALK',stats:['BB']},
-  {word:'SINGLE',stats:['H','TB']},
-  {word:'HIT',stats:['H','TB']},
-  {word:'DOUBLE',stats:['2B','H','TB']},
-  {word:'TRIPLE',stats:['3B','H','TB']},
-  {word:'TOTAL BASES',stats:['TB']},
-  {word:'RBI',stats:['RBI']},
-  {word:'RUN BATTED IN',stats:['RBI']},
-  {word:'BASEBALL',stats:null},
-  {word:'MLB',stats:null},
+  {word:'FIRST BASKET',stats:['FG','PTS']},
+  {word:'BASKET',stats:['FG','PTS']},
+  {word:'FIELD GOAL',stats:['FG','PTS']},
+  {word:'THREE POINTER',stats:['3PM','PTS']},
+  {word:'THREE',stats:['3PM']},
+  {word:'FREE THROW',stats:['FT','PTS']},
+  {word:'POINTS',stats:['PTS']},
+  {word:'REBOUND',stats:['REB']},
+  {word:'ASSIST',stats:['AST']},
+  {word:'DOUBLE DOUBLE',stats:['PTS','REB','AST']},
+  {word:'BASKETBALL',stats:null},
+  {word:'WNBA',stats:null},
 ];
 
-/* Tracked batter stats (§2): season AND career, staircases on all.
-   AB/PA are green-light signals, never the bet. */
+/* Tracked player stats — season AND career entering totals, staircases on
+   all (WNBA counters per spec: FG PTS REB AST 3PM FT GP + PRA composite). */
 export const STATS=[
-  ['SO','strikeOuts'],['H','hits'],['HR','homeRuns'],['2B','doubles'],['3B','triples'],
-  ['BB','baseOnBalls'],['TB','totalBases'],['AB','atBats'],['PA','plateAppearances'],
+  ['FG','FG'],['PTS','PTS'],['REB','REB'],['AST','AST'],
+  ['3PM','3PM'],['FT','FT'],['PRA','PRA'],['GP','GP'],
 ];
-export const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,HR:2,BB:2,'2B':2,'3B':1};
-/* Refine-box lanes (§4.2). Default ON: HR + TB. */
-export const LANES=['HR','TB','K','H','BB','2B','3B'];
-export const LANE_STAT={HR:'HR',TB:'TB',K:'SO',H:'H',BB:'BB','2B':'2B','3B':'3B'};
-export const DEFAULT_LANES_ON=['HR','TB'];
+export const STAT_DEPTH={FG:3,PTS:5,REB:2,AST:2,'3PM':1,FT:2,PRA:5,GP:1};
+
+/* Refine-box lanes (§2): First Basket is the flagship, default ON. */
+export const LANES=['FB','PTS','REB','AST','3PM','PRA'];
+export const LANE_STAT={FB:'FG',PTS:'PTS',REB:'REB',AST:'AST','3PM':'3PM',PRA:'PRA'};
+export const DEFAULT_LANES_ON=['FB'];
 
 export const T_FAMILY=[40,43,57,58,59,62,191,69,84,177,201,1336];
 
-/* Default color rules (§8) — ordered, first match wins. */
+/* Default color rules — ordered, first match wins. */
 export const DEFAULT_COLOR_RULES=[
   {target:{type:'family',value:'T'},color:'#ffb02e',label:'T-family'},
   {target:{type:'category',value:'thread'},color:'#46a6ff',label:'Active thread'},
+  {target:{type:'category',value:'h2h'},color:'#46a6ff',label:'H2H values'},
   {target:{type:'category',value:'date'},color:'#46d0ff',label:"Today's date numbers"},
   {target:{type:'category',value:'theme'},color:'#d046ff',label:'Theme values'},
 ];

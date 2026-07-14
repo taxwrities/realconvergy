@@ -1,18 +1,22 @@
 /* ================================================================
-   store — app state context: profile prefs (auto-saved to cvg.*),
-   slate data, selections, and the Phase-1 scoring engine
-   (loaded-value map + batter/pitcher evaluation + CROSS rows).
-   House rules: gematria sort primary; stats annotate, never re-rank;
-   AB/PA rungs are green-light signals, never the bet.
+   store — WNBA app state (WNBA-REDESIGN-SPEC §2). Same architecture
+   as apps/mlb: profile prefs on cvg.* keys, slate, loaded-value map,
+   player evaluation, CROSS rows. WNBA rules enforced here:
+   - profile 'wnba' (Chaldean + Satanic default ON, own cipher store)
+   - sport-scoped vocab (basketball/Masonic only — no MLB values)
+   - First Basket lane: cFG+1/arena check first, column team lock
+     outranks arena/date, KAT rule badge, away-encodes-home default
+   - starters first (inferred top-5 min; manual labels override)
+   - H2H context chips from data/wnba-h2h.json + live top-up
 ================================================================ */
 import {createContext,useContext,useEffect,useMemo,useState,useCallback} from 'react';
 import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/numbers.js';
-import {clockFrom,dateNumerology,daysBetween,todayISO} from '../engine/clocks.js';
-import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
+import {clockFrom,dateNumerology,todayISO} from '../engine/clocks.js';
+import {CORE_WORDS_WNBA,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,deepFetchGame} from '../data/mlb.js';
+import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor} from '../data/wnba.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
@@ -20,12 +24,16 @@ import {dateNumerology as dnFor} from '../engine/clocks.js';
 const Ctx=createContext(null);
 export const useApp=()=>useContext(Ctx);
 
-const seedVocab=()=>CORE_WORDS_MLB.map(word=>({word,enabled:true,source:'core',values:calcAll(word)}));
+/* KAT Rule words (§2): name encoding these across ≥2 ciphers = premium FB lean */
+const KAT_WORDS=['BASKETBALL','WNBA','NBA','WOMENS BASKETBALL','FIRST BASKET'];
+
+const seedVocab=()=>CORE_WORDS_WNBA.map(w=>({word:w.word,enabled:w.enabled!==false,
+  source:'core',...(w.seasonal?{seasonal:w.seasonal}:{}),values:calcAll(w.word)}));
 
 export function AppStateProvider({children}){
-  /* ---------- persisted prefs (auto-save on change, §3) ---------- */
-  const [profile]=useState(()=>load('cvg.profile','mlb'));
-  const [ciphers,setCiphers]=useState(()=>load(`cvg.ciphers.${profile}`,CIPHER_DEFAULTS[profile]||CIPHER_DEFAULTS.mlb));
+  /* ---------- persisted prefs ---------- */
+  const [profile]=useState(()=>load('cvg.profile','wnba'));
+  const [ciphers,setCiphers]=useState(()=>load(`cvg.ciphers.${profile}`,CIPHER_DEFAULTS[profile]||CIPHER_DEFAULTS.wnba));
   const [vocab,setVocab]=useState(()=>load(`cvg.vocab.${profile}`,null)||seedVocab());
   const [phrases,setPhrases]=useState(()=>load('cvg.phrases',[]));
   const [templates,setTemplates]=useState(()=>load('cvg.templates',[]));
@@ -49,18 +57,18 @@ export function AppStateProvider({children}){
   useEffect(()=>{save('cvg.forecasts',forecasts)},[forecasts]);
   useEffect(()=>{saveDay(date,dayState)},[date,dayState]);
 
-  /* boot checksum (§2) */
   const boot=useMemo(()=>checksum(),[]);
 
   /* ---------- slate ---------- */
-  const [slate,setSlate]=useState(null);       // {games, people, teamStats}
+  const [slate,setSlate]=useState(null);
   const [seasonInfo,setSeasonInfo]=useState(null);
   const [loading,setLoading]=useState('');
   const [error,setError]=useState('');
   const [gamePk,setGamePk]=useState(null);
-  const [side,setSide]=useState('away');
+  /* away-encodes-home (§2): first bucket typically HOME side — default there */
+  const [side,setSide]=useState('home');
   const [batterId,setBatterId]=useState(null);
-  const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
+  const [contextFilter,setContextFilter]=useState(null);
 
   const refresh=useCallback(async()=>{
     setError('');setLoading('Loading slate…');
@@ -76,23 +84,23 @@ export function AppStateProvider({children}){
   },[date,gamePk]);
   useEffect(()=>{refresh()},[]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ---------- derived: enabled cipher values helper ---------- */
   const vals=useCallback(s=>{
     const v=calcAll(s);
     return ALL_CIPHERS.filter(c=>ciphers[c]).map(c=>({cipher:c,n:v[c]})).filter(x=>x.n>0);
   },[ciphers]);
 
   const dn=useMemo(()=>dateNumerology(date,ciphers),[date,ciphers]);
-
   const game=useMemo(()=>slate?.games.find(g=>g.pk===gamePk)||null,[slate,gamePk]);
+  const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
 
-  /* ---------- loaded-value map for the active game ----------
-     number → [{src, cat}]; cat drives color rules + chip typing. */
+  /* ---------- loaded-value map ----------
+     entries {src, cat, team?, arena?} — team/arena feed the FB lane's
+     column-team-lock and cFG+1/arena priority rules. */
   const loaded=useMemo(()=>{
     const m=new Map();
-    const add=(n,src,cat)=>{
+    const add=(n,src,cat,meta)=>{
       n=+n;if(!n||n<=0)return;
-      const a=m.get(n)||[];a.push({src,cat});m.set(n,a);
+      const a=m.get(n)||[];a.push({src,cat,...(meta||{})});m.set(n,a);
     };
     vocab.filter(w=>w.enabled).forEach(w=>{
       ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{const n=w.values[c];if(n)add(n,`${w.word} ${c}`,'core')});
@@ -107,19 +115,31 @@ export function AppStateProvider({children}){
       ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{const n=p.values?.[c];if(n)add(n,`"${p.text}" ${c}`,'phrase')});
     });
     if(game){
-      [game.home,game.away].forEach(t=>{
+      [['home',game.home],['away',game.away]].forEach(([sideKey,t])=>{
         [t.name,t.teamName,t.locationName].filter(Boolean).forEach(nm=>{
-          vals(nm).forEach(({cipher,n})=>add(n,`${nm} ${cipher}`,'context'));
+          vals(nm).forEach(({cipher,n})=>add(n,`${nm} ${cipher}`,'context',{team:sideKey}));
         });
+        /* MLB city-bridge lane routes to HOME-team players only (§2) */
+        if(sideKey==='home'&&t.mlbName)
+          vals(t.mlbName).forEach(({cipher,n})=>add(n,`⇄ ${t.mlbName} ${cipher}`,'context',{team:'home',bridge:true}));
       });
-      if(game.venue)vals(game.venue).forEach(({cipher,n})=>add(n,`${game.venue} ${cipher}`,'context'));
-      add(game.gameNumber.home,`${game.home.teamName} game #${game.gameNumber.home}`,'context');
-      add(game.gameNumber.away,`${game.away.teamName} game #${game.gameNumber.away}`,'context');
+      if(game.venue)vals(game.venue).forEach(({cipher,n})=>add(n,`${game.venue} ${cipher}`,'context',{arena:true}));
+      ['home','away'].forEach(s=>{
+        if(game.gameNumber[s])add(game.gameNumber[s],`${game[s].teamName} season game #${game.gameNumber[s]}`,'context');
+      });
+      if(h2h){
+        add(h2h.gameNo,`H2H meeting #${h2h.gameNo}`,'h2h');
+        add(h2h.awayWins,`${game.away.abbrev} series wins`,'h2h');
+        add(h2h.homeWins,`${game.home.abbrev} series wins`,'h2h');
+        if(h2h.daysSinceLast)add(h2h.daysSinceLast,'days since last meeting','h2h');
+        if(h2h.daysSinceFirst)add(h2h.daysSinceFirst,'days since first-ever meeting','h2h');
+        if(h2h.playoffs.games)add(h2h.playoffs.games,'playoff meetings','h2h');
+      }
     }
     return m;
-  },[vocab,ciphers,dn,dayState,registry,phrases,game,vals]);
+  },[vocab,ciphers,dn,dayState,registry,phrases,game,h2h,vals]);
 
-  /* ---------- pattern-engine source sets + ctx builder ---------- */
+  /* ---------- pattern-engine sources + ctx ---------- */
   const patternSources=useMemo(()=>{
     const core=[],theme=[];
     vocab.filter(w=>w.enabled).forEach(w=>{
@@ -139,15 +159,17 @@ export function AppStateProvider({children}){
   const buildPatternCtx=useCallback(({p,side,g,dnUse,gameNumber,dateThread,loadedAll})=>{
     const teamName=g?(side==='home'?g.home.teamName:g.away.teamName):'';
     const oppTeamName=g?(side==='home'?g.away.teamName:g.home.teamName):'';
-    const spId=g?(side==='home'?g.awaySP:g.homeSP):null;
-    const sp=spId?slate?.people[spId]:null;
+    /* "SP" slot = opposing team's likely first-possession finisher (starting C) */
+    const cId=g?(side==='home'?g.awaySP:g.homeSP):null;
+    const c=cId?slate?.people[cId]:null;
     const bday=p.birthDate?clockFrom(p.birthDate,dnUse===dn?date:dnUse._date):null;
     return{
       ciphers,templates,dn:dnUse,
       gameNumber:gameNumber??(g?g.gameNumber[side]:null),
+      h2hGameNo:g&&h2h?h2h.gameNo:null,
       teamStats:g?slate?.teamStats[side==='home'?g.home.id:g.away.id]:null,
       teamName,oppTeamName,stadium:g?.venue||'',
-      oppPitcherName:sp?.fullName||'',oppPitcherVals:sp?nameRun(sp.fullName,ciphers):[],
+      oppPitcherName:c?.fullName||'',oppPitcherVals:c?nameRun(c.fullName,ciphers):[],
       themeNames:[...registry,...dayState.adhocThemes].map(t=>t.name),
       sources:{core:patternSources.core,theme:patternSources.theme,
         dateThread:dateThread||patternSources.dateThread,
@@ -159,13 +181,12 @@ export function AppStateProvider({children}){
           {n:bday.totalDays,label:`day ${bday.totalDays} alive`},{n:bday.weeks,label:`week ${bday.weeks}`},
         ].filter(x=>x.n>0):[]},
     };
-  },[ciphers,templates,slate,dn,date,registry,dayState,patternSources]);
+  },[ciphers,templates,slate,dn,date,registry,dayState,patternSources,h2h]);
 
-  /* ---------- batter evaluation ---------- */
+  /* ---------- player evaluation ---------- */
   const evalBatter=useCallback(p=>{
     if(!p)return null;
     const run=nameRun(p.fullName,ciphers);
-    if(p.legalName)run.push(...nameRun(p.legalName,ciphers).map(x=>({...x,legal:true})));
     const nameNums=new Set(run.map(x=>x.n));
     const bday=p.birthDate?clockFrom(p.birthDate,date):null;
     const bdayNums=bday?[
@@ -184,7 +205,7 @@ export function AppStateProvider({children}){
       if(p.jersey===n)out.push({src:`#${p.jersey} jersey`,cat:'jersey'});
       if(isPrime(n)){
         const pi=primeIndex(n);
-        (loaded.get(pi)||[]).forEach(h=>out.push({src:`${n}=${pi}th prime → ${h.src}`,cat:h.cat,bridge:true}));
+        (loaded.get(pi)||[]).forEach(h=>out.push({src:`${n}=${pi}th prime → ${h.src}`,cat:h.cat,bridge:true,team:h.team,arena:h.arena}));
       }
       return out;
     };
@@ -195,43 +216,59 @@ export function AppStateProvider({children}){
         if(!obj||obj[key]==null)return;
         for(let k=1;k<=depth;k++){
           const n=+obj[key]+k;
-          const hits=hitsFor(n);
-          rungs.push({stat:lbl,scope,n,cur:+obj[key],off:k,hits});
+          rungs.push({stat:lbl,scope,n,cur:+obj[key],off:k,hits:hitsFor(n)});
         }
       });
-      // venue-side splits (home batter → home split), HR emphasis like scanner
+      /* venue splits — FG/PTS emphasis for the FB lane */
       const loc=p._side==='home'?'home':'away';
-      ['career','season'].forEach(scope=>{
-        const s=p.split?.[scope+'-'+loc];
-        if(s&&s[key]!=null&&(lbl==='HR'||lbl==='TB')){
-          for(let k=1;k<=(STAT_DEPTH[lbl]||1);k++){
-            const n=+s[key]+k;
-            rungs.push({stat:lbl,scope:`${scope}·${loc}`,n,cur:+s[key],off:k,hits:hitsFor(n)});
-          }
+      const s=p.split?.['season-'+loc];
+      if(s&&s[key]!=null&&(lbl==='FG'||lbl==='PTS')){
+        for(let k=1;k<=(STAT_DEPTH[lbl]||1);k++){
+          const n=+s[key]+k;
+          rungs.push({stat:lbl,scope:`season·${loc}`,n,cur:+s[key],off:k,hits:hitsFor(n)});
         }
-      });
+      }
     });
     const jerseyHits=p.jersey?(loaded.get(p.jersey)||[]).concat(
       (p.jersey===dn.M||p.jersey===dn.DD)?[{src:`${dn.M}/${dn.DD} date`,cat:'date'}]:[]):[];
     const threadHit=rungs.some(r=>r.hits.some(h=>h.cat==='thread'));
-    /* lane badges: outcome lanes with a live rung hit; AB/PA excluded from
-       badges (green-light only, shown in card) */
+    /* KAT Rule (§2): name encodes BASKETBALL/WNBA values across ≥2 ciphers */
+    const katVals=new Map(); // value → word
+    vocab.filter(w=>w.enabled&&KAT_WORDS.includes(w.word)).forEach(w=>{
+      ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{if(w.values[c])katVals.set(w.values[c],w.word)});
+    });
+    const katHits=run.filter(x=>katVals.has(x.n))
+      .map(x=>({cipher:x.cipher,n:x.n,word:katVals.get(x.n)}));
+    const kat=new Set(katHits.map(x=>x.cipher)).size>=2;
+    /* lane badges */
     const lanes={};
     LANES.forEach(L=>{
       const st=LANE_STAT[L];
       lanes[L]=rungs.some(r=>r.stat===st&&r.hits.length>0);
     });
-    /* PRIMARY/ALT call lines from refine lanes only, ranked by distinct
-       evidence count then closeness (off) — gematria first, stats annotate */
+    /* FB check (§2): cFG+1 / arena runs first — surfaced at card top */
+    const fgC1=rungs.find(r=>r.stat==='FG'&&r.scope==='career'&&r.off===1);
+    const fgS1=rungs.find(r=>r.stat==='FG'&&r.scope==='season'&&r.off===1);
+    const fbCheck={
+      career:fgC1?{n:fgC1.n,cur:fgC1.cur,hits:fgC1.hits,arena:fgC1.hits.some(h=>h.arena)}:null,
+      season:fgS1?{n:fgS1.n,cur:fgS1.cur,hits:fgS1.hits,arena:fgS1.hits.some(h=>h.arena)}:null,
+    };
+    /* PRIMARY/ALT: gematria first. FB column lock — stat+1 landing on OWN
+       team name outranks arena, which outranks generic date/core (§2). */
     const laneStats=new Set(settings.lanesOn.map(L=>LANE_STAT[L]));
+    const rank=r=>{
+      const teamLock=r.hits.some(h=>h.team&&h.team===p._side)?2:0;
+      const arena=r.hits.some(h=>h.arena)?1:0;
+      return teamLock*100+arena*50+r.hits.length;
+    };
     const candidates=rungs
       .filter(r=>laneStats.has(r.stat)&&r.hits.length>0)
-      .sort((a,b)=>b.hits.length-a.hits.length||a.off-b.off);
-    return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,
+      .sort((a,b)=>rank(b)-rank(a)||a.off-b.off);
+    return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,kat,katHits,fbCheck,
       primary:candidates[0]||null,alt:candidates[1]||null,nameNums};
-  },[ciphers,date,loaded,dn,settings.lanesOn]);
+  },[ciphers,date,loaded,dn,settings.lanesOn,vocab]);
 
-  /* ---------- board: evaluated lineup for active game/side ---------- */
+  /* ---------- board: starters first (already ordered by the pipeline) ---------- */
   const board=useMemo(()=>{
     if(!slate||!game)return{away:[],home:[]};
     const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
@@ -245,14 +282,13 @@ export function AppStateProvider({children}){
           .filter(x=>x.res.match);
         const upcoming=forecasts.filter(f=>f.playerId===id&&f.date>=date)
           .sort((a,b)=>a.date<b.date?-1:1);
-        return{order:i+1,ev:evalBatter({...p,_side:s}),id,patternHits,
+        return{order:i+1,ev:evalBatter({...p,_side:s}),id,patternHits,starter:p.starter,
           forecast:upcoming[0]||null,maturing:upcoming.find(f=>f.date===date)||null};
       }).filter(Boolean);
     });
     return out;
   },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
 
-  /* per-batter pattern preview for the editor (live, §5) */
   const previewPattern=useCallback(pattern=>{
     if(!slate||!game)return null;
     const id=batterId||board[side]?.[0]?.id;
@@ -263,7 +299,6 @@ export function AppStateProvider({children}){
     return{who:p.fullName,res:evalPattern(pattern,ctx)};
   },[slate,game,batterId,board,side,buildPatternCtx,dn]);
 
-  /* pattern hit counts across today's whole slate ("N hits today") */
   const patternCounts=useMemo(()=>{
     if(!slate)return{};
     const counts={};
@@ -283,19 +318,19 @@ export function AppStateProvider({children}){
     return counts;
   },[slate,patterns,buildPatternCtx,dn]);
 
-  /* deep splits for the active game (vsTeam / league / month / day-of-week) */
+  /* deep (⚡): vs-opponent split from this season's meetings */
   const [deepBusy,setDeepBusy]=useState(false);
   const deepFetch=useCallback(async()=>{
     if(!slate||!game||game.deepDone||deepBusy)return;
     setDeepBusy(true);
     try{
       await deepFetchGame(game,slate.people,date,()=>{});
-      setSlate({...slate}); // people mutated in place; new ref re-derives
+      setSlate({...slate});
     }catch(e){setError('Deep fetch failed: '+e.message)}
     setDeepBusy(false);
   },[slate,game,date,deepBusy]);
 
-  /* ---------- forecast engine (§6): generate + freeze + grade ---------- */
+  /* ---------- forecast ---------- */
   const [forecastBusy,setForecastBusy]=useState('');
   const generateForecasts=useCallback(async()=>{
     if(!slate?.games.length)return;
@@ -312,27 +347,20 @@ export function AppStateProvider({children}){
           });
         });
       });
-      setForecastBusy(`Walking ${days} days × ${roster.length} batters…`);
+      setForecastBusy(`Walking ${days} days × ${roster.length} players…`);
       const cards=runForecast({patterns,roster,fromDate:date,days,scheduleByTeam,
         ctxFactory:(row,s,projected)=>{
           const dnD=dnFor(s.date,ciphers);dnD._date=s.date;
-          let deep=row.p.deep;
-          if(deep?.dowAll){
-            const dw=new Date(s.date+'T12:00:00').getDay()+1;
-            deep={...deep,dow:deep.dowAll[dw]||null,
-              dowTag:['','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dw]};
-          }
           const dateThread=[
             ...Object.entries(dnD.vals).map(([n,l])=>({n:+n,label:l})),
             ...dayState.adhocThread.map(n=>({n,label:'thread'})),
           ];
           return buildPatternCtx({
-            p:{...row.p,season:projected.season,career:projected.career,deep,_side:s.side},
+            p:{...row.p,season:projected.season,career:projected.career,_side:s.side},
             side:s.side,g:null,dnUse:dnD,gameNumber:s.gameNumber,
             dateThread,loadedAll:[...patternSources.core,...patternSources.theme,...dateThread],
           });
         }});
-      /* frozen-card discipline: keep already-frozen past/graded cards, replace the future set */
       setForecasts(f=>[...f.filter(x=>x.date<=date),...cards]);
       setForecastBusy('');
     }catch(e){setForecastBusy('');setError('Forecast failed: '+e.message)}
@@ -344,7 +372,6 @@ export function AppStateProvider({children}){
     return g;
   },[date]);
 
-  /* registry graduation (§10.4): adhoc theme → cvg.registry with team tags */
   const graduateTheme=useCallback((name,teams)=>{
     const t=dayState.adhocThemes.find(x=>x.name===name);
     if(!t||registry.some(r=>r.name===name))return;
@@ -352,7 +379,6 @@ export function AppStateProvider({children}){
     setDayState(s=>({...s,adhocThemes:s.adhocThemes.filter(x=>x.name!==name)}));
   },[dayState,registry]);
 
-  /* card-logging (§10.4): freeze-scan day log → data/YYYY-MM-DD.json + logs/…md */
   const exportDayLog=useCallback(()=>{
     if(!slate)return;
     const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
@@ -365,7 +391,7 @@ export function AppStateProvider({children}){
         const ev=evalBatter({...p,_side:s});
         const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
         const pats=daily.filter(pt=>evalPattern(pt,ctx).match).map(pt=>pt.name);
-        return{name:p.fullName,team:g[s].teamName,side:s,jersey:p.jersey,
+        return{name:p.fullName,team:g[s].teamName,side:s,jersey:p.jersey,starter:p.starter,kat:ev.kat,
           primary:ev.primary?{col:`${ev.primary.scope} ${ev.primary.stat}`,n:ev.primary.n,sits:ev.primary.cur,
             evidence:ev.primary.hits.map(h=>h.src)}:null,
           alt:ev.alt?{col:`${ev.alt.scope} ${ev.alt.stat}`,n:ev.alt.n,sits:ev.alt.cur}:null,
@@ -373,7 +399,7 @@ export function AppStateProvider({children}){
           patterns:pats,thread:ev.threadHit};
       }).filter(Boolean)),
     }));
-    const payload={schema:'cvg-day-log/v1',date,exportedAt:new Date().toISOString(),
+    const payload={schema:'cvg-day-log/v1',sport:'wnba',date,exportedAt:new Date().toISOString(),
       lanesOn:settings.lanesOn,thread:dayState.adhocThread,
       themes:[...dayState.adhocThemes.map(t=>t.name),...registry.map(t=>t.name)],
       forecastsMaturing:forecasts.filter(f=>f.date===date),games:gamesOut};
@@ -383,24 +409,24 @@ export function AppStateProvider({children}){
       URL.revokeObjectURL(a.href);
     };
     dl(`${date}.json`,JSON.stringify(payload,null,1),'application/json');
-    const md=[`# Board log — ${date}`,''];
+    const md=[`# WNBA board log — ${date}`,''];
     gamesOut.forEach(g=>{
       md.push(`## ${g.label}${g.frozen?'':' ⚠ NOT FROZEN'}`);
       g.batters.filter(b=>b.primary||b.patterns.length).forEach(b=>{
-        md.push(`- **${b.name}** (${b.team})${b.primary?` — ${b.primary.col} → ${b.primary.n} (sits ${b.primary.sits})`:''}${b.patterns.length?` · patterns: ${b.patterns.join(', ')}`:''}${b.thread?' · THREAD':''}`);
+        md.push(`- **${b.name}** (${b.team})${b.starter?' ⭐':''}${b.kat?' · KAT':''}${b.primary?` — ${b.primary.col} → ${b.primary.n} (sits ${b.primary.sits})`:''}${b.patterns.length?` · patterns: ${b.patterns.join(', ')}`:''}${b.thread?' · THREAD':''}`);
       });
       md.push('');
     });
     dl(`${date}.md`,md.join('\n'),'text/markdown');
   },[slate,patterns,evalBatter,buildPatternCtx,dn,date,settings.lanesOn,dayState,registry,forecasts]);
 
-  /* ---------- context rail chips with hit counts ---------- */
+  /* ---------- context rail: theme purple · thread/H2H blue · date gray ---------- */
   const contextChips=useMemo(()=>{
     if(!game)return[];
     const chips=[];
     const roster=[...board.away,...board.home];
     const countHits=n=>roster.filter(r=>r.ev.rungs.some(g=>g.n===n&&g.hits.length)).length;
-    [...dayState.adhocThemes,...registry.filter(t=>!t.teams||t.teams.includes(game.home.teamName)||t.teams.includes(game.away.teamName))]
+    [...dayState.adhocThemes,...registry.filter(t=>!t.teams||!t.teams.length||t.teams.includes(game.home.teamName)||t.teams.includes(game.away.teamName))]
       .forEach(t=>{
         ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{
           const n=t.values?.[c];
@@ -408,58 +434,68 @@ export function AppStateProvider({children}){
         });
       });
     dayState.adhocThread.forEach(n=>chips.push({kind:'thread',label:'thread',n,cnt:countHits(n)}));
+    /* H2H chips (§3): headline duration number = all-time meeting # */
+    if(h2h){
+      chips.push({kind:'h2h',label:'H2H game #',n:h2h.gameNo,cnt:countHits(h2h.gameNo),
+        lineage:h2h.lineageNote.length?h2h.lineageNote.join(' · '):null});
+      chips.push({kind:'h2h',label:`${game.away.abbrev} W`,n:h2h.awayWins,cnt:countHits(h2h.awayWins)});
+      chips.push({kind:'h2h',label:`${game.home.abbrev} W`,n:h2h.homeWins,cnt:countHits(h2h.homeWins)});
+      if(h2h.daysSinceLast!=null)chips.push({kind:'h2h',label:'days since last',n:h2h.daysSinceLast,cnt:countHits(h2h.daysSinceLast)});
+      if(h2h.daysSinceFirst!=null)chips.push({kind:'h2h',label:'days since first',n:h2h.daysSinceFirst,cnt:countHits(h2h.daysSinceFirst)});
+      if(h2h.playoffs.games)chips.push({kind:'h2h',label:'playoff meetings',n:h2h.playoffs.games,cnt:countHits(h2h.playoffs.games)});
+    }
     chips.push({kind:'date',label:'DOY',n:dn.doy,cnt:countHits(dn.doy)});
     chips.push({kind:'date',label:`${dn.M}/${dn.DD}`,n:+(''+dn.M+dn.DD),cnt:countHits(+(''+dn.M+dn.DD))});
     chips.push({kind:'date',label:'days left',n:dn.left,cnt:countHits(dn.left)});
     return chips;
-  },[game,board,dayState,registry,ciphers,dn]);
+  },[game,board,dayState,registry,ciphers,dn,h2h]);
 
-  /* ---------- matchup: pitcher + CROSS rows + team staircases ---------- */
+  /* ---------- matchup: opposing center + CROSS + team staircases ---------- */
   const matchup=useMemo(()=>{
     if(!slate||!game||!batterId)return null;
     const bat=[...board.away,...board.home].find(r=>r.id===batterId);
     if(!bat)return null;
     const batSide=board.away.some(r=>r.id===batterId)?'away':'home';
-    const spId=batSide==='away'?game.homeSP:game.awaySP;
-    const sp=spId?slate.people[spId]:null;
+    const cId=batSide==='away'?game.homeSP:game.awaySP;
+    const c=cId?slate.people[cId]:null;
     const cross=[];
-    if(sp){
-      const spRun=nameRun(sp.fullName,ciphers);
+    if(c){
+      const cRun=nameRun(c.fullName,ciphers);
       const batNums=new Set([...bat.ev.nameNums,...bat.ev.rungs.filter(r=>r.off===1).map(r=>r.n)]);
-      spRun.forEach(x=>{
+      cRun.forEach(x=>{
         if(batNums.has(x.n)){
           const why=bat.ev.rungs.filter(r=>r.off===1&&r.n===x.n).map(r=>`${r.scope} ${r.stat}→${r.n}`);
-          cross.push({n:x.n,text:`${sp.lastName} ${x.cipher} ${x.n} = ${why.length?why.join(' + '):'batter name value'}`});
+          cross.push({n:x.n,text:`${c.lastName} ${x.cipher} ${x.n} = ${why.length?why.join(' + '):'player name value'}`});
         }
-        if(x.n===game.gameNumber.home||x.n===game.gameNumber.away)
-          cross.push({n:x.n,text:`${sp.lastName} ${x.cipher} ${x.n} = team game #${x.n}`});
+        if(h2h&&x.n===h2h.gameNo)
+          cross.push({n:x.n,text:`${c.lastName} ${x.cipher} ${x.n} = H2H meeting #${x.n}`});
       });
     }
-    // team staircases: next R/AB/PA/TB that land on loaded or batter milestone values
     const stair=[];
     const teamId=batSide==='away'?game.away.id:game.home.id;
     const ts=slate.teamStats[teamId];
     if(ts){
       const batNext=new Set(bat.ev.rungs.filter(r=>r.off===1).map(r=>r.n));
-      ['R','AB','PA','TB'].forEach(k=>{
+      ['PTS','FG','REB','AST'].forEach(k=>{
         if(ts[k]==null)return;
-        for(let add=1;add<=(k==='R'?10:45);add++){
+        for(let add=1;add<=(k==='PTS'?110:45);add++){
           const n=ts[k]+add;
           const hit=loaded.get(n)||[];
           if(hit.length||batNext.has(n)){
             stair.push({k,n,cur:ts[k],need:add,
-              why:hit.length?hit[0].src:'batter milestone '+n});
+              why:hit.length?hit[0].src:'player milestone '+n});
             break;
           }
         }
       });
     }
-    const spBday=sp?.birthDate?clockFrom(sp.birthDate,date):null;
-    return{sp,spRun:sp?nameRun(sp.fullName,ciphers):[],spBday,cross,stair,bat,
-      vsHand:bat.ev.p.split?.[batSide==='away'?'season-away':'season-home']||null};
-  },[slate,game,batterId,board,ciphers,loaded,date]);
+    const cBday=c?.birthDate?clockFrom(c.birthDate,date):null;
+    return{sp:c,spRun:c?nameRun(c.fullName,ciphers):[],spBday:cBday,cross,stair,bat,
+      vsHand:bat.ev.p.split?.[batSide==='away'?'season-away':'season-home']||null,
+      vsOpp:bat.ev.p.deep?.vsOpp||null,oppTag:bat.ev.p.deep?.oppTag||null};
+  },[slate,game,batterId,board,ciphers,loaded,date,h2h]);
 
-  /* ---------- color rules resolver (§8: first match wins) ---------- */
+  /* ---------- color rules ---------- */
   const colorFor=useCallback((n,cats=[])=>{
     for(const r of colorRules){
       const t=r.target;
@@ -471,7 +507,7 @@ export function AppStateProvider({children}){
     return null;
   },[colorRules]);
 
-  /* ---------- quick-add actions (§8, all persist for the day) ---------- */
+  /* ---------- quick-add ---------- */
   const addTheme=useCallback(name=>{
     const t={name:name.trim(),values:calcAll(name)};
     if(t.name)setDayState(s=>({...s,adhocThemes:[...s.adhocThemes,t]}));
@@ -482,7 +518,6 @@ export function AppStateProvider({children}){
   const addLabel=useCallback((playerId,label)=>{
     setDayState(s=>({...s,labels:{...s.labels,[playerId]:[...(s.labels[playerId]||[]),label]}}));
   },[]);
-  /* vocab save gated on checksum (§2/§7) */
   const saveVocab=useCallback(next=>{
     const c=checksum();
     if(!c.ok)return{ok:false,msg:`Checksum FAILED (JESUIT ORDER ${JSON.stringify(c.got)}) — save refused`};
@@ -494,7 +529,7 @@ export function AppStateProvider({children}){
     if(t)setPhrases(ps=>[...ps,{text:t,values:calcAll(t),source:'manual'}]);
   },[]);
 
-  /* ---------- universal search (§8: bottom-up method as UI) ---------- */
+  /* ---------- universal search ---------- */
   const search=useCallback(q=>{
     q=q.trim();
     if(!q)return null;
@@ -522,7 +557,7 @@ export function AppStateProvider({children}){
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,
-    board,contextChips,matchup,loaded,colorFor,evalBatter,
+    board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,
     deepFetch,deepBusy,

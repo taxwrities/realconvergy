@@ -52,7 +52,7 @@ function CoreTable(){
   };
   return(
     <div className="panel">
-      <h3>Core table — MLB scope only (no basketball vocab, house rule)</h3>
+      <h3>Core table — WNBA scope only (no MLB vocab, cross-sport lock)</h3>
       <div style={{overflowX:'auto'}}>
         <table className="vtable">
           <thead>

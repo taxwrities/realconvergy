@@ -1,47 +1,62 @@
 /* ================================================================
-   forecast — the Landings method (LAYOUT-SPEC §6). Walk the upcoming
-   schedule per batter for date-dependent patterns; resolve each
-   date's counters at realistic accrual; emit cards where ≥2 hard
-   conditions converge. Frozen-card discipline: conditions freeze
-   when generated; grading compares against the frozen card.
+   forecast — the Landings method over the BDL WNBA schedule.
+   Walk upcoming games per player for date-dependent patterns at
+   floored per-game-rate accrual; emit cards where ≥2 hard converge.
+   Frozen-card discipline: conditions freeze at generation.
 ================================================================ */
 import {evalPattern,isDateDependent,summarizeCondition} from './patterns.js';
 
-const API='https://statsapi.mlb.com/api/v1';
+const PROXY='/.netlify/functions/bdl';
+const etDate=iso=>new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
 
-/* team schedule window: one call covers the whole slate's teams */
+async function bdl(params){
+  const qs=new URLSearchParams(params.entries?params:Object.entries(params).flatMap(([k,v])=>Array.isArray(v)?v.map(x=>[k,x]):[[k,v]]));
+  const r=await fetch(`${PROXY}?${qs}`);
+  if(!r.ok)throw new Error(`${r.status} schedule range`);
+  return r.json();
+}
+
+/* schedule window: one games call covering every date in the range. */
 export async function fetchScheduleRange(startDate,endDate){
-  const r=await fetch(`${API}/schedule?sportId=1&startDate=${startDate}&endDate=${endDate}`);
-  if(!r.ok)throw new Error(r.status+' schedule range');
-  const d=await r.json();
+  const dates=[];
+  for(let d=startDate;d<=endDate;d=addDays(d,1))dates.push(d);
+  let out=[],cursor=null,guard=0;
+  do{
+    const qs=new URLSearchParams({path:'games',per_page:100});
+    dates.forEach(x=>qs.append('dates[]',x));
+    if(cursor!=null)qs.append('cursor',cursor);
+    const r=await fetch(`${PROXY}?${qs}`);
+    if(!r.ok)throw new Error(`${r.status} schedule range`);
+    const j=await r.json();
+    out=out.concat(j.data||[]);
+    cursor=j.meta&&j.meta.next_cursor;
+  }while(cursor!=null&&++guard<20);
   const byTeam={};
-  (d.dates||[]).forEach(day=>{
-    day.games.forEach(g=>{
-      [['home',g.teams.home],['away',g.teams.away]].forEach(([side,t])=>{
-        const id=t.team.id;
-        (byTeam[id]=byTeam[id]||[]).push({date:day.date,side,
-          opp:(side==='home'?g.teams.away:g.teams.home).team.name,
-          gameNumber:(t.leagueRecord?.wins||0)+(t.leagueRecord?.losses||0)+1});
-      });
+  out.forEach(g=>{
+    const d=etDate(g.date);
+    [['home',g.home_team,g.visitor_team],['away',g.visitor_team,g.home_team]].forEach(([side,t,opp])=>{
+      if(!t)return;
+      (byTeam[t.id]=byTeam[t.id]||[]).push({date:d,side,opp:(opp&&(opp.full_name||opp.name))||'',gameNumber:null});
     });
   });
+  Object.values(byTeam).forEach(a=>a.sort((x,y)=>x.date<y.date?-1:1));
   return byTeam;
 }
 
-/* realistic accrual: per-game season rates, floored — a projection is a
-   floor for staircase landings, never a promise */
+/* realistic accrual: per-game season rates, floored — a floor, never a promise */
+const KEYS=['FG','PTS','REB','AST','3PM','FT','PRA'];
 export function projectStats(p,gamesAhead){
   const g=+(p.season?.gamesPlayed||0);
   if(!g||!gamesAhead)return{season:p.season,career:p.career};
   const proj=obj=>{
     if(!obj)return obj;
     const out={...obj};
-    for(const k of['strikeOuts','hits','homeRuns','doubles','triples','baseOnBalls','totalBases','atBats','plateAppearances'])
-      if(obj[k]!=null)out[k]=+obj[k]+Math.floor((+obj[k]/g)*gamesAhead);
+    for(const k of KEYS)if(obj[k]!=null)out[k]=+obj[k]+Math.floor((+obj[k]/g)*gamesAhead);
+    if(out.gamesPlayed!=null)out.gamesPlayed=+obj.gamesPlayed+gamesAhead;
+    if(out.GP!=null)out.GP=+obj.GP+gamesAhead;
     return out;
   };
   const seasonProj=proj(p.season);
-  // career advances by the same projected accrual
   const career={...p.career};
   if(p.career)for(const k of Object.keys(career))
     if(p.season?.[k]!=null&&seasonProj?.[k]!=null&&typeof career[k]==='number')
@@ -55,13 +70,12 @@ export function addDays(dstr,n){
   return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-/* the walk. ctxFactory(batterRow, dateISO, sched, projected) → engine ctx */
+/* the walk. ctxFactory(playerRow, sched, projected) → engine ctx */
 export function runForecast({patterns,roster,fromDate,days,scheduleByTeam,ctxFactory}){
   const datePatterns=patterns.filter(p=>p.enabled&&isDateDependent(p));
   const cards=[];
   roster.forEach(row=>{
-    const teamId=row.teamId;
-    const sched=(scheduleByTeam[teamId]||[]).filter(s=>s.date>fromDate&&s.date<=addDays(fromDate,days));
+    const sched=(scheduleByTeam[row.teamId]||[]).filter(s=>s.date>fromDate&&s.date<=addDays(fromDate,days));
     datePatterns.forEach(pat=>{
       const window=[];
       sched.forEach((s,idx)=>{
@@ -89,16 +103,21 @@ export function runForecast({patterns,roster,fromDate,days,scheduleByTeam,ctxFac
   return cards.sort((a,b)=>a.date<b.date?-1:1);
 }
 
-/* grading vs frozen card: did the lane stat actually land that day?
-   Uses the season gameLog (splits carry date + stat). */
+/* grading vs frozen card via the game log on that date.
+   FB lane grades as "made a field goal" — a floor proxy; true first-basket
+   grading needs play-by-play, which BDL does not expose. */
 export async function gradeForecast(card,season){
-  const r=await fetch(`${API}/people/${card.playerId}/stats?stats=gameLog&group=hitting&season=${season}`);
-  if(!r.ok)throw new Error(r.status+' gameLog');
+  const qs=new URLSearchParams({path:'player_stats',per_page:100});
+  qs.append('player_ids[]',card.playerId);
+  qs.append('seasons[]',season);
+  const r=await fetch(`${PROXY}?${qs}`);
+  if(!r.ok)throw new Error(`${r.status} gameLog`);
   const d=await r.json();
-  const logs=d.stats?.[0]?.splits||[];
-  const dayLog=logs.find(s=>s.date===card.date);
+  const logs=d.data||[];
+  const dayLog=logs.find(s=>s.game&&etDate(s.game.date)===card.date);
   if(!dayLog)return{graded:true,result:'NO GAME',detail:'no game log entry that date'};
-  const key={HR:'homeRuns',TB:'totalBases',K:'strikeOuts',H:'hits',BB:'baseOnBalls','2B':'doubles','3B':'triples'}[card.lane]||'homeRuns';
-  const got=+(dayLog.stat?.[key]||0);
-  return{graded:true,result:got>0?'HIT':'MISS',detail:`${card.lane}: ${got} on ${card.date}`};
+  const key={FB:'fgm',PTS:'pts',REB:'reb',AST:'ast','3PM':'fg3m',FT:'ftm'}[card.lane]||'fgm';
+  const got=card.lane==='PRA'?(+(dayLog.pts||0)+ +(dayLog.reb||0)+ +(dayLog.ast||0)):+(dayLog[key]||0);
+  return{graded:true,result:got>0?'HIT':'MISS',
+    detail:`${card.lane}: ${got} on ${card.date}${card.lane==='FB'?' (FG-made proxy — pbp not available)':''}`};
 }

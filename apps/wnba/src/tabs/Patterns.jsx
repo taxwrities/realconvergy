@@ -4,7 +4,7 @@ import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent} from '.
 import {LANES} from '../data/defaults.js';
 
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
-   with live preview against the currently selected batter. */
+   with live preview against the currently selected player. */
 export default function PatternsTab(){
   const [editing,setEditing]=useState(null); // pattern object being edited
   return editing
@@ -112,7 +112,7 @@ function Editor({pattern,onDone}){
                   className={d.pass?'v-green':'muted'}>
                   {d.pass
                     ?d.matches.slice(0,3).map((m,k)=><div key={k}>✓ {m.left} = {m.right}{m.chain?' (chain)':''}</div>)
-                    :d.noData?'· no data for this scope (deep fetch the game?)':'· no match on previewed batter'}
+                    :d.noData?'· no data for this scope (deep fetch the game?)':'· no match on previewed player'}
                 </div>
               )}
             </div>

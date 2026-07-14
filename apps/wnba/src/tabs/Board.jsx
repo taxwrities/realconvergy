@@ -4,7 +4,7 @@ import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
 import {daysBetween} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
 
-/* Board tab — LAYOUT-SPEC §4, zones top to bottom. */
+/* Board tab — LAYOUT-SPEC §4 zones, WNBA rules (WNBA-REDESIGN-SPEC §2/§3). */
 export default function BoardTab(){
   const {loading}=useApp();
   return(
@@ -16,15 +16,14 @@ export default function BoardTab(){
       <GameRail/>
       <ContextRail/>
       <TeamToggle/>
-      <BatterZone/>
+      <PlayerZone/>
       <MatchupPanel/>
     </div>
   );
 }
 
-/* zone 1 — date strip */
 function DateStrip(){
-  const {date,dn,seasonInfo,game}=useApp();
+  const {date,dn,seasonInfo,game,h2h}=useApp();
   const seasonDay=seasonInfo?daysBetween(seasonInfo.start,date)+1:null;
   return(
     <div className="date-strip">
@@ -32,7 +31,8 @@ function DateStrip(){
         <h3>Season</h3>
         <div className="big">{seasonDay?`Day ${seasonDay}`:'—'}</div>
         {game&&<div className="muted mono" style={{fontSize:11,marginTop:4}}>
-          game #{game.gameNumber.away}/{game.gameNumber.home}</div>}
+          season game #{game.gameNumber.away??'–'}/{game.gameNumber.home??'–'}
+          {h2h&&<> · H2H #{h2h.gameNo}</>}</div>}
       </div>
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
@@ -46,7 +46,6 @@ function DateStrip(){
   );
 }
 
-/* zone 2 — refine box: collapsible, sticky, lane chips (HR+TB default ON) */
 function RefineBox(){
   const {settings,setSettings}=useApp();
   const collapsed=settings.refineCollapsed;
@@ -79,10 +78,9 @@ function RefineBox(){
 function NoGames(){
   const {slate,loading}=useApp();
   if(loading||!slate||slate.games.length)return null;
-  return <div className="panel muted">No MLB games on this date (All-Star break / off-day). The board wakes up with the next slate.</div>;
+  return <div className="panel muted">No WNBA games on this date (All-Star break / off-day). The board wakes up with the next slate.</div>;
 }
 
-/* zone 3 — game chips, one active, "▾ N more" expands */
 function GameRail(){
   const {slate,gamePk,setGamePk,setBatterId,setContextFilter}=useApp();
   const [expanded,setExpanded]=useState(false);
@@ -93,9 +91,9 @@ function GameRail(){
     <div className="rail">
       {shown.map(g=>(
         <button key={g.pk} className={`chip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
-          {g.away.abbrev||g.away.teamName} @ {g.home.abbrev||g.home.teamName}
-          {g.status==='Live'&&<span className="v-red">●</span>}
+          {g.away.abbrev} @ {g.home.abbrev}
           {g.status==='Final'&&<span className="muted">F</span>}
+          {g.startET&&g.status!=='Final'&&<span className="muted" style={{fontSize:10}}> {g.startET}</span>}
         </button>
       ))}
       {slate.games.length>4&&(
@@ -107,8 +105,8 @@ function GameRail(){
   );
 }
 
-/* zone 4 — context rail: theme (purple) / thread+H2H (blue) / date (gray),
-   hit counts, tap to filter batter list to carriers */
+/* context rail: theme purple · thread/H2H blue · date gray. H2H game # chip
+   shows the franchise-lineage badge on tap-and-hold (title). */
 function ContextRail(){
   const {contextChips,contextFilter,setContextFilter}=useApp();
   if(!contextChips.length)return null;
@@ -117,9 +115,11 @@ function ContextRail(){
     <div className="rail">
       {contextChips.map((c,i)=>(
         <button key={i}
+          title={c.lineage||undefined}
           className={`chip ${cls[c.kind]||'gray'}${c.cnt>0?' active-hit':''}${contextFilter===c.n?' on':''}`}
           onClick={()=>setContextFilter(contextFilter===c.n?null:c.n)}>
           {c.label} <span className="n">{c.n}</span>
+          {c.lineage&&<span style={{fontSize:9,opacity:.8}}> ⛓</span>}
           {c.cnt>0&&<span className="cnt">{c.cnt}</span>}
         </button>
       ))}
@@ -127,7 +127,6 @@ function ContextRail(){
   );
 }
 
-/* zone 5 — team toggle */
 function TeamToggle(){
   const {game,side,setSide,setBatterId,deepFetch,deepBusy}=useApp();
   if(!game)return null;
@@ -136,25 +135,25 @@ function TeamToggle(){
       {['away','home'].map(s=>(
         <button key={s} className={`chip${side===s?' on':''}`}
           onClick={()=>{setSide(s);setBatterId(null)}}>
-          {game[s].teamName}{game.projected?' · proj':''}
+          {game[s].teamName}{s==='home'?' 🏠':''}{game.projected?' · proj':''}
         </button>
       ))}
       <button className="chip gold" style={{flex:'0 0 auto'}} disabled={game.deepDone||deepBusy}
-        onClick={deepFetch} title="vs-team / vs-league / month / day-of-week splits for this game">
+        onClick={deepFetch} title="vs-opponent split from this season's meetings">
         ⚡{game.deepDone?' ✓':deepBusy?' …':' DEEP'}
       </button>
     </div>
   );
 }
 
-/* zones 6+7 — batter list (sticky left) + batter card */
-function BatterZone(){
+/* player list (sticky left, starters first) + player card */
+function PlayerZone(){
   const {board,side,batterId,setBatterId,contextFilter,dayState}=useApp();
   const rows=board[side]||[];
   const filtered=contextFilter==null?rows
     :rows.filter(r=>r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length));
   const sel=rows.find(r=>r.id===batterId)||filtered[0]||rows[0];
-  if(!rows.length)return <div className="panel muted">No lineup yet — roster projection loads with the slate.</div>;
+  if(!rows.length)return <div className="panel muted">No roster yet — it loads with the slate.</div>;
   return(
     <div className="batter-zone">
       <div className="batter-list">
@@ -164,8 +163,9 @@ function BatterZone(){
           return(
             <button key={r.id} className={`batter-row${sel?.id===r.id?' on':''}${dim?' skip':''}`}
               onClick={()=>setBatterId(r.id)}>
-              <span className="nm"><span className="ord">{r.order}</span>{r.ev.p.fullName}</span>
+              <span className="nm"><span className="ord">{r.starter?'⭐':r.order}</span>{r.ev.p.fullName}</span>
               <span className="badges">
+                {r.ev.kat&&<span className="badge gold" title={`KAT rule: ${r.ev.katHits.map(k=>`${k.word} ${k.cipher} ${k.n}`).join(' · ')}`}>KAT</span>}
                 {r.patternHits.map(({pattern})=>(
                   <span key={pattern.id} className="badge gold" title={pattern.name}>{pattern.lane}</span>
                 ))}
@@ -184,29 +184,48 @@ function BatterZone(){
           );
         })}
       </div>
-      {sel&&<BatterCard row={sel}/>}
+      {sel&&<PlayerCard row={sel}/>}
     </div>
   );
 }
 
-function BatterCard({row}){
+function PlayerCard({row}){
   const {colorFor}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
-  /* TB rungs headline; BB never buried; full ladders surfaced (§4.7) */
-  const order={TB:0,HR:1,BB:2,H:3,'2B':4,'3B':5,SO:6,AB:7,PA:8};
+  /* FG rungs headline for the FB lane; PTS next; full ladders surfaced */
+  const order={FG:0,PTS:1,'3PM':2,REB:3,AST:4,FT:5,PRA:6,GP:7};
   hitRungs.sort((a,b)=>(order[a.stat]??9)-(order[b.stat]??9)||b.hits.length-a.hits.length||a.off-b.off);
+  const fb=ev.fbCheck;
   return(
     <div className="bcard">
       <div className="who">
         <span className="nm">{p.fullName}</span>
         {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#{p.jersey}</span>}
-        <span className="muted" style={{fontSize:11}}>{p.position}</span>
+        <span className="muted" style={{fontSize:11}}>{p.position}{p.starter?' · ⭐ starter':''}</span>
       </div>
       {ev.bday&&(
         <div className="bday-line">
           {ev.bday.since}d since bday · {ev.bday.until}d until · age {ev.bday.years} · day {ev.bday.totalDays} of life
+        </div>
+      )}
+      {/* cFG+1 / arena check renders FIRST on the card (§2 house rule) */}
+      {(fb.career||fb.season)&&(
+        <div className="call-line" style={{borderLeftColor:'var(--cvg-gold)',marginBottom:6}}>
+          <span className="tag" style={{color:'var(--cvg-gold)'}}>FB CHECK</span>
+          {fb.career&&<> cFG+1 → <b className="mono">{fb.career.n}</b>
+            {fb.career.arena&&<b className="v-gold"> ◉ ARENA</b>}
+            {fb.career.hits.length>0&&!fb.career.arena&&<span className="muted"> ({fb.career.hits.length} hit{fb.career.hits.length>1?'s':''})</span>}</>}
+          {fb.season&&<> · sFG+1 → <b className="mono">{fb.season.n}</b>
+            {fb.season.arena&&<b className="v-gold"> ◉ ARENA</b>}
+            {fb.season.hits.length>0&&!fb.season.arena&&<span className="muted"> ({fb.season.hits.length})</span>}</>}
+          {!fb.career?.hits.length&&!fb.season?.hits.length&&<span className="muted"> — no landings</span>}
+        </div>
+      )}
+      {ev.kat&&(
+        <div className="badges" style={{marginBottom:8}}>
+          <span className="badge gold">KAT · {ev.katHits.map(k=>`${k.word.split(' ')[0]} ${k.cipher} ${k.n}`).join(' · ')}</span>
         </div>
       )}
       {row.patternHits.length>0&&(
@@ -233,6 +252,7 @@ function BatterCard({row}){
           <span className="tag">PRIMARY</span>
           {ev.primary.scope} {ev.primary.stat} → <b className="mono">{ev.primary.n}</b>
           <span className="muted"> (sits {ev.primary.cur}{ev.primary.off>1?`, needs +${ev.primary.off}`:''})</span>
+          {ev.primary.hits.some(h=>h.team===p._side)&&<span className="badge gold" style={{marginLeft:6}}>TEAM LOCK</span>}
           <div className="muted" style={{fontSize:11.5,marginTop:3}}>
             {ev.primary.hits.map(h=>h.src).join(' · ')}
           </div>
@@ -248,7 +268,7 @@ function BatterCard({row}){
       <div className="rung-rows">
         {hitRungs.slice(0,14).map((r,i)=>{
           const color=colorFor(r.n,r.hits.map(h=>h.cat));
-          const greenlight=r.stat==='AB'||r.stat==='PA';
+          const greenlight=r.stat==='GP';
           return(
             <div key={i} className="rung hit">
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
@@ -268,34 +288,41 @@ function BatterCard({row}){
   );
 }
 
-/* zone 8 — matchup panel (flex slot v1 default): pitcher + CROSS + staircases */
+/* matchup panel: opposing paint presence / likely first-possession finisher,
+   cross-hits vs the opposing center, H2H-aware CROSS rows, team staircases */
 function MatchupPanel(){
-  const {matchup,ciphers}=useApp();
+  const {matchup}=useApp();
   if(!matchup)return null;
-  const {sp,spRun,spBday,cross,stair,vsHand}=matchup;
+  const {sp,spRun,spBday,cross,stair,vsHand,vsOpp,oppTag}=matchup;
   return(
     <div className="panel" style={{marginTop:10}}>
-      <h3>Matchup — opposing pitcher</h3>
+      <h3>Matchup — opposing center / first-possession finisher</h3>
       {sp?(
         <>
           <div style={{fontWeight:800,fontSize:14}}>{sp.fullName}
             {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #{sp.jersey}</span>}
+            <span className="muted" style={{fontSize:11}}> {sp.position}</span>
           </div>
           {spBday&&(
             <div className="bday-line" style={{marginTop:3}}>
-              {spBday.since}d since bday · {spBday.until}d until (SP age excluded — house rule)
+              {spBday.since}d since bday · {spBday.until}d until
             </div>
           )}
           <div className="name-run">
-            {spRun.filter(x=>!x.legal).slice(0,16).map((x,i)=>(
+            {spRun.slice(0,16).map((x,i)=>(
               <span key={i}><span className="muted">{cl(x.cipher).slice(0,4)}</span> <b>{x.n}</b></span>
             ))}
           </div>
         </>
-      ):<div className="muted" style={{fontSize:12}}>probable not posted</div>}
+      ):<div className="muted" style={{fontSize:12}}>no center identified (roster projection)</div>}
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
-          selected batter venue split: {vsHand.homeRuns??'–'} HR · {vsHand.hits??'–'} H · {vsHand.totalBases??'–'} TB
+          selected player venue split: {vsHand.FG??'–'} FG · {vsHand.PTS??'–'} PTS · {vsHand.REB??'–'} REB
+        </div>
+      )}
+      {vsOpp&&(
+        <div className="mono muted" style={{fontSize:11.5}}>
+          vs {oppTag} this season: {vsOpp.FG??'–'} FG · {vsOpp.PTS??'–'} PTS in {vsOpp.gamesPlayed} game{vsOpp.gamesPlayed>1?'s':''}
         </div>
       )}
       {cross.map((c,i)=>(
