@@ -28,7 +28,16 @@ exports.handler = async (event) => {
   }
   const url = BASE + String(path).replace(/^\/+/, "") + (qs.toString() ? "?" + qs.toString() : "");
   const key = process.env.BDL_KEY;
-  if (!key) return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "BDL_KEY not set on Netlify" }) };
+  if (!key) {
+    // bootstrap relay: no key on this site yet → forward to the wnbatool site's
+    // proxy (same function shape, key lives in its env). Set BDL_KEY here to cut the hop.
+    try {
+      const relay = await fetch("https://serene-meringue-6bd588.netlify.app/.netlify/functions/bdl?path=" + encodeURIComponent(path) + (qs.toString() ? "&" + qs.toString() : ""));
+      return { statusCode: relay.status, headers: CORS, body: await relay.text() };
+    } catch (e) {
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: "no BDL_KEY and relay failed: " + e.message }) };
+    }
+  }
   try {
     const r = await fetch(url, { headers: { Authorization: key } });
     const text = await r.text();
