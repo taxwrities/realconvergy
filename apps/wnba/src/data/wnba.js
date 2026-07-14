@@ -97,9 +97,13 @@ async function logTotals(ids,season){
 }
 
 export async function fetchSeasonInfo(season){
-  /* only feeds the "Day N of season" tile — league opener approximated from
-     the earliest game in the slate teams' season lists at fetchSlate time */
-  return{start:`${season}-05-01`,end:`${season}-09-15`,approx:true};
+  /* Feeds the "Day N of season" tile. Regular-season opening night per season
+     (2026 = the league's 30th season, tipped off Fri May 8, 2026 — verified
+     against the WNBA schedule release). Unknown years fall back to a May 1
+     approximation. */
+  const OPENERS={2026:'05-08'};
+  const md=OPENERS[season];
+  return{start:`${season}-${md||'05-01'}`,end:`${season}-09-15`,approx:!md};
 }
 
 /* Full slate. Output shape mirrors apps/mlb: {games, people, teamStats}. */

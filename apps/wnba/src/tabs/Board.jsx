@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
-import {daysBetween} from '../engine/clocks.js';
+import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
 
 /* Board tab — LAYOUT-SPEC §4 zones, WNBA rules (WNBA-REDESIGN-SPEC §2/§3). */
@@ -37,8 +37,11 @@ function DateStrip(){
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
         <div className="dn-vals">
-          {Object.entries(dn.vals).slice(0,10).map(([n,l])=>(
-            <span key={n} title={l}><b className="v-cyan">{n}</b></span>
+          {dateFigures(date).map((f,i)=>(
+            <span key={i} className="dn-fig" title={f.calc}>
+              <b className={f.top?'v-gold':'v-cyan'}>{f.n}</b>
+              <em className="dn-calc">{f.calc}</em>
+            </span>
           ))}
         </div>
       </div>
