@@ -16,3 +16,4 @@ scripts/                  one-time harvesters (h2h, birthdays)
 - Deploys: Netlify site per app — base dir `apps/mlb` / `apps/wnba` (or CLI: `npm run build:wnba && npx netlify-cli deploy --prod --dir apps/wnba/dist`).
 - `specs/live-session-rules-2026-06-10.md` referenced by the redesign spec was not found on disk at migration time — recover it if it resurfaces.
 - `Downloads/convergence-app` remains the Netlify-CLI-linked working copy of the MLB app until the site is repointed to this repo; `apps/mlb` is the version-controlled source going forward.
+
