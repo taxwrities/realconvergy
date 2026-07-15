@@ -1,8 +1,9 @@
 import {useState} from 'react';
+import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
-import {cl} from '../engine/gematria.js';
+import {classifyRungs} from '../engine/rungs.js';
 
 /* Board tab — LAYOUT-SPEC §4 zones, WNBA rules (WNBA-REDESIGN-SPEC §2/§3). */
 export default function BoardTab(){
@@ -272,7 +273,7 @@ function PlayerCard({row}){
           return(
             <div key={i} className="rung hit">
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
-              <b style={{color:color||'var(--cvg-green)'}}>{r.n}</b>
+              <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
               <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
               <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
             </div>
@@ -288,33 +289,142 @@ function PlayerCard({row}){
   );
 }
 
+/* ---- clickable numbers → "next rungs" popover (Tony 2026-07) ----
+   Any counting total is a RungNum; tapping it opens the ladder of value+N
+   checked against the loaded spine (date/thread/theme/core) + institutional
+   table, colored with the same rules the rest of the board uses. */
+function RungNum({stat,value,children,className='',style}){
+  const [anchor,setAnchor]=useState(null);
+  const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  return(
+    <>
+      <button type="button" className={`rungnum ${className}`} style={style} onClick={open}>{children}</button>
+      {anchor&&<RungPopup stat={stat} value={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
+    </>
+  );
+}
+
+function RungPopup({stat,value,anchor,onClose}){
+  const {loaded,colorFor}=useApp();
+  const ladder=classifyRungs(stat,value,{loaded});
+  /* clamp to viewport; flip above the number if it would run off the bottom */
+  const W=248,vw=window.innerWidth,vh=window.innerHeight;
+  const left=Math.max(8,Math.min(anchor.x,vw-W-8));
+  const below=anchor.y+6, wantAbove=below>vh-220;
+  const style=wantAbove
+    ?{left,bottom:Math.max(8,vh-anchor.top+6),width:W}
+    :{left,top:below,width:W};
+  return createPortal(
+    <>
+      <div className="rung-pop-scrim" onClick={onClose}/>
+      <div className="rung-pop" style={style} onClick={e=>e.stopPropagation()}>
+        <div className="rung-pop-head">
+          <b className="mono">{stat} {value}</b>
+          <span className="muted">→ next rungs</span>
+          <button className="rung-pop-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="rung-pop-body">
+          {ladder.map(r=>{
+            const color=colorFor(r.n,r.cats)
+              ||(r.institutional?'var(--cvg-gold)':(r.hit?'var(--cvg-green)':null));
+            const tags=[];
+            if(r.isDate)tags.push(['DN','var(--cvg-cyan)']);
+            if(r.isThread)tags.push(['THR','var(--cvg-blue)']);
+            if(r.institutional)tags.push(['TBL','var(--cvg-gold)']);
+            const srcs=r.hits.map(h=>h.src).filter(Boolean);
+            return(
+              <div key={r.off} className={`rung-pop-row${r.hit?' hit':''}`}>
+                <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
+                <span className="muted mono off">+{r.off}</span>
+                <span className="tags">
+                  {tags.map(([t,c])=><span key={t} className="ptag" style={{color:c}}>{t}</span>)}
+                </span>
+                <span className="why muted">{srcs.slice(0,2).join(' · ')}{srcs.length>2?` +${srcs.length-2}`:''}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+/* Basketball-Reference-style totals table — pure data, neutral text, no heat.
+   Percentages/GS are not clickable; every counting cell is a RungNum. */
+const TOTALS_COLS=[
+  {k:'GP',h:'G',stat:'GP'},{h:'GS',na:true},{k:'MIN',h:'MIN',stat:'MIN'},
+  {k:'FG',h:'FG',stat:'FG'},{k:'FGA',h:'FGA',stat:'FG'},{pct:['FG','FGA'],h:'FG%'},
+  {k:'3PM',h:'3P',stat:'3PM'},{k:'FG3A',h:'3PA',stat:'3PM'},{pct:['3PM','FG3A'],h:'3P%'},
+  {k:'2PM',h:'2P',stat:'2PM'},{k:'2PA',h:'2PA',stat:'2PM'},{pct:['2PM','2PA'],h:'2P%'},
+  {k:'FT',h:'FT',stat:'FT'},{k:'FTA',h:'FTA',stat:'FT'},{pct:['FT','FTA'],h:'FT%'},
+  {k:'ORB',h:'ORB',stat:'ORB'},{k:'DRB',h:'DRB',stat:'DRB'},{k:'TRB',h:'TRB',stat:'TRB'},
+  {k:'AST',h:'AST',stat:'AST'},{k:'STL',h:'STL',stat:'STL'},{k:'BLK',h:'BLK',stat:'BLK'},
+  {k:'TOV',h:'TOV',stat:'TOV'},{k:'PF',h:'PF',stat:'PF'},{k:'PTS',h:'PTS',stat:'PTS'},
+];
+const fmtPct=x=>x>=1?'1.000':'.'+Math.round(x*1000).toString().padStart(3,'0');
+
+function TotalsCell({col,line}){
+  if(col.na)return <td className="muted">–</td>;
+  if(col.pct){
+    const [a,b]=col.pct,av=line[a],bv=line[b];
+    return bv?<td className="mono pct">{fmtPct((av||0)/bv)}</td>:<td className="muted">–</td>;
+  }
+  const v=line[col.k];
+  if(v==null)return <td className="muted">–</td>;
+  return <td className="mono num"><RungNum stat={col.stat} value={v}>{v}</RungNum></td>;
+}
+
+function TotalsTable({players}){
+  const rows=[];
+  players.filter(Boolean).forEach(p=>{
+    if(p.career)rows.push({who:p.fullName,scope:'Career',line:p.career});
+    if(p.season)rows.push({who:p.fullName,scope:'Season',line:p.season});
+  });
+  if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
+  return(
+    <div className="totals-wrap">
+      <table className="totals">
+        <thead>
+          <tr><th className="pl">Player</th>{TOTALS_COLS.map(c=><th key={c.h}>{c.h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i}>
+              <td className="pl">{r.who} <span className="muted">{r.scope}</span></td>
+              {TOTALS_COLS.map(c=><TotalsCell key={c.h} col={c} line={r.line}/>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /* matchup panel: opposing paint presence / likely first-possession finisher,
    cross-hits vs the opposing center, H2H-aware CROSS rows, team staircases */
 function MatchupPanel(){
   const {matchup}=useApp();
   if(!matchup)return null;
-  const {sp,spRun,spBday,cross,stair,vsHand,vsOpp,oppTag}=matchup;
+  const {sp,spBday,cross,stair,vsHand,vsOpp,oppTag,bat}=matchup;
   return(
     <div className="panel" style={{marginTop:10}}>
-      <h3>Matchup — opposing center / first-possession finisher</h3>
+      <h3>Matchup — totals (selected player vs opposing center)</h3>
       {sp?(
         <>
           <div style={{fontWeight:800,fontSize:14}}>{sp.fullName}
             {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #{sp.jersey}</span>}
-            <span className="muted" style={{fontSize:11}}> {sp.position}</span>
+            <span className="muted" style={{fontSize:11}}> {sp.position} · opposing center</span>
           </div>
           {spBday&&(
             <div className="bday-line" style={{marginTop:3}}>
               {spBday.since}d since bday · {spBday.until}d until
             </div>
           )}
-          <div className="name-run">
-            {spRun.slice(0,16).map((x,i)=>(
-              <span key={i}><span className="muted">{cl(x.cipher).slice(0,4)}</span> <b>{x.n}</b></span>
-            ))}
-          </div>
         </>
       ):<div className="muted" style={{fontSize:12}}>no center identified (roster projection)</div>}
+      {/* Basketball-Reference-style totals — tap any number for its rung ladder */}
+      <TotalsTable players={[bat?.ev?.p,sp]}/>
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
           selected player venue split: {vsHand.FG??'–'} FG · {vsHand.PTS??'–'} PTS · {vsHand.REB??'–'} REB

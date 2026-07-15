@@ -12,6 +12,7 @@
    - no birthdate field → data/birthdays.json (build-time import).
 ================================================================ */
 import BIRTHDAYS from '../../../../data/birthdays.json';
+import {twoPM} from '../engine/rungs.js';
 
 const PROXY='/.netlify/functions/bdl';
 
@@ -71,16 +72,25 @@ const etDate=iso=>new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/Ne
 const etTime=iso=>new Date(iso).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'});
 const isoAddDays=(iso,n)=>{const d=new Date(iso+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 
-/* map summed log totals → the stat keys the engine reads (WNBA counters). */
+/* map summed log totals → the stat keys the engine reads (WNBA counters) PLUS
+   the full box-score totals that back the Basketball-Reference-style table.
+   2PM = FGM − FG3M (interior makes). */
 function statLine(t){
-  return{gamesPlayed:t.gp,GP:t.gp,PTS:t.pts,FG:t.fgm,'3PM':t.fg3m,FT:t.ftm,REB:t.reb,AST:t.ast,
-    PRA:(t.pts||0)+(t.reb||0)+(t.ast||0)};
+  return{gamesPlayed:t.gp,GP:t.gp,PTS:t.pts,FG:t.fgm,'3PM':t.fg3m,'2PM':twoPM(t.fgm,t.fg3m),
+    FT:t.ftm,REB:t.reb,AST:t.ast,PRA:(t.pts||0)+(t.reb||0)+(t.ast||0),
+    /* raw box totals (bbref career-row columns) */
+    MIN:Math.round(t.min||0),FGA:t.fga,FG3A:t.fg3a,'2PA':(t.fga||0)-(t.fg3a||0),
+    FTA:t.fta,ORB:t.oreb,DRB:t.dreb,TRB:t.reb,STL:t.stl,BLK:t.blk,TOV:t.tov,PF:t.pf};
 }
-const zero=()=>({gp:0,pts:0,fgm:0,fg3m:0,ftm:0,reb:0,ast:0});
+const zero=()=>({gp:0,pts:0,fgm:0,fga:0,fg3m:0,fg3a:0,ftm:0,fta:0,
+  oreb:0,dreb:0,reb:0,ast:0,stl:0,blk:0,tov:0,pf:0,min:0});
 function addRow(a,s){
   const played=parseMin(s.min)>0||((s.pts||s.fgm||s.fga||s.reb||s.ast||s.fta)>0);
   if(played)a.gp+=1;
-  a.pts+=s.pts||0;a.fgm+=s.fgm||0;a.fg3m+=s.fg3m||0;a.ftm+=s.ftm||0;a.reb+=s.reb||0;a.ast+=s.ast||0;
+  a.pts+=s.pts||0;a.fgm+=s.fgm||0;a.fga+=s.fga||0;a.fg3m+=s.fg3m||0;a.fg3a+=s.fg3a||0;
+  a.ftm+=s.ftm||0;a.fta+=s.fta||0;a.oreb+=s.oreb||0;a.dreb+=s.dreb||0;a.reb+=s.reb||0;
+  a.ast+=s.ast||0;a.stl+=s.stl||0;a.blk+=s.blk||0;a.tov+=s.turnover||0;a.pf+=s.pf||0;
+  a.min+=parseMin(s.min);
 }
 
 /* pull game logs for ids; returns {acc, rows} (rows kept for splits/starters). */

@@ -44,7 +44,7 @@ export async function fetchScheduleRange(startDate,endDate){
 }
 
 /* realistic accrual: per-game season rates, floored — a floor, never a promise */
-const KEYS=['FG','PTS','REB','AST','3PM','FT','PRA'];
+const KEYS=['FG','PTS','REB','AST','3PM','2PM','FT','PRA'];
 export function projectStats(p,gamesAhead){
   const g=+(p.season?.gamesPlayed||0);
   if(!g||!gamesAhead)return{season:p.season,career:p.career};

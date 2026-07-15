@@ -136,5 +136,41 @@ const proj=projectStats({season:{PTS:100,gamesPlayed:50,GP:50,FG:40,REB:30,AST:2
 eq('project: PTS 100→110 over 5g',proj.season.PTS,110);
 eq('project: career advances by accrual',proj.career.PTS,510);
 
+/* ---- rungs: 2PM box math + ladder generation + hit matching (Tony 2026-07) ---- */
+import {twoPM,rungOffsets,classifyRungs} from '../src/engine/rungs.js';
+
+/* (a) 2PM = FGM − FG3M */
+eq('twoPM 56-11=45',twoPM(56,11),45);
+eq('twoPM null fg3m → fgm',twoPM(6,null),6);
+eq('twoPM 0/0',twoPM(0,0),0);
+
+/* (b) rung ranges are sensible per stat/magnitude */
+const o3=rungOffsets('3PM',193);
+eq('3PM tight ticks 1..8',o3.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
+eq('3PM includes +7',o3.includes(7),true);
+eq('3PM includes +8',o3.includes(8),true);
+const oPts=rungOffsets('PTS',5000);
+eq('PTS jump +10',oPts.includes(10),true);
+eq('PTS jump +25',oPts.includes(25),true);
+eq('PTS jump +30',oPts.includes(30),true);
+const oMin=rungOffsets('MIN',12000);
+eq('MIN thousands-scale +50/100/250/500',
+  oMin.includes(50)&&oMin.includes(100)&&oMin.includes(250)&&oMin.includes(500),true);
+const oReb=rungOffsets('REB',400);
+eq('REB extends past the tight window (8 & 10)',oReb.includes(8)&&oReb.includes(10),true);
+eq('offsets sorted ascending',oPts.every((n,i,a)=>i===0||a[i-1]<n),true);
+
+/* (c) DN / thread / institutional matching flags the right rungs */
+const loadedRung=new Map();
+loadedRung.set(145,[{src:'DOY 145',cat:'date'}]);
+loadedRung.set(143,[{src:'thread',cat:'thread'}]);
+const cls=classifyRungs('3PM',140,{loaded:loadedRung}); // 140+7=147 ∈ institutional table
+const atOff=off=>cls.find(r=>r.off===off);
+eq('rung +7 → 147 hits institutional table',atOff(7).institutional,true);
+eq('rung +7 counts as hit',atOff(7).hit,true);
+eq('rung +5 → 145 flagged as DN',atOff(5).isDate,true);
+eq('rung +3 → 143 flagged as thread',atOff(3).isThread,true);
+eq('rung +1 → 141 is not a hit',atOff(1).hit,false);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
