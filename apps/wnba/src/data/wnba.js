@@ -13,6 +13,7 @@
 ================================================================ */
 import BIRTHDAYS from '../../../../data/birthdays.json';
 import {twoPM} from '../engine/rungs.js';
+import {CUP_FINAL_DATES,excludedIdsFrom,keepStatRow} from './gamefilter.js';
 
 const PROXY='/.netlify/functions/bdl';
 
@@ -29,13 +30,16 @@ async function bdl(path,params){
   return j;
 }
 async function pull(path,params){
+  /* guard is a runaway backstop, not a budget: a 25-player career chunk on a
+     vet-heavy slate exceeds 8k rows, and cutting pagination silently drops the
+     OLDEST seasons (found 2026-07: Azura Stevens career missing 2018-20). */
   let out=[],cursor=null,guard=0;
   do{
     const p=cursor?{...params,cursor}:params;
     const r=await bdl(path,p);
     out=out.concat(r.data||[]);
     cursor=r.meta&&r.meta.next_cursor;
-  }while(cursor&&++guard<80);
+  }while(cursor&&++guard<400);
   return out;
 }
 export const parseMin=m=>{if(m==null)return 0;m=String(m).trim();if(!m||m==='0'||m==='00')return 0;if(m.includes(':')){const[a,b]=m.split(':').map(x=>parseInt(x,10)||0);return a+b/60}const n=parseInt(m,10);return isNaN(n)?0:n};
@@ -93,7 +97,29 @@ function addRow(a,s){
   a.min+=parseMin(s.min);
 }
 
-/* pull game logs for ids; returns {acc, rows} (rows kept for splits/starters). */
+/* bbref Regular-Season parity (verified vs Gabby Williams / Azura Stevens
+   career rows 2026-07): totals must exclude playoffs, Cup finals, All-Star.
+   The playoff/cup game-id set is one games query per season, cached. */
+const REAL_TEAM_IDS=new Set(WNBA_TEAMS.map(t=>t.bdl));
+const _exclCache=new Map(); // season → Promise<Set<gameId>>
+function excludedGameIds(season){
+  if(!_exclCache.has(season))
+    _exclCache.set(season,
+      pull('games',{'seasons[]':[season],per_page:100})
+        .then(rows=>excludedIdsFrom(rows,etDate))
+        .catch(()=>{_exclCache.delete(season);return new Set()}));
+  return _exclCache.get(season);
+}
+async function excludedForSeasons(seasons){
+  const sets=await Promise.all(seasons.map(excludedGameIds));
+  const merged=new Set();
+  sets.forEach(s=>s.forEach(id=>merged.add(id)));
+  return merged;
+}
+
+/* pull game logs for ids; returns {acc, rows, excluded}. acc counts only
+   bbref-regular rows; rows stay unfiltered (starters/minutes want real
+   last-game data), excluded is exported so callers can filter splits. */
 async function logTotals(ids,season){
   const acc={};ids.forEach(id=>acc[id]=zero());
   let rows=[];
@@ -102,8 +128,18 @@ async function logTotals(ids,season){
     const chunk=await pull('player_stats',{...params,'player_ids[]':ids.slice(i,i+25)});
     rows=rows.concat(chunk);
   }
-  rows.forEach(s=>{const a=acc[s.player&&s.player.id];if(a)addRow(a,s)});
-  return{acc,rows};
+  const seasons=[...new Set(rows.map(s=>s.game&&s.game.season).filter(x=>x!=null))];
+  const excluded=await excludedForSeasons(seasons);
+  const seen=new Set(); // player|game dedupe — cursor pagination can repeat rows
+  rows.forEach(s=>{
+    if(!keepStatRow(s,REAL_TEAM_IDS,excluded))return;
+    const pid=s.player&&s.player.id;
+    const key=pid+'|'+(s.game&&s.game.id);
+    if(seen.has(key))return;
+    seen.add(key);
+    const a=acc[pid];if(a)addRow(a,s);
+  });
+  return{acc,rows,excluded};
 }
 
 export async function fetchSeasonInfo(season){
@@ -167,7 +203,7 @@ export async function fetchSlate(dstr,onProgress){
   // season + career totals from game logs
   const ids=Object.keys(people).map(Number);
   prog(`Season totals (${ids.length})…`);
-  const {acc:sea,rows:seaRows}=await logTotals(ids,season);
+  const {acc:sea,rows:seaRows,excluded:seaExcl}=await logTotals(ids,season);
   prog('Career totals…');
   let car={};try{car=(await logTotals(ids,null)).acc}catch(e){}
   ids.forEach(id=>{
@@ -181,6 +217,7 @@ export async function fetchSlate(dstr,onProgress){
   games.forEach(g=>Object.values(g.seasonGames).flat().forEach(x=>{homeIdByGame[x.id]=x.home_team&&x.home_team.id}));
   const splitAcc={};
   seaRows.forEach(s=>{
+    if(!keepStatRow(s,REAL_TEAM_IDS,seaExcl))return; // bbref-regular splits only
     const pid=s.player&&s.player.id,gid=s.game&&s.game.id;
     if(!pid||!people[pid]||homeIdByGame[gid]===undefined)return;
     const loc=homeIdByGame[gid]===people[pid].teamId?'home':'away';
@@ -247,7 +284,10 @@ export async function deepFetchGame(game,people,dstr,onProgress){
   const meet=(game.seasonGames[game.home.id]||[]).filter(x=>{
     const a=x.home_team&&x.home_team.id,b=x.visitor_team&&x.visitor_team.id;
     return(a===game.home.id&&b===game.away.id)||(a===game.away.id&&b===game.home.id);
-  }).filter(x=>String(x.status).toLowerCase()==='post').map(x=>x.id);
+  }).filter(x=>String(x.status).toLowerCase()==='post')
+    /* bbref-regular meetings only (no playoffs / Cup final) */
+    .filter(x=>!x.postseason&&!CUP_FINAL_DATES.has(etDate(x.date)))
+    .map(x=>x.id);
   if(meet.length){
     const rows=await pull('player_stats',{'game_ids[]':meet,per_page:100});
     const acc={};

@@ -172,5 +172,33 @@ eq('rung +5 → 145 flagged as DN',atOff(5).isDate,true);
 eq('rung +3 → 143 flagged as thread',atOff(3).isThread,true);
 eq('rung +1 → 141 is not a hit',atOff(1).hit,false);
 
+/* ---- gamefilter: bbref Regular-Season parity (verified vs Gabby Williams /
+   Azura Stevens career rows, 2026-07-15) ---- */
+import {CUP_FINAL_DATES,excludedIdsFrom,keepStatRow} from '../src/data/gamefilter.js';
+
+const etD=iso=>String(iso).slice(0,10); // fixture dates already ET-days
+const gRows=[
+  {id:1,date:'2025-06-10',postseason:false}, // regular
+  {id:2,date:'2025-09-17',postseason:true},  // playoff
+  {id:3,date:'2025-07-01',postseason:false}, // Cup FINAL 2025 (IND-MIN)
+  {id:4,date:'2022-07-26',postseason:false}, // Cup FINAL 2022 (LV-CHI)
+];
+const excl=excludedIdsFrom(gRows,etD);
+eq('filter: regular game kept',excl.has(1),false);
+eq('filter: playoff excluded',excl.has(2),true);
+eq('filter: 2025 cup final excluded',excl.has(3),true);
+eq('filter: 2022 cup final excluded',excl.has(4),true);
+eq('filter: 5 cup finals on record',CUP_FINAL_DATES.size,5);
+
+const REAL=new Set([9,6]); // SEA, CHI
+eq('filter: real-team regular row kept',
+  keepStatRow({team:{id:9},game:{id:1}},REAL,excl),true);
+eq('filter: all-star row dropped (TEAM CLARK id 24)',
+  keepStatRow({team:{id:24},game:{id:99}},REAL,excl),false);
+eq('filter: playoff row dropped',
+  keepStatRow({team:{id:9},game:{id:2}},REAL,excl),false);
+eq('filter: cup-final row dropped',
+  keepStatRow({team:{id:6},game:{id:4}},REAL,excl),false);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
