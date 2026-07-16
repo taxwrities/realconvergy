@@ -9,7 +9,8 @@ import {primeIndex,compositeIndex,chainBase} from './numbers.js';
 
 export const COUNTERS=[
   {id:'rung:HR',label:'HR rung'},{id:'rung:TB',label:'TB rung'},{id:'rung:SO',label:'K rung'},
-  {id:'rung:H',label:'H rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
+  {id:'rung:H',label:'H rung'},{id:'rung:1B',label:'1B rung'},{id:'rung:XBH',label:'XBH rung'},
+  {id:'rung:RBI',label:'RBI rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
   {id:'rung:3B',label:'3B rung'},{id:'rung:AB',label:'AB rung'},{id:'rung:PA',label:'PA rung'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
@@ -28,8 +29,8 @@ export const SOURCES=[
   {id:'word',label:'free word'},{id:'loaded',label:'any loaded value'},
 ];
 
-const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits',BB:'baseOnBalls',
-  '2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
+const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
+  RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
 export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter));

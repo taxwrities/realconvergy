@@ -4,6 +4,8 @@
    careerStatSplits/statSplits + sitCodes=[h,a] return venue splits.
    House rule: API totals exclude the current day (entering counts).
 ================================================================ */
+import {deriveStats} from '../engine/rungs.js';
+
 const API='https://statsapi.mlb.com/api/v1';
 
 async function jget(url){
@@ -79,12 +81,12 @@ export async function fetchSlate(dstr,onProgress){
         position:pp.primaryPosition?.abbreviation||'',split:{}};
       (pp.stats||[]).forEach(st=>{
         const tn=st.type.displayName;
-        if(tn==='career'){const s=st.splits?.[0]?.stat;if(s)rec.career=s}
-        else if(tn==='season'){const s=st.splits?.[0]?.stat;if(s)rec.season=s}
+        if(tn==='career'){const s=st.splits?.[0]?.stat;if(s)rec.career=deriveStats(s)}
+        else if(tn==='season'){const s=st.splits?.[0]?.stat;if(s)rec.season=deriveStats(s)}
         else if(tn==='careerStatSplits'||tn==='statSplits'){
           (st.splits||[]).forEach(sp=>{
             const side=sp.split?.code;if(side!=='h'&&side!=='a')return;
-            rec.split[(tn==='careerStatSplits'?'career':'season')+'-'+(side==='h'?'home':'away')]=sp.stat;
+            rec.split[(tn==='careerStatSplits'?'career':'season')+'-'+(side==='h'?'home':'away')]=deriveStats(sp.stat);
           });
         }
       });
@@ -135,8 +137,8 @@ export async function deepFetchGame(game,people,dstr,onProgress){
       (pp.stats||[]).forEach(st=>{
         (st.splits||[]).forEach(sp=>{
           if(sp.split?.code!==sit)return;
-          if(st.type.displayName==='careerStatSplits')deep.leagueCareer=sp.stat;
-          else if(st.type.displayName==='statSplits')deep.leagueSeason=sp.stat;
+          if(st.type.displayName==='careerStatSplits')deep.leagueCareer=deriveStats(sp.stat);
+          else if(st.type.displayName==='statSplits')deep.leagueSeason=deriveStats(sp.stat);
         });
       });
     });
@@ -155,13 +157,13 @@ export async function deepFetchGame(game,people,dstr,onProgress){
         const tn=st.type.displayName;
         if(tn==='vsTeamTotal'){
           const s=st.splits?.[0]?.stat;
-          if(s){deep.vsOpp=s;deep.oppTag=opp.abbrev||opp.teamName}
+          if(s){deep.vsOpp=deriveStats(s);deep.oppTag=opp.abbrev||opp.teamName}
         }else if(tn==='byMonth'){
           const sp=(st.splits||[]).find(x=>+x.month===gameMonth&&String(x.season)===season);
-          if(sp){deep.month=sp.stat;deep.monthTag=MONTH_NAMES[gameMonth]}
+          if(sp){deep.month=deriveStats(sp.stat);deep.monthTag=MONTH_NAMES[gameMonth]}
         }else if(tn==='byDayOfWeek'){
           deep.dowAll={};
-          (st.splits||[]).forEach(x=>{if(x.dayOfWeek!=null)deep.dowAll[+x.dayOfWeek]=x.stat});
+          (st.splits||[]).forEach(x=>{if(x.dayOfWeek!=null)deep.dowAll[+x.dayOfWeek]=deriveStats(x.stat)});
           if(deep.dowAll[dow]){deep.dow=deep.dowAll[dow];deep.dowTag=DOW_NAMES[dow]}
         }
       });

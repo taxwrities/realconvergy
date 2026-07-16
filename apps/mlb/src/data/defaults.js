@@ -30,16 +30,20 @@ export const OUTCOME_WORDS=[
 ];
 
 /* Tracked batter stats (§2): season AND career, staircases on all.
-   AB/PA are green-light signals, never the bet. */
+   AB/PA are green-light signals, never the bet.
+   1B/XBH are derived at ingest (engine/rungs.js deriveStats):
+   1B = H−2B−3B−HR, XBH = 2B+3B+HR. Counting stats only (Tony). */
 export const STATS=[
   ['SO','strikeOuts'],['H','hits'],['HR','homeRuns'],['2B','doubles'],['3B','triples'],
+  ['1B','1B'],['XBH','XBH'],['RBI','rbi'],
   ['BB','baseOnBalls'],['TB','totalBases'],['AB','atBats'],['PA','plateAppearances'],
 ];
-export const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,HR:2,BB:2,'2B':2,'3B':1};
-/* Refine-box lanes (§4.2). Default ON: HR + TB. */
-export const LANES=['HR','TB','K','H','BB','2B','3B'];
-export const LANE_STAT={HR:'HR',TB:'TB',K:'SO',H:'H',BB:'BB','2B':'2B','3B':'3B'};
-export const DEFAULT_LANES_ON=['HR','TB'];
+export const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,'1B':3,HR:2,XBH:2,BB:2,'2B':2,'3B':1};
+/* Refine-box lanes (§4.2). Default ON: HR + TB + 1B (Tony 2026-07-15);
+   XBH ships as a chip but stays OFF until tapped. */
+export const LANES=['HR','TB','1B','XBH','RBI','K','H','BB','2B','3B'];
+export const LANE_STAT={HR:'HR',TB:'TB','1B':'1B',XBH:'XBH',RBI:'RBI',K:'SO',H:'H',BB:'BB','2B':'2B','3B':'3B'};
+export const DEFAULT_LANES_ON=['HR','TB','1B'];
 
 export const T_FAMILY=[40,43,57,58,59,62,191,69,84,177,201,1336];
 

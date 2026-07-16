@@ -129,5 +129,53 @@ const proj=projectStats({season:{homeRuns:10,gamesPlayed:50,hits:100,totalBases:
 eq('project: hits 100→110 over 5g',proj.season.hits,110);
 eq('project: career advances by accrual',proj.career.hits,510);
 
+/* ---- rungs: 1B/XBH derivation + ladder generation + hit matching (Tony 2026-07) ---- */
+import {deriveStats,rungOffsets,classifyRungs} from '../src/engine/rungs.js';
+
+/* (a) 1B = H − 2B − 3B − HR, XBH = 2B + 3B + HR (locked identities) */
+let ds=deriveStats({hits:150,doubles:30,triples:3,homeRuns:25});
+eq('deriveStats 1B 150-30-3-25=92',ds['1B'],92);
+eq('deriveStats XBH 30+3+25=58',ds.XBH,58);
+ds=deriveStats({hits:6,doubles:null,triples:null,homeRuns:null});
+eq('deriveStats null extras → 1B=H',ds['1B'],6);
+eq('deriveStats null extras → XBH=0',ds.XBH,0);
+eq('deriveStats no hits field untouched',deriveStats({era:'3.21'})['1B'],undefined);
+eq('deriveStats null-safe',deriveStats(null),null);
+
+/* (b) rung ranges are sensible per stat/magnitude */
+const oHR=rungOffsets('HR',431);
+eq('HR tight ticks 1..8',oHR.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
+const o1B=rungOffsets('1B',1500);
+eq('1B keeps the tight window at scale',o1B.includes(7)&&o1B.includes(8),true);
+const oH=rungOffsets('H',2500);
+eq('H thousands-scale +25/50/100/250',
+  oH.includes(25)&&oH.includes(50)&&oH.includes(100)&&oH.includes(250),true);
+const oPA=rungOffsets('PA',12000);
+eq('PA +50/100/250/500',
+  oPA.includes(50)&&oPA.includes(100)&&oPA.includes(250)&&oPA.includes(500),true);
+const oSO=rungOffsets('SO',400);
+eq('SO extends past the tight window (8 & 10)',oSO.includes(8)&&oSO.includes(10),true);
+eq('offsets sorted ascending',oPA.every((n,i,a)=>i===0||a[i-1]<n),true);
+
+/* (c) DN / thread / core(institutional) matching flags the right rungs */
+const loadedRung=new Map();
+loadedRung.set(145,[{src:'DOY 145',cat:'date'}]);
+loadedRung.set(143,[{src:'thread',cat:'thread'}]);
+loadedRung.set(144,[{src:'JESUIT ORDER Ord',cat:'core'}]);
+const cls=classifyRungs('HR',140,{loaded:loadedRung});
+const atOff=off=>cls.find(r=>r.off===off);
+eq('rung +4 → 144 core word = institutional',atOff(4).institutional,true);
+eq('rung +4 counts as hit',atOff(4).hit,true);
+eq('rung +5 → 145 flagged as DN',atOff(5).isDate,true);
+eq('rung +3 → 143 flagged as thread',atOff(3).isThread,true);
+eq('rung +1 → 141 is not a hit',atOff(1).hit,false);
+eq('rung +5 not institutional (date only)',atOff(5).institutional,false);
+
+/* (d) projection carries the new lanes */
+const projNew=projectStats({season:{gamesPlayed:50,rbi:60,'1B':80,XBH:40},career:{rbi:600,'1B':800,XBH:400}},5);
+eq('project: RBI 60→66 over 5g',projNew.season.rbi,66);
+eq('project: 1B 80→88',projNew.season['1B'],88);
+eq('project: career XBH advances',projNew.career.XBH,404);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

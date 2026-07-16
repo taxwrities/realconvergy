@@ -6,6 +6,7 @@
    when generated; grading compares against the frozen card.
 ================================================================ */
 import {evalPattern,isDateDependent,summarizeCondition} from './patterns.js';
+import {deriveStats} from './rungs.js';
 
 const API='https://statsapi.mlb.com/api/v1';
 
@@ -36,7 +37,7 @@ export function projectStats(p,gamesAhead){
   const proj=obj=>{
     if(!obj)return obj;
     const out={...obj};
-    for(const k of['strikeOuts','hits','homeRuns','doubles','triples','baseOnBalls','totalBases','atBats','plateAppearances'])
+    for(const k of['strikeOuts','hits','homeRuns','doubles','triples','1B','XBH','rbi','baseOnBalls','totalBases','atBats','plateAppearances'])
       if(obj[k]!=null)out[k]=+obj[k]+Math.floor((+obj[k]/g)*gamesAhead);
     return out;
   };
@@ -98,7 +99,8 @@ export async function gradeForecast(card,season){
   const logs=d.stats?.[0]?.splits||[];
   const dayLog=logs.find(s=>s.date===card.date);
   if(!dayLog)return{graded:true,result:'NO GAME',detail:'no game log entry that date'};
-  const key={HR:'homeRuns',TB:'totalBases',K:'strikeOuts',H:'hits',BB:'baseOnBalls','2B':'doubles','3B':'triples'}[card.lane]||'homeRuns';
-  const got=+(dayLog.stat?.[key]||0);
+  const key={HR:'homeRuns',TB:'totalBases',K:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',RBI:'rbi',
+    BB:'baseOnBalls','2B':'doubles','3B':'triples'}[card.lane]||'homeRuns';
+  const got=+(deriveStats(dayLog.stat)?.[key]||0);
   return{graded:true,result:got>0?'HIT':'MISS',detail:`${card.lane}: ${got} on ${card.date}`};
 }
