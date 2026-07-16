@@ -1,9 +1,30 @@
-import {useState} from 'react';
+import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {classifyRungs} from '../engine/rungs.js';
+
+/* Desktop horizontal scroll: a callback ref that turns vertical wheel into
+   horizontal scroll on overflowing rails/tables (mouse users have no h-track).
+   Yields to the page once the strip is scrolled to its end. */
+function useHScroll(){
+  const cleanup=useRef(null);
+  return useCallback(node=>{
+    if(cleanup.current){cleanup.current();cleanup.current=null;}
+    if(!node)return;
+    const onWheel=e=>{
+      if(node.scrollWidth<=node.clientWidth)return;
+      if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+      const atStart=node.scrollLeft<=0;
+      const atEnd=node.scrollLeft+node.clientWidth>=node.scrollWidth-1;
+      if((e.deltaY<0&&atStart)||(e.deltaY>0&&atEnd))return;
+      node.scrollLeft+=e.deltaY;e.preventDefault();
+    };
+    node.addEventListener('wheel',onWheel,{passive:false});
+    cleanup.current=()=>node.removeEventListener('wheel',onWheel);
+  },[]);
+}
 
 /* Board tab — LAYOUT-SPEC §4 zones, WNBA rules (WNBA-REDESIGN-SPEC §2/§3). */
 export default function BoardTab(){
@@ -85,11 +106,12 @@ function NoGames(){
 function GameRail(){
   const {slate,gamePk,setGamePk,setBatterId,setContextFilter}=useApp();
   const [expanded,setExpanded]=useState(false);
+  const hRail=useHScroll();
   if(!slate?.games.length)return null;
   const shown=expanded?slate.games:slate.games.slice(0,4);
   const pick=pk=>{setGamePk(pk);setBatterId(null);setContextFilter(null)};
   return(
-    <div className="rail">
+    <div className="rail" ref={hRail}>
       {shown.map(g=>(
         <button key={g.pk} className={`chip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
           {g.away.abbrev} @ {g.home.abbrev}
@@ -110,10 +132,11 @@ function GameRail(){
    shows the franchise-lineage badge on tap-and-hold (title). */
 function ContextRail(){
   const {contextChips,contextFilter,setContextFilter}=useApp();
+  const hRail=useHScroll();
   if(!contextChips.length)return null;
   const cls={theme:'purple',thread:'blue',h2h:'blue',date:'gray'};
   return(
-    <div className="rail">
+    <div className="rail" ref={hRail}>
       {contextChips.map((c,i)=>(
         <button key={i}
           title={c.lineage||undefined}
@@ -296,9 +319,10 @@ function PlayerCard({row}){
 function RungNum({stat,value,children,className='',style}){
   const [anchor,setAnchor]=useState(null);
   const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  /* .active = this number's menu is open → feedback on which stat you tapped */
   return(
     <>
-      <button type="button" className={`rungnum ${className}`} style={style} onClick={open}>{children}</button>
+      <button type="button" className={`rungnum ${className}${anchor?' active':''}`} style={style} onClick={open}>{children}</button>
       {anchor&&<RungPopup stat={stat} value={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
     </>
   );
@@ -306,6 +330,7 @@ function RungNum({stat,value,children,className='',style}){
 
 function RungPopup({stat,value,anchor,onClose}){
   const {loaded,colorFor}=useApp();
+  const [sel,setSel]=useState(null); // clicked rung → highlighted for feedback
   const ladder=classifyRungs(stat,value,{loaded});
   /* clamp to viewport; flip above the number if it would run off the bottom */
   const W=248,vw=window.innerWidth,vh=window.innerHeight;
@@ -333,7 +358,9 @@ function RungPopup({stat,value,anchor,onClose}){
             if(r.institutional)tags.push(['TBL','var(--cvg-gold)']);
             const srcs=r.hits.map(h=>h.src).filter(Boolean);
             return(
-              <div key={r.off} className={`rung-pop-row${r.hit?' hit':''}`}>
+              <div key={r.off}
+                className={`rung-pop-row${r.hit?' hit':''}${sel===r.off?' sel':''}`}
+                onClick={()=>setSel(sel===r.off?null:r.off)}>
                 <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
                 <span className="muted mono off">+{r.off}</span>
                 <span className="tags">
@@ -376,6 +403,7 @@ function TotalsCell({col,line}){
 }
 
 function TotalsTable({players}){
+  const hWrap=useHScroll();
   const rows=[];
   players.filter(Boolean).forEach(p=>{
     if(p.career)rows.push({who:p.fullName,scope:'Career',line:p.career});
@@ -383,7 +411,7 @@ function TotalsTable({players}){
   });
   if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
   return(
-    <div className="totals-wrap">
+    <div className="totals-wrap" ref={hWrap}>
       <table className="totals">
         <thead>
           <tr><th className="pl">Player</th>{TOTALS_COLS.map(c=><th key={c.h}>{c.h}</th>)}</tr>
@@ -401,30 +429,19 @@ function TotalsTable({players}){
   );
 }
 
-/* matchup panel: opposing paint presence / likely first-possession finisher,
-   cross-hits vs the opposing center, H2H-aware CROSS rows, team staircases */
+/* bottom panel: the selected player's full totals table (bbref-style) + venue
+   / vs-opponent splits + team staircases. The opposing center was dropped per
+   Tony (2026-07) — zero reason to surface it here. */
 function MatchupPanel(){
   const {matchup}=useApp();
   if(!matchup)return null;
-  const {sp,spBday,cross,stair,vsHand,vsOpp,oppTag,bat}=matchup;
+  const {stair,vsHand,vsOpp,oppTag,bat}=matchup;
+  const player=bat?.ev?.p;
   return(
     <div className="panel" style={{marginTop:10}}>
-      <h3>Matchup — totals (selected player vs opposing center)</h3>
-      {sp?(
-        <>
-          <div style={{fontWeight:800,fontSize:14}}>{sp.fullName}
-            {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #{sp.jersey}</span>}
-            <span className="muted" style={{fontSize:11}}> {sp.position} · opposing center</span>
-          </div>
-          {spBday&&(
-            <div className="bday-line" style={{marginTop:3}}>
-              {spBday.since}d since bday · {spBday.until}d until
-            </div>
-          )}
-        </>
-      ):<div className="muted" style={{fontSize:12}}>no center identified (roster projection)</div>}
+      <h3>Totals — {player?player.fullName:'selected player'}</h3>
       {/* Basketball-Reference-style totals — tap any number for its rung ladder */}
-      <TotalsTable players={[bat?.ev?.p,sp]}/>
+      <TotalsTable players={[player]}/>
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
           selected player venue split: {vsHand.FG??'–'} FG · {vsHand.PTS??'–'} PTS · {vsHand.REB??'–'} REB
@@ -435,9 +452,6 @@ function MatchupPanel(){
           vs {oppTag} this season: {vsOpp.FG??'–'} FG · {vsOpp.PTS??'–'} PTS in {vsOpp.gamesPlayed} game{vsOpp.gamesPlayed>1?'s':''}
         </div>
       )}
-      {cross.map((c,i)=>(
-        <div key={i} className="cross-row"><b className="v-green mono">{c.n}</b> — {c.text}</div>
-      ))}
       {stair.length>0&&(
         <>
           <h3 style={{marginTop:12}}>Team staircases</h3>
