@@ -1,10 +1,11 @@
 import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
-import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
+import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
 import {daysBetween} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
 import {classifyRungs} from '../engine/rungs.js';
+import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
    horizontal scroll on overflowing rails/tables (mouse users have no h-track).
@@ -53,15 +54,16 @@ function DateStrip(){
     <div className="date-strip">
       <div className="panel">
         <h3>Season</h3>
-        <div className="big">{seasonDay?`Day ${seasonDay}`:'—'}</div>
+        <div className="big">{seasonDay?<>Day <FactNum value={seasonDay}>{seasonDay}</FactNum></>:'—'}</div>
         {game&&<div className="muted mono" style={{fontSize:11,marginTop:4}}>
-          game #{game.gameNumber.away}/{game.gameNumber.home}</div>}
+          game #<FactNum value={game.gameNumber.away}>{game.gameNumber.away}</FactNum>
+          /<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum></div>}
       </div>
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
         <div className="dn-vals">
           {Object.entries(dn.vals).slice(0,10).map(([n,l])=>(
-            <span key={n} title={l}><b className="v-cyan">{n}</b></span>
+            <span key={n} title={l}><b className="v-cyan"><FactNum value={+n}>{n}</FactNum></b></span>
           ))}
         </div>
       </div>
@@ -144,7 +146,7 @@ function ContextRail(){
         <button key={i}
           className={`chip ${cls[c.kind]||'gray'}${c.cnt>0?' active-hit':''}${contextFilter===c.n?' on':''}`}
           onClick={()=>setContextFilter(contextFilter===c.n?null:c.n)}>
-          {c.label} <span className="n">{c.n}</span>
+          {c.label} <span className="n"><FactNum value={c.n}>{c.n}</FactNum></span>
           {c.cnt>0&&<span className="cnt">{c.cnt}</span>}
         </button>
       ))}
@@ -229,12 +231,16 @@ function BatterCard({row}){
     <div className="bcard">
       <div className="who">
         <span className="nm">{p.fullName}</span>
-        {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#{p.jersey}</span>}
+        {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#<FactNum value={p.jersey}>{p.jersey}</FactNum></span>}
         <span className="muted" style={{fontSize:11}}>{p.position}</span>
       </div>
       {ev.bday&&(
         <div className="bday-line">
-          {ev.bday.since}d since bday · {ev.bday.until}d until · age {ev.bday.years} · day {ev.bday.totalDays} of life
+          <FactNum value={ev.bday.since}>{ev.bday.since}</FactNum>d since bday
+          {' · '}<FactNum value={ev.bday.until}>{ev.bday.until}</FactNum>d until
+          {' · '}age <FactNum value={ev.bday.years}>{ev.bday.years}</FactNum>
+          {' · '}day <FactNum value={ev.bday.totalDays}>{ev.bday.totalDays}</FactNum> of life
+          {' · '}week <FactNum value={ev.bday.weeks}>{ev.bday.weeks}</FactNum>
         </div>
       )}
       {row.patternHits.length>0&&(
@@ -362,6 +368,97 @@ function RungPopup({stat,value,anchor,onClose}){
   );
 }
 
+/* ---- number-identity popover (Tony 2026-07): the bday / day-of-life
+   counters already feed rung matching invisibly — now they're inspectable.
+   Shows prime/composite + index, the number AS an index (nth prime /
+   composite), 9s chain, T-family, and spine hits (with prime-index bridge). */
+function FactNum({value,children,className='',style}){
+  const [anchor,setAnchor]=useState(null);
+  /* span (not button) so it can live INSIDE chip buttons; stopPropagation
+     keeps the chip's own filter toggle from firing on a number tap */
+  const open=e=>{
+    e.stopPropagation();
+    const r=e.currentTarget.getBoundingClientRect();
+    setAnchor({x:r.left,y:r.bottom,top:r.top});
+  };
+  return(
+    <>
+      <span role="button" tabIndex={0} className={`rungnum ${className}${anchor?' active':''}`} style={style}
+        onClick={open} onKeyDown={e=>{if(e.key==='Enter')open(e)}}>{children}</span>
+      {anchor&&<NumPopup n={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
+    </>
+  );
+}
+
+const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+const CAT_TAG={core:'CORE',date:'DN',thread:'THR',theme:'THEME',h2h:'H2H',
+  context:'CTX',phrase:'PHR',name:'NAME',bday:'BDAY',jersey:'JER'};
+
+function NumPopup({n,anchor,onClose}){
+  const {loaded,colorFor}=useApp();
+  const W=248,vw=window.innerWidth,vh=window.innerHeight;
+  const left=Math.max(8,Math.min(anchor.x,vw-W-8));
+  const below=anchor.y+6,wantAbove=below>vh-260;
+  const style=wantAbove
+    ?{left,bottom:Math.max(8,vh-anchor.top+6),width:W}
+    :{left,top:below,width:W};
+  const prime=isPrime(n),pIdx=primeIndex(n),cIdx=compositeIndex(n);
+  const hits=loaded.get(n)||[];
+  const headColor=colorFor(n,hits.map(h=>h.cat))||(hits.length?'var(--cvg-green)':null);
+  const bridge=prime?(loaded.get(pIdx)||[]):[];
+  const tFam=T_FAMILY.includes(n)||(prime&&T_FAMILY.includes(pIdx));
+  return createPortal(
+    <>
+      <div className="rung-pop-scrim" onClick={onClose}/>
+      <div className="rung-pop" style={style} onClick={e=>e.stopPropagation()}>
+        <div className="rung-pop-head">
+          <b className="mono" style={headColor?{color:headColor}:undefined}>{n}</b>
+          <span className="muted">number facts</span>
+          <button className="rung-pop-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="rung-pop-body">
+          <div className="fact-row">
+            {prime
+              ?<><b className="v-gold mono">prime</b><span className="muted">— the {ord(pIdx)} prime</span></>
+              :cIdx>0
+                ?<><b className="mono">composite</b><span className="muted">— the {ord(cIdx)} composite</span></>
+                :<span className="muted">neither prime nor composite</span>}
+          </div>
+          {n<=250&&nthPrime(n)>0&&(
+            <div className="fact-row"><span className="muted">as index:</span>
+              <b className="mono">{ord(n)} prime = {nthPrime(n)}</b></div>
+          )}
+          {n<=250&&nthComposite(n)>0&&(
+            <div className="fact-row"><span className="muted"></span>
+              <b className="mono">{ord(n)} composite = {nthComposite(n)}</b></div>
+          )}
+          <div className="fact-row"><span className="muted">chain:</span>
+            <b className="mono">{chainBase(n)}</b>
+            <span className="muted mono">({chainMembers(n,5).join(', ')}…)</span></div>
+          {tFam&&<div className="fact-row"><b className="v-gold">T-family</b></div>}
+          {hits.slice(0,6).map((h,i)=>(
+            <div key={i} className="fact-row hit">
+              <span className="ptag" style={{color:colorFor(n,[h.cat])||'var(--cvg-green)'}}>{CAT_TAG[h.cat]||(h.cat||'HIT').toUpperCase().slice(0,5)}</span>
+              <span className="why muted">{h.src}</span>
+            </div>
+          ))}
+          {hits.length>6&&<div className="fact-row muted" style={{fontSize:10}}>+{hits.length-6} more hits</div>}
+          {prime&&bridge.slice(0,3).map((h,i)=>(
+            <div key={'b'+i} className="fact-row hit">
+              <span className="ptag" style={{color:'var(--cvg-cyan)'}}>≙{pIdx}</span>
+              <span className="why muted">as prime #{pIdx} → {h.src}</span>
+            </div>
+          ))}
+          {!hits.length&&!(prime&&bridge.length)&&(
+            <div className="fact-row muted" style={{fontSize:11}}>no spine hits today</div>
+          )}
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
 /* Baseball-Reference-style batter totals — COUNTING STATS ONLY (Tony: no
    BA/OBP/SLG/OPS rate columns, no pitcher pitching table). Career + Season
    read straight off the hydrated stat objects; every cell is a RungNum. */
@@ -430,23 +527,27 @@ function MatchupPanel(){
       {sp?(
         <>
           <div style={{fontWeight:800,fontSize:14}}>{sp.fullName}
-            {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #{sp.jersey}</span>}
+            {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #<FactNum value={sp.jersey}>{sp.jersey}</FactNum></span>}
           </div>
           {spBday&&(
             <div className="bday-line" style={{marginTop:3}}>
-              {spBday.since}d since bday · {spBday.until}d until (SP age excluded — house rule)
+              <FactNum value={spBday.since}>{spBday.since}</FactNum>d since bday
+              {' · '}<FactNum value={spBday.until}>{spBday.until}</FactNum>d until (SP age excluded — house rule)
             </div>
           )}
           <div className="name-run">
             {spRun.filter(x=>!x.legal).slice(0,16).map((x,i)=>(
-              <span key={i}><span className="muted">{cl(x.cipher).slice(0,4)}</span> <b>{x.n}</b></span>
+              <span key={i}><span className="muted">{cl(x.cipher).slice(0,4)}</span> <b><FactNum value={x.n}>{x.n}</FactNum></b></span>
             ))}
           </div>
         </>
       ):<div className="muted" style={{fontSize:12}}>probable not posted</div>}
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
-          selected batter venue split: {vsHand.homeRuns??'–'} HR · {vsHand.hits??'–'} H · {vsHand.totalBases??'–'} TB
+          selected batter venue split:{' '}
+          {vsHand.homeRuns!=null?<FactNum value={vsHand.homeRuns}>{vsHand.homeRuns}</FactNum>:'–'} HR ·{' '}
+          {vsHand.hits!=null?<FactNum value={vsHand.hits}>{vsHand.hits}</FactNum>:'–'} H ·{' '}
+          {vsHand.totalBases!=null?<FactNum value={vsHand.totalBases}>{vsHand.totalBases}</FactNum>:'–'} TB
         </div>
       )}
       {cross.map((c,i)=>(
