@@ -214,13 +214,16 @@ function PlayerZone(){
 }
 
 function PlayerCard({row}){
-  const {colorFor}=useApp();
+  const {colorFor,contextFilter}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
   /* FG rungs headline for the FB lane; PTS next; full ladders surfaced */
   const order={FG:0,PTS:1,'3PM':2,REB:3,AST:4,FT:5,PRA:6,GP:7};
   hitRungs.sort((a,b)=>(order[a.stat]??9)-(order[b.stat]??9)||b.hits.length-a.hits.length||a.off-b.off);
+  /* active context chip: rungs landing on that number sort first + ring (§feedback) */
+  if(contextFilter!=null)
+    hitRungs.sort((a,b)=>(b.n===contextFilter?1:0)-(a.n===contextFilter?1:0));
   const fb=ev.fbCheck;
   return(
     <div className="bcard">
@@ -293,11 +296,13 @@ function PlayerCard({row}){
         {hitRungs.slice(0,14).map((r,i)=>{
           const color=colorFor(r.n,r.hits.map(h=>h.cat));
           const greenlight=r.stat==='GP';
+          const flt=contextFilter!=null&&r.n===contextFilter;
           return(
-            <div key={i} className="rung hit">
+            <div key={i} className={`rung hit${flt?' flt':''}`}>
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
               <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
               <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
+              {flt&&<span className="badge blue">◈ CHIP</span>}
               <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
             </div>
           );
