@@ -256,6 +256,20 @@ import {summarizeCondition} from '../src/engine/patterns.js';
   eq('sinceLast: no deep data → noData',r2.noData,true);
 }
 
+/* ---- dateFig counter (§6): precise 5-formula set, unlike wide dn ---- */
+import {resolveCounter} from '../src/engine/patterns.js';
+{
+  const ctx=mkCtx({date:'2026-07-16'});
+  const ns=resolveCounter({counter:'dateFig',scope:'season'},ctx).map(x=>x.n);
+  eq('dateFig: exactly 7 values',ns.length,7);
+  eq('dateFig: set for 2026-07-16',ns.join(','),'69,33,24,49,22,197,168');
+  /* Stott leg 1b: 168 days left = New York Mets 168 */
+  const r=evalCondition({counter:'dateFig',scope:'season',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:true},
+    mkCtx({date:'2026-07-16',oppTeamNames:['Mets','New York Mets']}));
+  eq('dateFig: 168 left = New York Mets 168',r.matches.some(m=>m.n===168),true);
+  eq('dateFig: date-dependent',isDateDependent({conditions:[{counter:'dateFig'}]}),true);
+}
+
 /* ---- oppTeam/team sources resolve all name variants (§3) ---- */
 import {resolveSource} from '../src/engine/patterns.js';
 {

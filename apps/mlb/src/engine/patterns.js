@@ -6,7 +6,7 @@
 ================================================================ */
 import {calcAll,ALL_CIPHERS} from './gematria.js';
 import {primeIndex,compositeIndex,chainBase,numberToWords} from './numbers.js';
-import {daysBetween} from './clocks.js';
+import {daysBetween,dateFigures} from './clocks.js';
 
 export const COUNTERS=[
   {id:'rung:HR',label:'HR rung'},{id:'rung:TB',label:'TB rung'},{id:'rung:SO',label:'K rung'},
@@ -17,7 +17,8 @@ export const COUNTERS=[
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
   {id:'stair:R',label:'team next R'},{id:'stair:AB',label:'team next AB'},
   {id:'stair:PA',label:'team next PA'},{id:'stair:TB',label:'team next TB'},
-  {id:'doy',label:'DOY'},{id:'dn',label:'date numerology'},{id:'dow',label:'day-of-week value'},
+  {id:'doy',label:'DOY'},{id:'dateFig',label:'date figures (5 formulas + DOY + left)'},
+  {id:'dn',label:'date numerology (wide)'},{id:'dow',label:'day-of-week value'},
   {id:'age',label:'batter age figures'},
   {id:'oppPitcherClock',label:'opp SP birthday clock'},
   {id:'sinceLast:HR',label:'days since last HR'},{id:'sinceLast:H',label:'days since last hit'},
@@ -38,7 +39,7 @@ export const SOURCES=[
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
   RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
-export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
+export const DATE_COUNTERS=new Set(['doy','dateFig','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter)||c.counter?.startsWith('sinceLast'));
 
@@ -82,6 +83,9 @@ export function resolveCounter(cond,ctx){
     if(base!=null)for(let k=1;k<=10;k++)out.push({n:base+k,label:`team ${stat} ${base}+${k}`});
   }else if(kind==='doy'){
     out.push({n:ctx.dn.doy,label:`DOY ${ctx.dn.doy}`});
+  }else if(kind==='dateFig'){
+    /* the 5 standard formulas + DOY + Days Left — precise, unlike 'dn' */
+    if(ctx.date)dateFigures(ctx.date).forEach(f=>out.push({n:f.n,label:f.calc}));
   }else if(kind==='dn'){
     Object.entries(ctx.dn.vals).forEach(([n,l])=>out.push({n:+n,label:l}));
   }else if(kind==='dow'){
