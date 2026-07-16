@@ -18,6 +18,7 @@ export const COUNTERS=[
   {id:'stair:PA',label:'team next PA'},{id:'stair:TB',label:'team next TB'},
   {id:'doy',label:'DOY'},{id:'dn',label:'date numerology'},{id:'dow',label:'day-of-week value'},
   {id:'age',label:'batter age figures'},
+  {id:'oppPitcherClock',label:'opp SP birthday clock'},
 ];
 export const SCOPES=['season','career','vsTeam','vsDivision','vsLeague','venue','month','dow'];
 export const MODS=[{id:'',label:'—'},{id:'primeIdx',label:'prime # of'},{id:'compIdx',label:'composite # of'},{id:'chain',label:'chain-to'}];
@@ -32,7 +33,7 @@ export const SOURCES=[
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
   RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
-export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age']);
+export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter));
 
@@ -82,6 +83,8 @@ export function resolveCounter(cond,ctx){
     enabledVals(ctx.dn.dayName,ctx.ciphers).forEach(x=>out.push(x));
   }else if(kind==='age'){
     (ctx.batter.ageFigures||[]).forEach(x=>out.push({n:x.n,label:x.label}));
+  }else if(kind==='oppPitcherClock'){
+    (ctx.oppPitcherClock||[]).forEach(x=>out.push({n:x.n,label:x.label}));
   }
   return out;
 }

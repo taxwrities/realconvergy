@@ -225,6 +225,16 @@ import {summarizeCondition} from '../src/engine/patterns.js';
   eq('numberWord: no ref → no match',r2.pass,false);
 }
 
+/* ---- oppPitcherClock counter (§4): Stott leg 2b — 31d after SP bday ---- */
+{
+  const ctx=mkCtx({oppPitcherClock:[{n:31,label:'31d after SP bday'},{n:29,label:'SP age 29'}]});
+  const r=evalCondition({counter:'oppPitcherClock',scope:'season',lmod:'',rmod:'',
+    source:'word',sourceArg:'Eight',hard:true},ctx); // EIGHT Red 31
+  eq('oppPitcherClock: 31d after SP bday = EIGHT Red 31',r.pass,true);
+  eq('oppPitcherClock: date-dependent → feeds Forecast',
+    isDateDependent({conditions:[{counter:'oppPitcherClock'}]}),true);
+}
+
 /* ---- oppTeam/team sources resolve all name variants (§3) ---- */
 import {resolveSource} from '../src/engine/patterns.js';
 {

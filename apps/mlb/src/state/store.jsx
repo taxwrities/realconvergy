@@ -163,13 +163,21 @@ export function AppStateProvider({children}){
     const oppTeamNames=g?nameVariants(side==='home'?g.away:g.home):[];
     const spId=g?(side==='home'?g.awaySP:g.homeSP):null;
     const sp=spId?slate?.people[spId]:null;
-    const bday=p.birthDate?clockFrom(p.birthDate,dnUse===dn?date:dnUse._date):null;
+    const ctxDate=dnUse===dn?date:dnUse._date;
+    const bday=p.birthDate?clockFrom(p.birthDate,ctxDate):null;
+    const spClock=sp?.birthDate?clockFrom(sp.birthDate,ctxDate):null;
     return{
-      ciphers,templates,dn:dnUse,
+      ciphers,templates,dn:dnUse,date:ctxDate,
       gameNumber:gameNumber??(g?g.gameNumber[side]:null),
       teamStats:g?slate?.teamStats[side==='home'?g.home.id:g.away.id]:null,
       teamName,oppTeamName,teamNames,oppTeamNames,stadium:g?.venue||'',
       oppPitcherName:sp?.fullName||'',oppPitcherVals:sp?nameRun(sp.fullName,ciphers):[],
+      oppPitcherClock:spClock?[
+        {n:spClock.since,label:`${spClock.since}d after SP bday`},
+        {n:spClock.until,label:`${spClock.until}d to SP bday`},
+        {n:spClock.years,label:`SP age ${spClock.years}`},
+        {n:spClock.years+1,label:`SP turns ${spClock.years+1}`},
+      ].filter(x=>x.n>0):[],
       themeNames:[...registry,...dayState.adhocThemes].map(t=>t.name),
       sources:{core:patternSources.core,theme:patternSources.theme,
         dateThread:dateThread||patternSources.dateThread,
