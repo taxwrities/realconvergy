@@ -95,8 +95,10 @@ export function resolveSource(cond,ctx){
   if(src==='loaded')return ctx.sources.loadedAll;
   if(src==='ownName')return ctx.batter.nameVals;
   if(src==='oppPitcher')return ctx.oppPitcherVals||[];
-  if(src==='oppTeam')return enabledVals(ctx.oppTeamName||'',ctx.ciphers);
-  if(src==='team')return enabledVals(ctx.teamName||'',ctx.ciphers);
+  /* all name variants (nickname/full/city) when the ctx provides them;
+     single-string fallback keeps older ctx shapes working */
+  if(src==='oppTeam')return(ctx.oppTeamNames?.length?ctx.oppTeamNames:[ctx.oppTeamName]).filter(Boolean).flatMap(nm=>enabledVals(nm,ctx.ciphers));
+  if(src==='team')return(ctx.teamNames?.length?ctx.teamNames:[ctx.teamName]).filter(Boolean).flatMap(nm=>enabledVals(nm,ctx.ciphers));
   if(src==='stadium')return enabledVals(ctx.stadium||'',ctx.ciphers);
   if(src==='word')return typeof cond.sourceArg==='string'&&cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
   if(src==='numberWord'){

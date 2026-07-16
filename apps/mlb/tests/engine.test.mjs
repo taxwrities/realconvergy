@@ -225,5 +225,18 @@ import {summarizeCondition} from '../src/engine/patterns.js';
   eq('numberWord: no ref → no match',r2.pass,false);
 }
 
+/* ---- oppTeam/team sources resolve all name variants (§3) ---- */
+import {resolveSource} from '../src/engine/patterns.js';
+{
+  const ctx=mkCtx({oppTeamName:'Mets',oppTeamNames:['Mets','New York Mets','New York']});
+  const ns=new Set(resolveSource({source:'oppTeam'},ctx).map(x=>x.n));
+  eq('oppTeam variants: Mets=57 present',ns.has(57),true);
+  eq('oppTeam variants: New York Mets=168 present',ns.has(168),true);
+  /* fallback: single-string ctx (older shape) still resolves */
+  const ns2=new Set(resolveSource({source:'oppTeam'},mkCtx({oppTeamName:'Mets'})).map(x=>x.n));
+  eq('oppTeam fallback: nickname-only still works',ns2.has(57),true);
+  eq('oppTeam fallback: no phantom 168',ns2.has(168),false);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

@@ -155,6 +155,12 @@ export function AppStateProvider({children}){
   const buildPatternCtx=useCallback(({p,side,g,dnUse,gameNumber,dateThread,loadedAll})=>{
     const teamName=g?(side==='home'?g.home.teamName:g.away.teamName):'';
     const oppTeamName=g?(side==='home'?g.away.teamName:g.home.teamName):'';
+    /* all name variants for the team/oppTeam sources — nickname alone misses
+       full-name values ("Mets"=57 but "New York Mets"=168); same variant set
+       the loaded map indexes. */
+    const nameVariants=t=>t?[...new Set([t.name,t.teamName,t.locationName].filter(Boolean))]:[];
+    const teamNames=g?nameVariants(side==='home'?g.home:g.away):[];
+    const oppTeamNames=g?nameVariants(side==='home'?g.away:g.home):[];
     const spId=g?(side==='home'?g.awaySP:g.homeSP):null;
     const sp=spId?slate?.people[spId]:null;
     const bday=p.birthDate?clockFrom(p.birthDate,dnUse===dn?date:dnUse._date):null;
@@ -162,7 +168,7 @@ export function AppStateProvider({children}){
       ciphers,templates,dn:dnUse,
       gameNumber:gameNumber??(g?g.gameNumber[side]:null),
       teamStats:g?slate?.teamStats[side==='home'?g.home.id:g.away.id]:null,
-      teamName,oppTeamName,stadium:g?.venue||'',
+      teamName,oppTeamName,teamNames,oppTeamNames,stadium:g?.venue||'',
       oppPitcherName:sp?.fullName||'',oppPitcherVals:sp?nameRun(sp.fullName,ciphers):[],
       themeNames:[...registry,...dayState.adhocThemes].map(t=>t.name),
       sources:{core:patternSources.core,theme:patternSources.theme,
