@@ -30,6 +30,28 @@ export function todayISO(){
   return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+/* The DateStrip's headline date figures — a fixed, date-driven set shown
+   left-to-right. figs[0] (M+DD+YY+cent) is the top number and renders gold.
+   calc is kept as a hover title only; the row itself is numbers-only. */
+export function dateFigures(dstr){
+  const d=new Date(dstr+'T12:00:00');
+  const M=d.getMonth()+1,DD=d.getDate(),YYYY=d.getFullYear(),YY=YYYY%100,cent=Math.floor(YYYY/100);
+  const digs=n=>String(n).split('').join('+');            // 14 -> "1+4", 2026 -> "2+0+2+6"
+  const dig=n=>String(n).split('').reduce((a,x)=>a+ +x,0);
+  const doy=Math.round((d-new Date(YYYY,0,1))/864e5)+1;
+  const leap=(YYYY%4===0&&(YYYY%100!==0||YYYY%400===0));
+  const left=(leap?366:365)-doy;
+  return[
+    {n:M+DD+YY+cent,             calc:`(${M}) + (${DD}) + (${cent}) + (${YY})`, top:true},
+    {n:M+DD+dig(YYYY),           calc:`(${M}) + (${DD}) + ${digs(YYYY)}`},
+    {n:dig(M)+dig(DD)+dig(YYYY), calc:`${digs(M)} + ${digs(DD)} + ${digs(YYYY)}`},
+    {n:M+DD+YY,                  calc:`(${M}) + (${DD}) + (${YY})`},
+    {n:dig(M)+dig(DD)+dig(YY),   calc:`${digs(M)} + ${digs(DD)} + ${digs(YY)}`},
+    {n:doy,                      calc:'Day of Year'},
+    {n:left,                     calc:'Days Left'},
+  ];
+}
+
 export function dateNumerology(dstr,enabled){
   const d=new Date(dstr+'T12:00:00');
   const M=d.getMonth()+1,DD=d.getDate(),YYYY=d.getFullYear(),YY=YYYY%100,cent=Math.floor(YYYY/100);

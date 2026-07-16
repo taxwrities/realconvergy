@@ -2,7 +2,7 @@ import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
-import {daysBetween} from '../engine/clocks.js';
+import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
 import {classifyRungs} from '../engine/rungs.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
@@ -79,8 +79,10 @@ function DateStrip(){
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
         <div className="dn-vals">
-          {Object.entries(dn.vals).slice(0,10).map(([n,l])=>(
-            <span key={n} title={l}><b className="v-cyan"><FactNum value={+n}>{n}</FactNum></b></span>
+          {dateFigures(date).map((f,i)=>(
+            <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>
+              <FactNum value={f.n}>{f.n}</FactNum>
+            </b>
           ))}
         </div>
       </div>
