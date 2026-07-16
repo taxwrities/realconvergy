@@ -1,9 +1,10 @@
 import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
-import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
+import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {classifyRungs} from '../engine/rungs.js';
+import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
    horizontal scroll on overflowing rails/tables (mouse users have no h-track).
@@ -60,7 +61,9 @@ function DateStrip(){
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
         <div className="dn-vals">
           {dateFigures(date).map((f,i)=>(
-            <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>{f.n}</b>
+            <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>
+              <FactNum value={f.n}>{f.n}</FactNum>
+            </b>
           ))}
         </div>
       </div>
@@ -234,7 +237,11 @@ function PlayerCard({row}){
       </div>
       {ev.bday&&(
         <div className="bday-line">
-          {ev.bday.since}d since bday · {ev.bday.until}d until · age {ev.bday.years} · day {ev.bday.totalDays} of life
+          <FactNum value={ev.bday.since}>{ev.bday.since}</FactNum>d since bday
+          {' · '}<FactNum value={ev.bday.until}>{ev.bday.until}</FactNum>d until
+          {' · '}age <FactNum value={ev.bday.years}>{ev.bday.years}</FactNum>
+          {' · '}day <FactNum value={ev.bday.totalDays}>{ev.bday.totalDays}</FactNum> of life
+          {' · '}week <FactNum value={ev.bday.weeks}>{ev.bday.weeks}</FactNum>
         </div>
       )}
       {/* cFG+1 / arena check renders FIRST on the card (§2 house rule) */}
@@ -375,6 +382,90 @@ function RungPopup({stat,value,anchor,onClose}){
               </div>
             );
           })}
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+/* ---- number-identity popover (Tony 2026-07): the bday / day-of-life
+   counters already feed rung matching invisibly — now they're inspectable.
+   Shows prime/composite + index, the number AS an index (nth prime /
+   composite), 9s chain, T-family, and spine hits (with prime-index bridge). */
+function FactNum({value,children,className='',style}){
+  const [anchor,setAnchor]=useState(null);
+  const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  return(
+    <>
+      <button type="button" className={`rungnum ${className}${anchor?' active':''}`} style={style} onClick={open}>{children}</button>
+      {anchor&&<NumPopup n={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
+    </>
+  );
+}
+
+const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+const CAT_TAG={core:'CORE',date:'DN',thread:'THR',theme:'THEME',h2h:'H2H',
+  context:'CTX',phrase:'PHR',name:'NAME',bday:'BDAY',jersey:'JER'};
+
+function NumPopup({n,anchor,onClose}){
+  const {loaded,colorFor}=useApp();
+  const W=248,vw=window.innerWidth,vh=window.innerHeight;
+  const left=Math.max(8,Math.min(anchor.x,vw-W-8));
+  const below=anchor.y+6,wantAbove=below>vh-260;
+  const style=wantAbove
+    ?{left,bottom:Math.max(8,vh-anchor.top+6),width:W}
+    :{left,top:below,width:W};
+  const prime=isPrime(n),pIdx=primeIndex(n),cIdx=compositeIndex(n);
+  const hits=loaded.get(n)||[];
+  const headColor=colorFor(n,hits.map(h=>h.cat))||(hits.length?'var(--cvg-green)':null);
+  const bridge=prime?(loaded.get(pIdx)||[]):[];
+  const tFam=T_FAMILY.includes(n)||(prime&&T_FAMILY.includes(pIdx));
+  return createPortal(
+    <>
+      <div className="rung-pop-scrim" onClick={onClose}/>
+      <div className="rung-pop" style={style} onClick={e=>e.stopPropagation()}>
+        <div className="rung-pop-head">
+          <b className="mono" style={headColor?{color:headColor}:undefined}>{n}</b>
+          <span className="muted">number facts</span>
+          <button className="rung-pop-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="rung-pop-body">
+          <div className="fact-row">
+            {prime
+              ?<><b className="v-gold mono">prime</b><span className="muted">— the {ord(pIdx)} prime</span></>
+              :cIdx>0
+                ?<><b className="mono">composite</b><span className="muted">— the {ord(cIdx)} composite</span></>
+                :<span className="muted">neither prime nor composite</span>}
+          </div>
+          {n<=250&&nthPrime(n)>0&&(
+            <div className="fact-row"><span className="muted">as index:</span>
+              <b className="mono">{ord(n)} prime = {nthPrime(n)}</b></div>
+          )}
+          {n<=250&&nthComposite(n)>0&&(
+            <div className="fact-row"><span className="muted"></span>
+              <b className="mono">{ord(n)} composite = {nthComposite(n)}</b></div>
+          )}
+          <div className="fact-row"><span className="muted">chain:</span>
+            <b className="mono">{chainBase(n)}</b>
+            <span className="muted mono">({chainMembers(n,5).join(', ')}…)</span></div>
+          {tFam&&<div className="fact-row"><b className="v-gold">T-family</b></div>}
+          {hits.slice(0,6).map((h,i)=>(
+            <div key={i} className="fact-row hit">
+              <span className="ptag" style={{color:colorFor(n,[h.cat])||'var(--cvg-green)'}}>{CAT_TAG[h.cat]||(h.cat||'HIT').toUpperCase().slice(0,5)}</span>
+              <span className="why muted">{h.src}</span>
+            </div>
+          ))}
+          {hits.length>6&&<div className="fact-row muted" style={{fontSize:10}}>+{hits.length-6} more hits</div>}
+          {prime&&bridge.slice(0,3).map((h,i)=>(
+            <div key={'b'+i} className="fact-row hit">
+              <span className="ptag" style={{color:'var(--cvg-cyan)'}}>≙{pIdx}</span>
+              <span className="why muted">as prime #{pIdx} → {h.src}</span>
+            </div>
+          ))}
+          {!hits.length&&!(prime&&bridge.length)&&(
+            <div className="fact-row muted" style={{fontSize:11}}>no spine hits today</div>
+          )}
         </div>
       </div>
     </>,
