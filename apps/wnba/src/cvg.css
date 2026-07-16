@@ -104,11 +104,25 @@ body { background: #101319; overscroll-behavior-y: none; }
 
 /* date strip */
 .date-strip { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-bottom: 10px; }
-.date-strip .panel { margin-bottom: 0; }
+/* min-width:0 — grid items default to min-width:auto, which lets the panel
+   blow out its track to fit .dn-vals instead of letting that row scroll. */
+.date-strip .panel { margin-bottom: 0; min-width: 0; }
 .date-strip .big { font-size: 22px; font-weight: 800; font-family: var(--cvg-mono); }
-.dn-vals { display: flex; flex-wrap: nowrap; align-items: baseline; gap: 6px 10px; font-family: var(--cvg-mono); font-size: 15px; }
-.dn-vals b { line-height: 1.1; }
-.dn-vals .v-gold { font-weight: 800; }
+/* One non-wrapping row of 7 figures, each with its literal calc string under it.
+   The calc text is wider than the panel at phone widths, so the row scrolls
+   horizontally rather than wrapping into a grid (Tony 2026-07: keep the
+   sub-labels, keep the row horizontal). */
+.dn-vals {
+  display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 8px;
+  font-family: var(--cvg-mono); font-size: 12px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding-bottom: 2px;
+}
+.dn-vals::-webkit-scrollbar { display: none; }
+.dn-fig { display: inline-flex; flex: 0 0 auto; flex-direction: column; align-items: center; gap: 1px; }
+.dn-fig b { font-size: 15px; line-height: 1.1; }
+.dn-fig .v-gold { font-weight: 800; }
+.dn-calc { font-style: normal; font-size: 9px; line-height: 1.1; color: #8a90a0; white-space: nowrap; letter-spacing: 0; }
 
 /* refine box */
 .refine { position: sticky; top: 0; z-index: 20; background: #101319; padding: 4px 0 6px; }
@@ -305,7 +319,9 @@ body { background: #101319; overscroll-behavior-y: none; }
 
 @media (max-width: 400px) {
   .batter-zone { grid-template-columns: 104px 1fr; }
-  .date-strip { grid-template-columns: 1fr 1.4fr; }
+  /* stack: the DN row needs the full width, otherwise its scroll window is
+     ~180px and shows barely two figures at a time. */
+  .date-strip { grid-template-columns: 1fr; }
 }
 
 /* desktop (mouse) — expose horizontal scrollbars so wide rails + the totals
@@ -319,4 +335,8 @@ body { background: #101319; overscroll-behavior-y: none; }
   .totals-wrap { scrollbar-width: thin; scrollbar-color: #3a4252 transparent; }
   .totals-wrap::-webkit-scrollbar-thumb { background: #3a4252; border-radius: 4px; }
   .totals-wrap::-webkit-scrollbar-track { background: transparent; }
+  .dn-vals { scrollbar-width: thin; scrollbar-color: #3a4252 transparent; }
+  .dn-vals::-webkit-scrollbar { display: block; height: 6px; }
+  .dn-vals::-webkit-scrollbar-thumb { background: #3a4252; border-radius: 3px; }
+  .dn-vals::-webkit-scrollbar-track { background: transparent; }
 }
