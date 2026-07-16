@@ -1,8 +1,10 @@
 import {useState} from 'react';
+import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
 import {daysBetween} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
+import {classifyRungs} from '../engine/rungs.js';
 
 /* Board tab — LAYOUT-SPEC §4, zones top to bottom. */
 export default function BoardTab(){
@@ -184,7 +186,10 @@ function BatterZone(){
           );
         })}
       </div>
-      {sel&&<BatterCard row={sel}/>}
+      <div className="card-col">
+        {sel&&<BatterCard row={sel}/>}
+        {sel&&<TotalsPanel row={sel}/>}
+      </div>
     </div>
   );
 }
@@ -252,7 +257,7 @@ function BatterCard({row}){
           return(
             <div key={i} className="rung hit">
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
-              <b style={{color:color||'var(--cvg-green)'}}>{r.n}</b>
+              <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
               <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
               <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
             </div>
@@ -264,6 +269,124 @@ function BatterCard({row}){
         <span className="muted">thread </span>
         {ev.threadHit?<b className="v-blue">Y</b>:<span className="muted">N</span>}
       </div>
+    </div>
+  );
+}
+
+/* ---- clickable numbers → "next rungs" popover (Tony 2026-07) ----
+   Any counting total is a RungNum; tapping it opens the ladder of value+N
+   checked against the loaded spine (date/thread/theme/core), colored with
+   the same rules the rest of the board uses. Institutional = the rung hits
+   an enabled Core-vocab word (editable in Vocab, Tony decision #3). */
+function RungNum({stat,value,children,className='',style}){
+  const [anchor,setAnchor]=useState(null);
+  const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  return(
+    <>
+      <button type="button" className={`rungnum ${className}`} style={style} onClick={open}>{children}</button>
+      {anchor&&<RungPopup stat={stat} value={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
+    </>
+  );
+}
+
+function RungPopup({stat,value,anchor,onClose}){
+  const {loaded,colorFor}=useApp();
+  const ladder=classifyRungs(stat,value,{loaded});
+  /* clamp to viewport; flip above the number if it would run off the bottom */
+  const W=248,vw=window.innerWidth,vh=window.innerHeight;
+  const left=Math.max(8,Math.min(anchor.x,vw-W-8));
+  const below=anchor.y+6, wantAbove=below>vh-220;
+  const style=wantAbove
+    ?{left,bottom:Math.max(8,vh-anchor.top+6),width:W}
+    :{left,top:below,width:W};
+  return createPortal(
+    <>
+      <div className="rung-pop-scrim" onClick={onClose}/>
+      <div className="rung-pop" style={style} onClick={e=>e.stopPropagation()}>
+        <div className="rung-pop-head">
+          <b className="mono">{stat} {value}</b>
+          <span className="muted">→ next rungs</span>
+          <button className="rung-pop-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="rung-pop-body">
+          {ladder.map(r=>{
+            const color=colorFor(r.n,r.cats)
+              ||(r.institutional?'var(--cvg-gold)':(r.hit?'var(--cvg-green)':null));
+            const tags=[];
+            if(r.isDate)tags.push(['DN','var(--cvg-cyan)']);
+            if(r.isThread)tags.push(['THR','var(--cvg-blue)']);
+            if(r.institutional)tags.push(['CORE','var(--cvg-gold)']);
+            const srcs=r.hits.map(h=>h.src).filter(Boolean);
+            return(
+              <div key={r.off} className={`rung-pop-row${r.hit?' hit':''}`}>
+                <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
+                <span className="muted mono off">+{r.off}</span>
+                <span className="tags">
+                  {tags.map(([t,c])=><span key={t} className="ptag" style={{color:c}}>{t}</span>)}
+                </span>
+                <span className="why muted">{srcs.slice(0,2).join(' · ')}{srcs.length>2?` +${srcs.length-2}`:''}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+/* Baseball-Reference-style batter totals — COUNTING STATS ONLY (Tony: no
+   BA/OBP/SLG/OPS rate columns, no pitcher pitching table). Career + Season
+   read straight off the hydrated stat objects; every cell is a RungNum. */
+const TOTALS_COLS=[
+  {k:'gamesPlayed',h:'G'},{k:'plateAppearances',h:'PA'},{k:'atBats',h:'AB'},
+  {k:'runs',h:'R'},{k:'hits',h:'H'},{k:'1B',h:'1B'},{k:'doubles',h:'2B'},
+  {k:'triples',h:'3B'},{k:'homeRuns',h:'HR'},{k:'XBH',h:'XBH'},{k:'rbi',h:'RBI'},
+  {k:'totalBases',h:'TB'},{k:'baseOnBalls',h:'BB'},{k:'strikeOuts',h:'SO'},
+  {k:'stolenBases',h:'SB'},{k:'caughtStealing',h:'CS'},{k:'groundIntoDoublePlay',h:'GDP'},
+  {k:'hitByPitch',h:'HBP'},{k:'sacBunts',h:'SH'},{k:'sacFlies',h:'SF'},
+  {k:'intentionalWalks',h:'IBB'},
+];
+
+function TotalsCell({col,line}){
+  const v=line[col.k];
+  if(v==null)return <td className="muted">–</td>;
+  return <td className="mono num"><RungNum stat={col.h} value={v}>{v}</RungNum></td>;
+}
+
+function TotalsTable({player}){
+  const rows=[];
+  if(player?.career)rows.push({scope:'Career',line:player.career});
+  if(player?.season)rows.push({scope:'Season',line:player.season});
+  if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
+  return(
+    <div className="totals-wrap">
+      <table className="totals">
+        <thead>
+          <tr><th className="pl">Scope</th>{TOTALS_COLS.map(c=><th key={c.h}>{c.h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i}>
+              <td className="pl">{r.scope}</td>
+              {TOTALS_COLS.map(c=><TotalsCell key={c.h} col={c} line={r.line}/>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* card column, under the card: the selected batter's bbref counting line.
+   Batter only — a pitcher's batting line is meaningless post-DH. */
+function TotalsPanel({row}){
+  const p=row.ev.p;
+  if(!p.career&&!p.season)return null;
+  return(
+    <div className="panel">
+      <h3>Totals — {p.fullName}</h3>
+      <TotalsTable player={p}/>
     </div>
   );
 }
