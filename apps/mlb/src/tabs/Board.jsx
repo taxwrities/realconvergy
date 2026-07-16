@@ -36,12 +36,26 @@ export default function BoardTab(){
       <DateStrip/>
       <RefineBox/>
       {loading&&<div className="warn-banner">{loading}</div>}
+      <FreshnessBanner/>
       <NoGames/>
       <GameRail/>
       <ContextRail/>
       <TeamToggle/>
       <BatterZone/>
       <MatchupPanel/>
+    </div>
+  );
+}
+
+/* cached-slate freshness + manual refresh (§ persist, Tony 2026-07) */
+function FreshnessBanner(){
+  const {slate,loading,slateSavedAt,refresh}=useApp();
+  if(loading||!slate||!slateSavedAt)return null;
+  const t=new Date(slateSavedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  return(
+    <div className="warn-banner fresh" onClick={refresh} role="button" tabIndex={0}
+      onKeyDown={e=>{if(e.key==='Enter')refresh()}}>
+      slate cached from {t} · tap to refresh ↻
     </div>
   );
 }

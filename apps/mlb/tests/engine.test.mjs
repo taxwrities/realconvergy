@@ -177,5 +177,16 @@ eq('project: RBI 60→66 over 5g',projNew.season.rbi,66);
 eq('project: 1B 80→88',projNew.season['1B'],88);
 eq('project: career XBH advances',projNew.career.XBH,404);
 
+/* ---- slate cache validity (instant rehydrate guard) ---- */
+import {isSlateCacheValid} from '../src/data/storage.js';
+{
+  const today='2026-07-16';
+  const good={schema:'cvg-slateCache/v1',date:today,savedAt:1,slate:{},seasonInfo:null};
+  eq('slateCache: valid today entry accepted',isSlateCacheValid(good,today),true);
+  eq('slateCache: yesterday rejected',isSlateCacheValid({...good,date:'2026-07-15'},today),false);
+  eq('slateCache: wrong schema rejected',isSlateCacheValid({...good,schema:'x'},today),false);
+  eq('slateCache: null rejected',isSlateCacheValid(null,today),false);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

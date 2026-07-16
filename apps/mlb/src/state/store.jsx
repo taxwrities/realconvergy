@@ -11,7 +11,7 @@ import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/nu
 import {clockFrom,dateNumerology,daysBetween,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
-import {load,save,loadDay,saveDay,exportConfig,importConfig} from '../data/storage.js';
+import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
 import {fetchSlate,fetchSeasonInfo,deepFetchGame} from '../data/mlb.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
@@ -52,12 +52,14 @@ export function AppStateProvider({children}){
   /* boot checksum (§2) */
   const boot=useMemo(()=>checksum(),[]);
 
-  /* ---------- slate ---------- */
-  const [slate,setSlate]=useState(null);       // {games, people, teamStats}
-  const [seasonInfo,setSeasonInfo]=useState(null);
+  /* ---------- slate (hydrate from cache for instant reopen) ---------- */
+  const cachedSlate=useMemo(()=>loadSlateCache(date),[date]);
+  const [slate,setSlate]=useState(()=>cachedSlate?.slate||null); // {games, people, teamStats}
+  const [seasonInfo,setSeasonInfo]=useState(()=>cachedSlate?.seasonInfo||null);
+  const [slateSavedAt,setSlateSavedAt]=useState(()=>cachedSlate?.savedAt||null);
   const [loading,setLoading]=useState('');
   const [error,setError]=useState('');
-  const [gamePk,setGamePk]=useState(null);
+  const [gamePk,setGamePk]=useState(()=>cachedSlate?.slate?.games?.[0]?.pk??null);
   const [side,setSide]=useState('away');
   const [batterId,setBatterId]=useState(null);
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
@@ -70,12 +72,16 @@ export function AppStateProvider({children}){
         fetchSlate(date,setLoading),
         fetchSeasonInfo(date.slice(0,4)).catch(()=>null),
       ]);
-      setSlate(s);setSeasonInfo(si);
+      setSlate(s);setSeasonInfo(si);setSlateSavedAt(Date.now());
       if(s.games.length&&gamePk==null)setGamePk(s.games[0].pk);
       setLoading('');
     }catch(e){setError('Slate load failed: '+e.message);setLoading('')}
   },[date,gamePk]);
-  useEffect(()=>{refresh()},[]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* manual-refresh policy: fetch on boot only when there's no cache for today;
+     a valid cache is trusted until the user taps refresh (banner / ↻). */
+  useEffect(()=>{if(!cachedSlate)refresh()},[]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* write-through: persist every slate change (fetch + ⚡ deep mutation) */
+  useEffect(()=>{if(slate)saveSlateCache(date,slate,seasonInfo)},[slate,seasonInfo,date]);
 
   /* ---------- derived: enabled cipher values helper ---------- */
   const vals=useCallback(s=>{
@@ -521,7 +527,7 @@ export function AppStateProvider({children}){
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
-    slate,loading,error,refresh,game,gamePk,setGamePk,side,setSide,
+    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,

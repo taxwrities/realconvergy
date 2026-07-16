@@ -20,12 +20,37 @@ export function save(key,value){
 export function loadDay(date){return load(`cvg.dayState.${date}`,{adhocThemes:[],adhocThread:[],labels:{}})}
 export function saveDay(date,state){save(`cvg.dayState.${date}`,state)}
 
+/* ---- slate cache: instant rehydrate on reopen (heavy statsapi hydrate:
+   career + venue splits for ~50 batters + both probables + team totals) ----
+   single latest-only key; everything the board renders survives JSON
+   round-trip (people/teamStats are plain objects). */
+const SLATE_KEY='cvg.slateCache';
+const SLATE_SCHEMA='cvg-slateCache/v1';
+
+/* pure — testable: a cache entry is usable iff schema+date match today */
+export function isSlateCacheValid(entry,date){
+  return !!entry&&entry.schema===SLATE_SCHEMA&&entry.date===date;
+}
+
+export function saveSlateCache(date,slate,seasonInfo){
+  try{
+    const json=JSON.stringify({schema:SLATE_SCHEMA,date,savedAt:Date.now(),slate,seasonInfo});
+    if(json.length>4_000_000){localStorage.removeItem(SLATE_KEY);return} // quota guard
+    localStorage.setItem(SLATE_KEY,json);
+  }catch{try{localStorage.removeItem(SLATE_KEY)}catch{/* ignore */}} // run cache-less
+}
+
+export function loadSlateCache(date){
+  const entry=load(SLATE_KEY,null);
+  return isSlateCacheValid(entry,date)?entry:null;
+}
+
 /* Export everything cvg.* as one config.json (§3 persistence). */
 export function exportConfig(){
   const out={schema:'cvg-config/v1',exportedAt:new Date().toISOString(),data:{}};
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k&&k.startsWith('cvg.')){
+    if(k&&k.startsWith('cvg.')&&k!==SLATE_KEY){ // transient slate cache is not config
       try{out.data[k]=JSON.parse(localStorage.getItem(k))}catch{/* skip corrupt */}
     }
   }
