@@ -220,13 +220,16 @@ function BatterZone(){
 }
 
 function BatterCard({row}){
-  const {colorFor}=useApp();
+  const {colorFor,contextFilter}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
   /* TB rungs headline; BB never buried; full ladders surfaced (§4.7) */
-  const order={TB:0,HR:1,BB:2,H:3,'2B':4,'3B':5,SO:6,AB:7,PA:8};
-  hitRungs.sort((a,b)=>(order[a.stat]??9)-(order[b.stat]??9)||b.hits.length-a.hits.length||a.off-b.off);
+  const order={TB:0,HR:1,'1B':2,XBH:3,RBI:4,BB:5,H:6,'2B':7,'3B':8,SO:9,AB:10,PA:11};
+  hitRungs.sort((a,b)=>(order[a.stat]??12)-(order[b.stat]??12)||b.hits.length-a.hits.length||a.off-b.off);
+  /* active context chip: rungs landing on that number sort first + ring (§feedback) */
+  if(contextFilter!=null)
+    hitRungs.sort((a,b)=>(b.n===contextFilter?1:0)-(a.n===contextFilter?1:0));
   return(
     <div className="bcard">
       <div className="who">
@@ -283,11 +286,13 @@ function BatterCard({row}){
         {hitRungs.slice(0,14).map((r,i)=>{
           const color=colorFor(r.n,r.hits.map(h=>h.cat));
           const greenlight=r.stat==='AB'||r.stat==='PA';
+          const flt=contextFilter!=null&&r.n===contextFilter;
           return(
-            <div key={i} className="rung hit">
+            <div key={i} className={`rung hit${flt?' flt':''}`}>
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
               <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
               <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
+              {flt&&<span className="badge blue">◈ CHIP</span>}
               <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
             </div>
           );

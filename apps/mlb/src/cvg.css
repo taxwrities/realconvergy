@@ -148,6 +148,8 @@ body { background: #101319; overscroll-behavior-y: none; }
   padding: 3px 6px; border-radius: 6px;
 }
 .rung.hit { background: #101319; }
+/* rung matches the active context chip — the "why did this batter match" row */
+.rung.hit.flt { background: #0e1826; box-shadow: 0 0 0 1px var(--cvg-blue) inset; }
 .rung .st { color: #8a90a0; min-width: 62px; font-size: 11px; }
 .rung .why { color: #8a90a0; font-size: 11px; flex: 1; }
 .call-line { font-size: 13px; margin-top: 4px; padding: 7px 9px; border-radius: 8px; background: #101319; border-left: 3px solid var(--cvg-gold); }
