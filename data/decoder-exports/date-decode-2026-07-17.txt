@@ -1,0 +1,1039 @@
+MLB DATE DECODER — 2026-07-17 (end date excluded)
+
+=== Tampa Bay Rays @ Boston Red SoxRegular Season ===
+Fenway Park · 2026-07-17 · end date excluded
+
+## Stadium — Fenway Park
+Groundbreaking — 1911-09-25
+  114[C83] Years 295[C232] Days
+  114[C83] Years 9[C4] Months 22[C13] Days
+  114[C83] Years 42[C28] Weeks 1 Days
+  1377[C1156] Months 22[C13] Days
+  5990[C5206] Weeks 4[C1] Days
+  41934[C37550] Days
+Opening day — 1912-04-20
+  114[C83] Years 88[C64] Days
+  114[C83] Years 2[P1] Months 27[C17] Days
+  114[C83] Years 12[C6] Weeks 4[C1] Days
+  1370[C1150] Months 27[C17] Days
+  5960[C5178] Weeks 6[C2] Days
+  41726[C37362] Days
+
+## Home Franchise — Boston Red Sox
+Franchise origin (Boston Americans, AL charter)never relocated — 1901-04-26
+  125[C94] Years 82[C59] Days
+  125[C94] Years 2[P1] Months 21[C12] Days
+  125[C94] Years 11[P5] Weeks 5[P3] Days
+  1502[C1262] Months 21[C12] Days
+  6534[C5689] Weeks 0 Days
+  45738[C40999] Days
+
+## Away Franchise — Tampa Bay Rays
+Franchise origin (Tampa Bay Devil Rays, AL expansion)never relocated — 1998-03-31
+  28[C18] Years 108[C79] Days
+  28[C18] Years 3[P2] Months 16[C9] Days
+  28[C18] Years 15[C8] Weeks 3[P2] Days
+  339[C270] Months 16[C9] Days
+  1476[C1242] Weeks 3[P2] Days
+  10335[C9066] Days
+
+## States
+Home state — MassachusettsState # 6C2 — 1788-02-06
+  238[C186] Years 161[C123] Days
+  238[C186] Years 5[P3] Months 11[P5] Days
+  238[C186] Years 23[P9] Weeks 0 Days
+  2861[P416] Months 11[P5] Days
+  12441[C10955] Weeks 2[P1] Days
+  87089[C78631] Days
+Away state — FloridaState # 27C17 — 1845-03-03
+  181[P42] Years 136[C103] Days
+  181[P42] Years 4[C1] Months 14[C7] Days
+  181[P42] Years 19[P8] Weeks 3[P2] Days
+  2176[C1849] Months 14[C7] Days
+  9463[P1172] Weeks 4[C1] Days
+  66245[C59634] Days
+
+## All-Time Counts
+H2H — TB vs BOS
+  …
+BOS all-time (home / away)
+  19554[C17335] total · 10081[C8843] W 9384[C8223] L 89[P24] T
+  home 9786[C8579] · 5514[C4785] W 4227[C3648] L
+  away 9768[C8563] · 4567[P619] W 5157[C4469] L
+TB all-time (home / away)
+  4520[C3905] total · 2220[C1889] W 2298[C1955] L 2[P1] T
+  home 2262[C1926] · 1213[P198] W 1048[C872] L
+  away 2258[C1922] · 1007[C838] W 1250[C1045] L
+
+=== Tampa Bay Rays @ Boston Red SoxRegular Season ===
+Fenway Park · 2026-07-17 · end date excluded
+
+## Stadium — Fenway Park
+Groundbreaking — 1911-09-25
+  114[C83] Years 295[C232] Days
+  114[C83] Years 9[C4] Months 22[C13] Days
+  114[C83] Years 42[C28] Weeks 1 Days
+  1377[C1156] Months 22[C13] Days
+  5990[C5206] Weeks 4[C1] Days
+  41934[C37550] Days
+Opening day — 1912-04-20
+  114[C83] Years 88[C64] Days
+  114[C83] Years 2[P1] Months 27[C17] Days
+  114[C83] Years 12[C6] Weeks 4[C1] Days
+  1370[C1150] Months 27[C17] Days
+  5960[C5178] Weeks 6[C2] Days
+  41726[C37362] Days
+
+## Home Franchise — Boston Red Sox
+Franchise origin (Boston Americans, AL charter)never relocated — 1901-04-26
+  125[C94] Years 82[C59] Days
+  125[C94] Years 2[P1] Months 21[C12] Days
+  125[C94] Years 11[P5] Weeks 5[P3] Days
+  1502[C1262] Months 21[C12] Days
+  6534[C5689] Weeks 0 Days
+  45738[C40999] Days
+
+## Away Franchise — Tampa Bay Rays
+Franchise origin (Tampa Bay Devil Rays, AL expansion)never relocated — 1998-03-31
+  28[C18] Years 108[C79] Days
+  28[C18] Years 3[P2] Months 16[C9] Days
+  28[C18] Years 15[C8] Weeks 3[P2] Days
+  339[C270] Months 16[C9] Days
+  1476[C1242] Weeks 3[P2] Days
+  10335[C9066] Days
+
+## States
+Home state — MassachusettsState # 6C2 — 1788-02-06
+  238[C186] Years 161[C123] Days
+  238[C186] Years 5[P3] Months 11[P5] Days
+  238[C186] Years 23[P9] Weeks 0 Days
+  2861[P416] Months 11[P5] Days
+  12441[C10955] Weeks 2[P1] Days
+  87089[C78631] Days
+Away state — FloridaState # 27C17 — 1845-03-03
+  181[P42] Years 136[C103] Days
+  181[P42] Years 4[C1] Months 14[C7] Days
+  181[P42] Years 19[P8] Weeks 3[P2] Days
+  2176[C1849] Months 14[C7] Days
+  9463[P1172] Weeks 4[C1] Days
+  66245[C59634] Days
+
+## All-Time Counts
+H2H — TB vs BOS
+  …
+BOS all-time (home / away)
+  19554[C17335] total · 10081[C8843] W 9384[C8223] L 89[P24] T
+  home 9786[C8579] · 5514[C4785] W 4227[C3648] L
+  away 9768[C8563] · 4567[P619] W 5157[C4469] L
+TB all-time (home / away)
+  4520[C3905] total · 2220[C1889] W 2298[C1955] L 2[P1] T
+  home 2262[C1926] · 1213[P198] W 1048[C872] L
+  away 2258[C1922] · 1007[C838] W 1250[C1045] L
+
+=== Los Angeles Dodgers @ New York YankeesRegular Season ===
+Yankee Stadium · 2026-07-17 · end date excluded
+
+## Stadium — Yankee Stadium
+Groundbreaking — 2006-08-16
+  19[P8] Years 335[C267] Days
+  19[P8] Years 11[P5] Months 1 Days
+  19[P8] Years 47[P15] Weeks 6[C2] Days
+  239[P52] Months 1 Days
+  1039[P175] Weeks 2[P1] Days
+  7275[C6346] Days
+Opening day — 2009-04-16
+  17[P7] Years 92[C67] Days
+  17[P7] Years 3[P2] Months 1 Days
+  17[P7] Years 13[P6] Weeks 1 Days
+  207[C160] Months 1 Days
+  900[C745] Weeks 1 Days
+  6301[P820] Days
+
+## Home Franchise — New York Yankees
+Franchise origin (Baltimore Orioles, AL charter 1901) — 1901-04-26
+  125[C94] Years 82[C59] Days
+  125[C94] Years 2[P1] Months 21[C12] Days
+  125[C94] Years 11[P5] Weeks 5[P3] Days
+  1502[C1262] Months 21[C12] Days
+  6534[C5689] Weeks 0 Days
+  45738[C40999] Days
+Arrived New York — 1903-04-22
+  123[C92] Years 86[C62] Days
+  123[C92] Years 2[P1] Months 25[C15] Days
+  123[C92] Years 12[C6] Weeks 2[P1] Days
+  1478[C1244] Months 25[C15] Days
+  6430[C5593] Weeks 2[P1] Days
+  45012[C40335] Days
+
+## Away Franchise — Los Angeles Dodgers
+Franchise origin (Brooklyn Atlantics, AA 1884) — 1884-05-01
+  142[C107] Years 77[C55] Days
+  142[C107] Years 2[P1] Months 16[C9] Days
+  142[C107] Years 11[P5] Weeks 0 Days
+  1706[C1439] Months 16[C9] Days
+  7420[C6478] Weeks 1 Days
+  51941[P5314] Days
+Arrived Los Angeles — 1958-04-18
+  68[C48] Years 90[C65] Days
+  68[C48] Years 2[P1] Months 29[P10] Days
+  68[C48] Years 12[C6] Weeks 6[C2] Days
+  818[C676] Months 29[P10] Days
+  3561[C3061] Weeks 0 Days
+  24927[C22171] Days
+
+## States
+Home state — New YorkState # 11P5 — 1788-07-26
+  237[C185] Years 356[C284] Days
+  237[C185] Years 11[P5] Months 21[C12] Days
+  237[C185] Years 50[C34] Weeks 6[C2] Days
+  2855[C2440] Months 21[C12] Days
+  12416[C10933] Weeks 6[C2] Days
+  86918[C78476] Days
+Away state — CaliforniaState # 31P11 — 1850-09-09
+  175[C134] Years 311[P64] Days
+  175[C134] Years 10[C5] Months 8[C3] Days
+  175[C134] Years 44[C29] Weeks 3[P2] Days
+  2110[C1792] Months 8[C3] Days
+  9175[C8037] Weeks 4[C1] Days
+  64229[C57796] Days
+
+## All-Time Counts
+H2H — LAD vs NYY
+  …
+NYY all-time (home / away)
+  19267[P2185] total · 10919[C9591] W 8256[C7220] L 92[C67] T
+  home 9623[P1188] · 5875[C5101] W 3708[C3190] L
+  away 9644[C8452] · 5044[C4368] W 4548[C3931] L
+LAD all-time (home / away)
+  19575[C17354] total · 10368[C9096] W 9116[C7985] L 91[C66] T
+  home 9786[C8579] · 5565[C4830] W 4178[C3603] L
+  away 9789[C8581] · 4803[C4155] W 4938[C4277] L
+
+=== Pittsburgh Pirates @ Cleveland GuardiansRegular Season ===
+Progressive Field · 2026-07-17 · end date excluded
+
+## Stadium — Progressive Field
+Groundbreaking~ — 1992-07-01 ~approx
+  34[C22] Years 16[C9] Days
+  34[C22] Years 0 Months 16[C9] Days
+  34[C22] Years 2[P1] Weeks 2[P1] Days
+  408[C328] Months 16[C9] Days
+  1776[C1501] Weeks 2[P1] Days
+  12434[C10949] Days
+Opening day — 1994-04-04
+  32[C20] Years 104[C76] Days
+  32[C20] Years 3[P2] Months 13[P6] Days
+  32[C20] Years 14[C7] Weeks 6[C2] Days
+  387[C310] Months 13[P6] Days
+  1684[C1420] Weeks 4[C1] Days
+  11792[C10378] Days
+
+## Home Franchise — Cleveland Guardians
+Franchise origin (Cleveland Blues, AL charter)never relocated — 1901-04-24
+  125[C94] Years 84[C60] Days
+  125[C94] Years 2[P1] Months 23[P9] Days
+  125[C94] Years 12[C6] Weeks 0 Days
+  1502[C1262] Months 23[P9] Days
+  6534[C5689] Weeks 2[P1] Days
+  45740[C41001] Days
+
+## Away Franchise — Pittsburgh Pirates
+Franchise origin (Pittsburgh Alleghenys, AA 1882)never relocated — 1882-05-02
+  144[C109] Years 76[C54] Days
+  144[C109] Years 2[P1] Months 15[C8] Days
+  144[C109] Years 10[C5] Weeks 6[C2] Days
+  1730[C1460] Months 15[C8] Days
+  7524[C6570] Weeks 3[P2] Days
+  52671[C47294] Days
+
+## States
+Home state — OhioState # 17P7 — 1803-03-01
+  223[P48] Years 138[C104] Days
+  223[P48] Years 4[C1] Months 16[C9] Days
+  223[P48] Years 19[P8] Weeks 5[P3] Days
+  2680[C2291] Months 16[C9] Days
+  11655[C10255] Weeks 3[P2] Days
+  81588[C73607] Days
+Away state — PennsylvaniaState # 2P1 — 1787-12-12
+  238[C186] Years 217[C169] Days
+  238[C186] Years 7[P4] Months 5[P3] Days
+  238[C186] Years 31[P11] Weeks 0 Days
+  2863[C2446] Months 5[P3] Days
+  12449[C10963] Weeks 2[P1] Days
+  87145[C78682] Days
+
+## All-Time Counts
+H2H — PIT vs CLE
+  …
+CLE all-time (home / away)
+  19566[C17346] total · 9985[C8755] W 9484[C8308] L 97[P25] T
+  home 9792[C8583] · 5363[C4654] W 4384[C3786] L
+  away 9774[C8568] · 4622[C3997] W 5100[C4418] L
+PIT all-time (home / away)
+  19571[P2220] total · 9806[C8596] W 9668[C8474] L 97[P25] T
+  home 9807[C8597] · 5335[C4628] W 4429[C3826] L
+  away 9764[C8560] · 4471[C3863] W 5239[C4541] L
+
+=== Texas Rangers @ Atlanta BravesRegular Season ===
+Truist Park · 2026-07-17 · end date excluded
+
+## Stadium — Truist Park
+Groundbreaking — 2014-09-16
+  11[P5] Years 304[C241] Days
+  11[P5] Years 10[C5] Months 1 Days
+  11[P5] Years 43[P14] Weeks 3[P2] Days
+  142[C107] Months 1 Days
+  617[P113] Weeks 3[P2] Days
+  4322[C3731] Days
+Opening day — 2017-04-14
+  9[C4] Years 94[C69] Days
+  9[C4] Years 3[P2] Months 3[P2] Days
+  9[C4] Years 13[P6] Weeks 3[P2] Days
+  111[C81] Months 3[P2] Days
+  483[C390] Weeks 0 Days
+  3381[C2904] Days
+
+## Home Franchise — Atlanta Braves
+Franchise origin (Boston Red Stockings, NA 1871) — 1871-05-05
+  155[C118] Years 73[P21] Days
+  155[C118] Years 2[P1] Months 12[C6] Days
+  155[C118] Years 10[C5] Weeks 3[P2] Days
+  1862[C1577] Months 12[C6] Days
+  8098[C7079] Weeks 0 Days
+  56686[C50938] Days
+Arrived Atlanta (from Milwaukee) — 1966-04-12
+  60[C42] Years 96[C71] Days
+  60[C42] Years 3[P2] Months 5[P3] Days
+  60[C42] Years 13[P6] Weeks 5[P3] Days
+  723[C594] Months 5[P3] Days
+  3144[C2697] Weeks 3[P2] Days
+  22011[C19545] Days
+
+## Away Franchise — Texas Rangers
+Franchise origin (Washington Senators, AL expansion 1961) — 1961-04-10
+  65[C46] Years 98[C72] Days
+  65[C46] Years 3[P2] Months 7[P4] Days
+  65[C46] Years 14[C7] Weeks 0 Days
+  783[C645] Months 7[P4] Days
+  3405[C2926] Weeks 4[C1] Days
+  23839[C21186] Days
+Arrived Texas (Arlington) — 1972-04-15
+  54[C37] Years 93[C68] Days
+  54[C37] Years 3[P2] Months 2[P1] Days
+  54[C37] Years 13[P6] Weeks 2[P1] Days
+  651[C532] Months 2[P1] Days
+  2830[C2419] Weeks 6[C2] Days
+  19816[C17573] Days
+
+## States
+Home state — GeorgiaState # 4C1 — 1788-01-02
+  238[C186] Years 196[C151] Days
+  238[C186] Years 6[C2] Months 15[C8] Days
+  238[C186] Years 28[C18] Weeks 0 Days
+  2862[C2445] Months 15[C8] Days
+  12446[C10960] Weeks 2[P1] Days
+  87124[C78662] Days
+Away state — TexasState # 28C18 — 1845-12-29
+  180[C138] Years 200[C153] Days
+  180[C138] Years 6[C2] Months 18[C10] Days
+  180[C138] Years 28[C18] Weeks 4[C1] Days
+  2166[C1839] Months 18[C10] Days
+  9420[C8254] Weeks 4[C1] Days
+  65944[C59358] Days
+
+## All-Time Counts
+H2H — TEX vs ATL
+  …
+ATL all-time (home / away)
+  19558[C17339] total · 9554[C8370] W 9895[C8674] L 109[P29] T
+  home 9717[C8519] · 5099[P681] W 4561[P618] L
+  away 9841[C8626] · 4455[C3849] W 5334[C4627] L
+TEX all-time (home / away)
+  10376[C9103] total · 4943[P661] W 5425[C4708] L 8[C3] T
+  home 5187[C4496] · 2695[C2302] W 2491[C2123] L
+  away 5189[P691] · 2248[C1913] W 2934[C2510] L
+
+=== Chicago White Sox @ Toronto Blue JaysRegular Season ===
+Rogers Centre · 2026-07-17 · end date excluded
+
+## Stadium — Rogers Centre
+Groundbreaking — 1986-10-03
+  39[C26] Years 287[C225] Days
+  39[C26] Years 9[C4] Months 14[C7] Days
+  39[C26] Years 41[P13] Weeks 0 Days
+  477[C385] Months 14[C7] Days
+  2076[C1763] Weeks 0 Days
+  14532[C12831] Days
+Opening day — 1989-06-05
+  37[P12] Years 42[C28] Days
+  37[P12] Years 1 Months 12[C6] Days
+  37[P12] Years 6[C2] Weeks 0 Days
+  445[C358] Months 12[C6] Days
+  1936[C1640] Weeks 4[C1] Days
+  13556[C11951] Days
+
+## Home Franchise — Toronto Blue Jays
+Franchise origin (Toronto Blue Jays, AL expansion)never relocated — 1977-04-07
+  49[C33] Years 101[P26] Days
+  49[C33] Years 3[P2] Months 10[C5] Days
+  49[C33] Years 14[C7] Weeks 3[P2] Days
+  591[C483] Months 10[C5] Days
+  2571[C2195] Weeks 1 Days
+  17998[C15933] Days
+
+## Away Franchise — Chicago White Sox
+Franchise origin (Chicago White Stockings, AL charter)never relocated — 1901-04-24
+  125[C94] Years 84[C60] Days
+  125[C94] Years 2[P1] Months 23[P9] Days
+  125[C94] Years 12[C6] Weeks 0 Days
+  1502[C1262] Months 23[P9] Days
+  6534[C5689] Weeks 2[P1] Days
+  45740[C41001] Days
+
+## States
+Home state — Ontario, Canada — 1867-07-01
+  159[C121] Years 16[C9] Days
+  159[C121] Years 0 Months 16[C9] Days
+  159[C121] Years 2[P1] Weeks 2[P1] Days
+  1908[C1615] Months 16[C9] Days
+  8298[C7255] Weeks 4[C1] Days
+  58090[C52207] Days
+Away state — IllinoisState # 21C12 — 1818-12-03
+  207[C160] Years 226[C177] Days
+  207[C160] Years 7[P4] Months 14[C7] Days
+  207[C160] Years 32[C20] Weeks 2[P1] Days
+  2491[C2123] Months 14[C7] Days
+  10833[C9516] Weeks 1 Days
+  75832[C68361] Days
+
+## All-Time Counts
+H2H — CWS vs TOR
+  …
+TOR all-time (home / away)
+  7804[C6816] total · 3898[C3358] W 3903[C3363] L 3[P2] T
+  home 3907[P540] · 2090[C1773] W 1817[C1536] L
+  away 3897[C3357] · 1808[C1528] W 2086[C1771] L
+CWS all-time (home / away)
+  19557[C17338] total · 9698[C8500] W 9754[C8550] L 105[C77] T
+  home 9776[C8570] · 5248[C4550] W 4472[C3864] L
+  away 9781[P1206] · 4450[C3845] W 5282[C4580] L
+
+=== Miami Marlins @ Milwaukee BrewersRegular Season ===
+American Family Field · 2026-07-17 · end date excluded
+
+## Stadium — American Family Field
+Groundbreaking — 1996-11-09
+  29[P10] Years 250[C196] Days
+  29[P10] Years 8[C3] Months 8[C3] Days
+  29[P10] Years 35[C23] Weeks 5[P3] Days
+  356[C284] Months 8[C3] Days
+  1548[C1304] Weeks 6[C2] Days
+  10842[C9524] Days
+Opening day — 2001-04-06
+  25[C15] Years 102[C75] Days
+  25[C15] Years 3[P2] Months 11[P5] Days
+  25[C15] Years 14[C7] Weeks 4[C1] Days
+  303[C240] Months 11[P5] Days
+  1319[P215] Weeks 0 Days
+  9233[C8088] Days
+
+## Home Franchise — Milwaukee Brewers
+Franchise origin (Seattle Pilots, AL expansion 1969) — 1969-04-08
+  57[C40] Years 100[C74] Days
+  57[C40] Years 3[P2] Months 9[C4] Days
+  57[C40] Years 14[C7] Weeks 2[P1] Days
+  687[C562] Months 9[C4] Days
+  2988[C2558] Weeks 3[P2] Days
+  20919[C18566] Days
+Arrived Milwaukee — 1970-04-07
+  56[C39] Years 101[P26] Days
+  56[C39] Years 3[P2] Months 10[C5] Days
+  56[C39] Years 14[C7] Weeks 3[P2] Days
+  675[C552] Months 10[C5] Days
+  2936[C2512] Weeks 3[P2] Days
+  20555[C18234] Days
+
+## Away Franchise — Miami Marlins
+Franchise origin (Florida Marlins, NL expansion)never relocated — 1993-04-05
+  33[C21] Years 103[P27] Days
+  33[C21] Years 3[P2] Months 12[C6] Days
+  33[C21] Years 14[C7] Weeks 5[P3] Days
+  399[C320] Months 12[C6] Days
+  1736[C1465] Weeks 4[C1] Days
+  12156[C10701] Days
+
+## States
+Home state — WisconsinState # 30C19 — 1848-05-29
+  178[C137] Years 49[C33] Days
+  178[C137] Years 1 Months 18[C10] Days
+  178[C137] Years 7[P4] Weeks 0 Days
+  2137[P322] Months 18[C10] Days
+  9294[C8142] Weeks 4[C1] Days
+  65062[C58562] Days
+Away state — FloridaState # 27C17 — 1845-03-03
+  181[P42] Years 136[C103] Days
+  181[P42] Years 4[C1] Months 14[C7] Days
+  181[P42] Years 19[P8] Weeks 3[P2] Days
+  2176[C1849] Months 14[C7] Days
+  9463[P1172] Weeks 4[C1] Days
+  66245[C59634] Days
+
+## All-Time Counts
+H2H — MIA vs MIL
+  …
+MIL all-time (home / away)
+  9094[C7965] total · 4461[C3854] W 4626[C4001] L 7[P4] T
+  home 4546[C3930] · 2387[C2032] W 2154[C1828] L
+  away 4548[C3931] · 2074[C1761] W 2472[C2106] L
+MIA all-time (home / away)
+  5265[C4566] total · 2430[C2069] W 2833[P411] L 2[P1] T
+  home 2634[C2251] · 1324[C1107] W 1309[C1094] L
+  away 2631[C2249] · 1106[C920] W 1524[C1282] L
+
+=== Minnesota Twins @ Chicago CubsRegular Season ===
+Wrigley Field · 2026-07-17 · end date excluded
+
+## Stadium — Wrigley Field
+Groundbreaking~ — 1914-02-01 ~approx
+  112[C82] Years 166[C127] Days
+  112[C82] Years 5[P3] Months 16[C9] Days
+  112[C82] Years 23[P9] Weeks 5[P3] Days
+  1349[C1131] Months 16[C9] Days
+  5867[P772] Weeks 5[P3] Days
+  41074[C36775] Days
+Opening day — 1914-04-23
+  112[C82] Years 85[C61] Days
+  112[C82] Years 2[P1] Months 24[C14] Days
+  112[C82] Years 12[C6] Weeks 1 Days
+  1346[C1128] Months 24[C14] Days
+  5856[C5086] Weeks 1 Days
+  40993[P4291] Days
+
+## Home Franchise — Chicago Cubs
+Franchise origin (Chicago White Stockings, NL charter 1876)never relocated — 1876-04-25
+  150[C114] Years 83[P23] Days
+  150[C114] Years 2[P1] Months 22[C13] Days
+  150[C114] Years 11[P5] Weeks 6[C2] Days
+  1802[C1522] Months 22[C13] Days
+  7838[C6847] Weeks 3[P2] Days
+  54869[P5579] Days
+
+## Away Franchise — Minnesota Twins
+Franchise origin (Washington Senators, AL charter 1901) — 1901-04-26
+  125[C94] Years 82[C59] Days
+  125[C94] Years 2[P1] Months 21[C12] Days
+  125[C94] Years 11[P5] Weeks 5[P3] Days
+  1502[C1262] Months 21[C12] Days
+  6534[C5689] Weeks 0 Days
+  45738[C40999] Days
+Arrived Minnesota — 1961-04-21
+  65[C46] Years 87[C63] Days
+  65[C46] Years 2[P1] Months 26[C16] Days
+  65[C46] Years 12[C6] Weeks 3[P2] Days
+  782[C644] Months 26[C16] Days
+  3404[C2925] Weeks 0 Days
+  23828[C21177] Days
+
+## States
+Home state — IllinoisState # 21C12 — 1818-12-03
+  207[C160] Years 226[C177] Days
+  207[C160] Years 7[P4] Months 14[C7] Days
+  207[C160] Years 32[C20] Weeks 2[P1] Days
+  2491[C2123] Months 14[C7] Days
+  10833[C9516] Weeks 1 Days
+  75832[C68361] Days
+Away state — MinnesotaState # 32C20 — 1858-05-11
+  168[C128] Years 67[P19] Days
+  168[C128] Years 2[P1] Months 6[C2] Days
+  168[C128] Years 9[C4] Weeks 4[C1] Days
+  2018[C1711] Months 6[C2] Days
+  8775[C7681] Weeks 3[P2] Days
+  61428[C55248] Days
+
+## All-Time Counts
+H2H — MIN vs CHC
+  …
+CHC all-time (home / away)
+  19590[C17367] total · 9848[C8633] W 9638[C8447] L 104[C76] T
+  home 9834[C8620] · 5331[C4625] W 4449[C3844] L
+  away 9756[C8552] · 4517[P613] W 5189[P691] L
+MIN all-time (home / away)
+  19573[C17352] total · 9372[C8212] W 10091[P1238] L 110[C80] T
+  home 9816[C8605] · 5101[P682] W 4651[P629] L
+  away 9757[C8553] · 4271[P586] W 5440[C4721] L
+
+=== Baltimore Orioles @ Houston AstrosRegular Season ===
+Daikin Park · 2026-07-17 · end date excluded
+
+## Stadium — Daikin Park
+
+## Home Franchise — Houston Astros
+Franchise origin (Houston Colt .45s, NL expansion)never relocated — 1962-04-10
+  64[C45] Years 98[C72] Days
+  64[C45] Years 3[P2] Months 7[P4] Days
+  64[C45] Years 14[C7] Weeks 0 Days
+  771[C634] Months 7[P4] Days
+  3353[C2880] Weeks 3[P2] Days
+  23474[C20861] Days
+
+## Away Franchise — Baltimore Orioles
+Franchise origin (Milwaukee Brewers, AL charter 1901) — 1901-04-24
+  125[C94] Years 84[C60] Days
+  125[C94] Years 2[P1] Months 23[P9] Days
+  125[C94] Years 12[C6] Weeks 0 Days
+  1502[C1262] Months 23[P9] Days
+  6534[C5689] Weeks 2[P1] Days
+  45740[C41001] Days
+Arrived Baltimore (from St. Louis Browns) — 1954-04-15
+  72[C51] Years 93[C68] Days
+  72[C51] Years 3[P2] Months 2[P1] Days
+  72[C51] Years 13[P6] Weeks 2[P1] Days
+  867[C716] Months 2[P1] Days
+  3770[C3244] Weeks 1 Days
+  26391[C23492] Days
+
+## States
+Home state — TexasState # 28C18 — 1845-12-29
+  180[C138] Years 200[C153] Days
+  180[C138] Years 6[C2] Months 18[C10] Days
+  180[C138] Years 28[C18] Weeks 4[C1] Days
+  2166[C1839] Months 18[C10] Days
+  9420[C8254] Weeks 4[C1] Days
+  65944[C59358] Days
+Away state — MarylandState # 7P4 — 1788-04-28
+  238[C186] Years 80[C57] Days
+  238[C186] Years 2[P1] Months 19[P8] Days
+  238[C186] Years 11[P5] Weeks 3[P2] Days
+  2858[C2442] Months 19[P8] Days
+  12429[C10945] Weeks 4[C1] Days
+  87007[C78556] Days
+
+## All-Time Counts
+H2H — BAL vs HOU
+  …
+HOU all-time (home / away)
+  10235[C8980] total · 5140[C4454] W 5088[C4407] L 7[P4] T
+  home 5116[C4431] · 2835[C2423] W 2279[C1940] L
+  away 5119[P685] · 2305[C1962] W 2809[C2399] L
+BAL all-time (home / away)
+  19568[C17348] total · 9234[C8089] W 10220[C8966] L 114[C83] T
+  home 9774[C8568] · 4966[C4302] W 4742[C4102] L
+  away 9794[C8585] · 4268[C3682] W 5478[C4754] L
+
+=== San Diego Padres @ Kansas City RoyalsRegular Season ===
+Kauffman Stadium · 2026-07-17 · end date excluded
+
+## Stadium — Kauffman Stadium
+Groundbreaking — 1968-07-11
+  58[C41] Years 6[C2] Days
+  58[C41] Years 0 Months 6[C2] Days
+  58[C41] Years 0 Weeks 6[C2] Days
+  696[C570] Months 6[C2] Days
+  3027[C2592] Weeks 1 Days
+  21190[C18807] Days
+Opening day — 1973-04-10
+  53[P16] Years 98[C72] Days
+  53[P16] Years 3[P2] Months 7[P4] Days
+  53[P16] Years 14[C7] Weeks 0 Days
+  639[C523] Months 7[P4] Days
+  2779[C2374] Weeks 3[P2] Days
+  19456[C17250] Days
+
+## Home Franchise — Kansas City Royals
+Franchise origin (Kansas City Royals, AL expansion)never relocated — 1969-04-08
+  57[C40] Years 100[C74] Days
+  57[C40] Years 3[P2] Months 9[C4] Days
+  57[C40] Years 14[C7] Weeks 2[P1] Days
+  687[C562] Months 9[C4] Days
+  2988[C2558] Weeks 3[P2] Days
+  20919[C18566] Days
+
+## Away Franchise — San Diego Padres
+Franchise origin (San Diego Padres, NL expansion)never relocated — 1969-04-08
+  57[C40] Years 100[C74] Days
+  57[C40] Years 3[P2] Months 9[C4] Days
+  57[C40] Years 14[C7] Weeks 2[P1] Days
+  687[C562] Months 9[C4] Days
+  2988[C2558] Weeks 3[P2] Days
+  20919[C18566] Days
+
+## States
+Home state — MissouriState # 24C14 — 1821-08-10
+  204[C157] Years 341[C272] Days
+  204[C157] Years 11[P5] Months 7[P4] Days
+  204[C157] Years 48[C32] Weeks 5[P3] Days
+  2459[P364] Months 7[P4] Days
+  10693[C9388] Weeks 0 Days
+  74851[C67470] Days
+Away state — CaliforniaState # 31P11 — 1850-09-09
+  175[C134] Years 311[P64] Days
+  175[C134] Years 10[C5] Months 8[C3] Days
+  175[C134] Years 44[C29] Weeks 3[P2] Days
+  2110[C1792] Months 8[C3] Days
+  9175[C8037] Weeks 4[C1] Days
+  64229[C57796] Days
+
+## All-Time Counts
+H2H — SD vs KC
+  …
+KC all-time (home / away)
+  9084[C7956] total · 4327[P591] W 4755[C4114] L 2[P1] T
+  home 4535[C3919] · 2331[C1986] W 2202[C1874] L
+  away 4549[P617] · 1996[C1694] W 2553[C2178] L
+SD all-time (home / away)
+  9095[C7966] total · 4261[P585] W 4832[C4181] L 2[P1] T
+  home 4552[C3934] · 2301[C1958] W 2250[C1915] L
+  away 4543[C3927] · 1960[C1662] W 2582[C2205] L
+
+=== Cincinnati Reds @ Colorado RockiesRegular Season ===
+Coors Field · 2026-07-17 · end date excluded
+
+## Stadium — Coors Field
+Groundbreaking — 1993-10-16
+  32[C20] Years 274[C215] Days
+  32[C20] Years 9[C4] Months 1 Days
+  32[C20] Years 39[C26] Weeks 1 Days
+  393[C315] Months 1 Days
+  1708[C1441] Weeks 6[C2] Days
+  11962[C10527] Days
+Opening day — 1995-04-26
+  31[P11] Years 82[C59] Days
+  31[P11] Years 2[P1] Months 21[C12] Days
+  31[P11] Years 11[P5] Weeks 5[P3] Days
+  374[C299] Months 21[C12] Days
+  1629[C1370] Weeks 2[P1] Days
+  11405[C10028] Days
+
+## Home Franchise — Colorado Rockies
+Franchise origin (Colorado Rockies, NL expansion)never relocated — 1993-04-05
+  33[C21] Years 103[P27] Days
+  33[C21] Years 3[P2] Months 12[C6] Days
+  33[C21] Years 14[C7] Weeks 5[P3] Days
+  399[C320] Months 12[C6] Days
+  1736[C1465] Weeks 4[C1] Days
+  12156[C10701] Days
+
+## Away Franchise — Cincinnati Reds
+Franchise origin (Cincinnati Red Stockings, AA 1882)never relocated — 1882-05-02
+  144[C109] Years 76[C54] Days
+  144[C109] Years 2[P1] Months 15[C8] Days
+  144[C109] Years 10[C5] Weeks 6[C2] Days
+  1730[C1460] Months 15[C8] Days
+  7524[C6570] Weeks 3[P2] Days
+  52671[C47294] Days
+
+## States
+Home state — ColoradoState # 38C25 — 1876-08-01
+  149[P35] Years 350[C279] Days
+  149[P35] Years 11[P5] Months 16[C9] Days
+  149[P35] Years 50[C34] Weeks 0 Days
+  1799[C1520] Months 16[C9] Days
+  7824[C6834] Weeks 3[P2] Days
+  54771[C49199] Days
+Away state — OhioState # 17P7 — 1803-03-01
+  223[P48] Years 138[C104] Days
+  223[P48] Years 4[C1] Months 16[C9] Days
+  223[P48] Years 19[P8] Weeks 5[P3] Days
+  2680[C2291] Months 16[C9] Days
+  11655[C10255] Weeks 3[P2] Days
+  81588[C73607] Days
+
+## All-Time Counts
+H2H — CIN vs COL
+  …
+COL all-time (home / away)
+  5276[C4576] total · 2399[P357] W 2872[C2455] L 5[P3] T
+  home 2635[C2252] · 1391[C1169] W 1242[C1038] L
+  away 2641[C2258] · 1008[C839] W 1630[C1371] L
+CIN all-time (home / away)
+  19586[C17363] total · 9715[C8517] W 9780[C8574] L 91[C66] T
+  home 9825[C8613] · 5254[C4556] W 4525[C3909] L
+  away 9761[C8557] · 4461[C3854] W 5255[C4557] L
+
+=== Detroit Tigers @ Los Angeles AngelsRegular Season ===
+Angel Stadium · 2026-07-17 · end date excluded
+
+## Stadium — Angel Stadium
+Groundbreaking — 1964-08-31
+  61[P18] Years 320[C253] Days
+  61[P18] Years 10[C5] Months 16[C9] Days
+  61[P18] Years 45[C30] Weeks 5[P3] Days
+  742[C610] Months 16[C9] Days
+  3228[C2771] Weeks 4[C1] Days
+  22600[C20075] Days
+Opening day — 1966-04-19
+  60[C42] Years 89[P24] Days
+  60[C42] Years 2[P1] Months 28[C18] Days
+  60[C42] Years 12[C6] Weeks 5[P3] Days
+  722[C593] Months 28[C18] Days
+  3143[C2696] Weeks 3[P2] Days
+  22004[C19538] Days
+
+## Home Franchise — Los Angeles Angels
+Franchise origin (Los Angeles Angels, AL expansion) — 1961-04-11
+  65[C46] Years 97[P25] Days
+  65[C46] Years 3[P2] Months 6[C2] Days
+  65[C46] Years 13[P6] Weeks 6[C2] Days
+  783[C645] Months 6[C2] Days
+  3405[C2926] Weeks 3[P2] Days
+  23838[C21185] Days
+Arrived Anaheim — 1966-04-19
+  60[C42] Years 89[P24] Days
+  60[C42] Years 2[P1] Months 28[C18] Days
+  60[C42] Years 12[C6] Weeks 5[P3] Days
+  722[C593] Months 28[C18] Days
+  3143[C2696] Weeks 3[P2] Days
+  22004[C19538] Days
+
+## Away Franchise — Detroit Tigers
+Franchise origin (Detroit Tigers, AL charter)never relocated — 1901-04-25
+  125[C94] Years 83[P23] Days
+  125[C94] Years 2[P1] Months 22[C13] Days
+  125[C94] Years 11[P5] Weeks 6[C2] Days
+  1502[C1262] Months 22[C13] Days
+  6534[C5689] Weeks 1 Days
+  45739[C41000] Days
+
+## States
+Home state — CaliforniaState # 31P11 — 1850-09-09
+  175[C134] Years 311[P64] Days
+  175[C134] Years 10[C5] Months 8[C3] Days
+  175[C134] Years 44[C29] Weeks 3[P2] Days
+  2110[C1792] Months 8[C3] Days
+  9175[C8037] Weeks 4[C1] Days
+  64229[C57796] Days
+Away state — MichiganState # 26C16 — 1837-01-26
+  189[C146] Years 172[C132] Days
+  189[C146] Years 5[P3] Months 21[C12] Days
+  189[C146] Years 24[C14] Weeks 4[C1] Days
+  2273[P338] Months 21[C12] Days
+  9886[C8666] Weeks 1 Days
+  69203[P6873] Days
+
+## All-Time Counts
+H2H — DET vs LAA
+  …
+LAA all-time (home / away)
+  10389[C9116] total · 5129[C4443] W 5257[C4559] L 3[P2] T
+  home 5205[C4512] · 2736[C2336] W 2469[C2103] L
+  away 5184[C4493] · 2393[P356] W 2788[C2383] L
+DET all-time (home / away)
+  19585[C17362] total · 9799[C8590] W 9691[C8494] L 95[C70] T
+  home 9799[C8590] · 5304[C4600] W 4454[C3848] L
+  away 9786[C8579] · 4495[C3884] W 5237[P697] L
+
+=== Washington Nationals @ AthleticsRegular Season ===
+Sutter Health Park · 2026-07-17 · end date excluded
+
+## Stadium — Sutter Health Park
+Groundbreaking~ — 1999-10-01 ~approx
+  26[C16] Years 289[C227] Days
+  26[C16] Years 9[C4] Months 16[C9] Days
+  26[C16] Years 41[P13] Weeks 2[P1] Days
+  321[C254] Months 16[C9] Days
+  1398[C1176] Weeks 0 Days
+  9786[C8579] Days
+Opening day — 2000-04-14
+  26[C16] Years 94[C69] Days
+  26[C16] Years 3[P2] Months 3[P2] Days
+  26[C16] Years 13[P6] Weeks 3[P2] Days
+  315[C249] Months 3[P2] Days
+  1370[C1150] Weeks 0 Days
+  9590[C8405] Days
+
+## Home Franchise — Athletics
+Franchise origin (Philadelphia Athletics, AL charter) — 1901-04-26
+  125[C94] Years 82[C59] Days
+  125[C94] Years 2[P1] Months 21[C12] Days
+  125[C94] Years 11[P5] Weeks 5[P3] Days
+  1502[C1262] Months 21[C12] Days
+  6534[C5689] Weeks 0 Days
+  45738[C40999] Days
+Arrived Sacramento (from Oakland) — 2025-03-27
+  1 Years 112[C82] Days
+  1 Years 3[P2] Months 20[C11] Days
+  1 Years 16[C9] Weeks 0 Days
+  15[C8] Months 20[C11] Days
+  68[C48] Weeks 1 Days
+  477[C385] Days
+
+## Away Franchise — Washington Nationals
+Franchise origin (Montreal Expos, NL expansion) — 1969-04-08
+  57[C40] Years 100[C74] Days
+  57[C40] Years 3[P2] Months 9[C4] Days
+  57[C40] Years 14[C7] Weeks 2[P1] Days
+  687[C562] Months 9[C4] Days
+  2988[C2558] Weeks 3[P2] Days
+  20919[C18566] Days
+Arrived Washington D.C. — 2005-04-14
+  21[C12] Years 94[C69] Days
+  21[C12] Years 3[P2] Months 3[P2] Days
+  21[C12] Years 13[P6] Weeks 3[P2] Days
+  255[C200] Months 3[P2] Days
+  1109[P186] Weeks 1 Days
+  7764[C6778] Days
+
+## States
+Home state — CaliforniaState # 31P11 — 1850-09-09
+  175[C134] Years 311[P64] Days
+  175[C134] Years 10[C5] Months 8[C3] Days
+  175[C134] Years 44[C29] Weeks 3[P2] Days
+  2110[C1792] Months 8[C3] Days
+  9175[C8037] Weeks 4[C1] Days
+  64229[C57796] Days
+Away state — District of Columbia — 1790-07-16
+  236[C184] Years 1 Days
+  236[C184] Years 0 Months 1 Days
+  236[C184] Years 0 Weeks 1 Days
+  2832[C2421] Months 1 Days
+  12314[C10842] Weeks 0 Days
+  86198[C77817] Days
+
+## All-Time Counts
+H2H — WSH vs OAK
+  …
+OAK all-time (home / away)
+  19524[C17309] total · 9445[C8274] W 9991[C8761] L 88[C64] T
+  home 9737[C8536] · 5147[P686] W 4545[C3929] L
+  away 9787[P1207] · 4298[C3707] W 5446[C4725] L
+WSH all-time (home / away)
+  9094[C7965] total · 4378[C3780] W 4709[C4073] L 7[P4] T
+  home 4522[C3907] · 2319[C1974] W 2203[P328] L
+  away 4572[C3952] · 2059[C1748] W 2506[C2137] L
+
+=== St. Louis Cardinals @ Arizona DiamondbacksRegular Season ===
+Chase Field · 2026-07-17 · end date excluded
+
+## Stadium — Chase Field
+Groundbreaking — 1995-11-16
+  30[C19] Years 243[C189] Days
+  30[C19] Years 8[C3] Months 1 Days
+  30[C19] Years 34[C22] Weeks 5[P3] Days
+  368[C294] Months 1 Days
+  1600[C1348] Weeks 1 Days
+  11201[C9844] Days
+Opening day — 1998-03-31
+  28[C18] Years 108[C79] Days
+  28[C18] Years 3[P2] Months 16[C9] Days
+  28[C18] Years 15[C8] Weeks 3[P2] Days
+  339[C270] Months 16[C9] Days
+  1476[C1242] Weeks 3[P2] Days
+  10335[C9066] Days
+
+## Home Franchise — Arizona Diamondbacks
+Franchise origin (Arizona Diamondbacks, NL expansion)never relocated — 1998-03-31
+  28[C18] Years 108[C79] Days
+  28[C18] Years 3[P2] Months 16[C9] Days
+  28[C18] Years 15[C8] Weeks 3[P2] Days
+  339[C270] Months 16[C9] Days
+  1476[C1242] Weeks 3[P2] Days
+  10335[C9066] Days
+
+## Away Franchise — St. Louis Cardinals
+Franchise origin (St. Louis Brown Stockings, AA 1882)never relocated — 1882-05-02
+  144[C109] Years 76[C54] Days
+  144[C109] Years 2[P1] Months 15[C8] Days
+  144[C109] Years 10[C5] Weeks 6[C2] Days
+  1730[C1460] Months 15[C8] Days
+  7524[C6570] Weeks 3[P2] Days
+  52671[C47294] Days
+
+## States
+Home state — ArizonaState # 48C32 — 1912-02-14
+  114[C83] Years 153[C116] Days
+  114[C83] Years 5[P3] Months 3[P2] Days
+  114[C83] Years 21[C12] Weeks 6[C2] Days
+  1373[P220] Months 3[P2] Days
+  5970[C5188] Weeks 2[P1] Days
+  41792[C37422] Days
+Away state — MissouriState # 24C14 — 1821-08-10
+  204[C157] Years 341[C272] Days
+  204[C157] Years 11[P5] Months 7[P4] Days
+  204[C157] Years 48[C32] Weeks 5[P3] Days
+  2459[P364] Months 7[P4] Days
+  10693[C9388] Weeks 0 Days
+  74851[C67470] Days
+
+## All-Time Counts
+H2H — STL vs ARI
+  …
+ARI all-time (home / away)
+  4524[C3908] total · 2211[C1881] W 2311[P344] L 2[P1] T
+  home 2261[C1925] · 1181[P194] W 1080[C899] L
+  away 2263[C1927] · 1030[C857] W 1231[P202] L
+STL all-time (home / away)
+  19577[P2221] total · 10158[C8911] W 9313[C8160] L 106[C78] T
+  home 9823[C8611] · 5453[C4731] W 4309[C3718] L
+  away 9754[C8550] · 4705[C4069] W 5004[C4333] L
+
+=== San Francisco Giants @ Seattle MarinersRegular Season ===
+T-Mobile Park · 2026-07-17 · end date excluded
+
+## Stadium — T-Mobile Park
+Groundbreaking — 1997-03-08
+  29[P10] Years 131[P32] Days
+  29[P10] Years 4[C1] Months 9[C4] Days
+  29[P10] Years 18[C10] Weeks 5[P3] Days
+  352[C281] Months 9[C4] Days
+  1531[P242] Weeks 6[C2] Days
+  10723[P1307] Days
+Opening day — 1999-07-15
+  27[C17] Years 2[P1] Days
+  27[C17] Years 0 Months 2[P1] Days
+  27[C17] Years 0 Weeks 2[P1] Days
+  324[C257] Months 2[P1] Days
+  1409[P223] Weeks 1 Days
+  9864[C8646] Days
+
+## Home Franchise — Seattle Mariners
+Franchise origin (Seattle Mariners, AL expansion)never relocated — 1977-04-06
+  49[C33] Years 102[C75] Days
+  49[C33] Years 3[P2] Months 11[P5] Days
+  49[C33] Years 14[C7] Weeks 4[C1] Days
+  591[C483] Months 11[P5] Days
+  2571[C2195] Weeks 2[P1] Days
+  17999[C15934] Days
+
+## Away Franchise — San Francisco Giants
+Franchise origin (New York Gothams, NL 1883) — 1883-05-01
+  143[C108] Years 77[C55] Days
+  143[C108] Years 2[P1] Months 16[C9] Days
+  143[C108] Years 11[P5] Weeks 0 Days
+  1718[C1450] Months 16[C9] Days
+  7472[C6526] Weeks 3[P2] Days
+  52307[C46959] Days
+Arrived San Francisco — 1958-04-15
+  68[C48] Years 93[C68] Days
+  68[C48] Years 3[P2] Months 2[P1] Days
+  68[C48] Years 13[P6] Weeks 2[P1] Days
+  819[C677] Months 2[P1] Days
+  3561[C3061] Weeks 3[P2] Days
+  24930[C22174] Days
+
+## States
+Home state — WashingtonState # 42C28 — 1889-11-11
+  136[C103] Years 248[C194] Days
+  136[C103] Years 8[C3] Months 6[C2] Days
+  136[C103] Years 35[C23] Weeks 3[P2] Days
+  1640[C1380] Months 6[C2] Days
+  7131[C6216] Weeks 4[C1] Days
+  49921[P5125] Days
+Away state — CaliforniaState # 31P11 — 1850-09-09
+  175[C134] Years 311[P64] Days
+  175[C134] Years 10[C5] Months 8[C3] Days
+  175[C134] Years 44[C29] Weeks 3[P2] Days
+  2110[C1792] Months 8[C3] Days
+  9175[C8037] Weeks 4[C1] Days
+  64229[C57796] Days
+
+## All-Time Counts
+H2H — SF vs SEA
+  …
+SEA all-time (home / away)
+  7803[C6815] total · 3733[P521] W 4067[C3506] L 3[P2] T
+  home 3896[C3356] · 1996[C1694] W 1900[C1609] L
+  away 3907[P540] · 1737[C1466] W 2167[C1840] L
+SF all-time (home / away)
+  19569[C17349] total · 10383[C9110] W 9094[C7965] L 92[C67] T
+  home 9778[C8572] · 5579[C4842] W 4156[C3584] L
+  away 9791[P1208] · 4804[C4156] W 4938[C4277] L

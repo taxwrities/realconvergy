@@ -1,0 +1,67 @@
+MLB DATE DECODER — 2026-07-16 (end date excluded)
+
+=== New York Mets @ Philadelphia PhilliesRegular Season ===
+Citizens Bank Park · 2026-07-16 · end date excluded
+
+## Stadium — Citizens Bank Park
+Groundbreaking — 2001-06-28
+  25[C15] Years 18[C10] Days
+  25[C15] Years 0 Months 18[C10] Days
+  25[C15] Years 2[P1] Weeks 4[C1] Days
+  300[C237] Months 18[C10] Days
+  1307[P214] Weeks 0 Days
+  9149[C8015] Days
+Opening day — 2004-04-12
+  22[C13] Years 95[C70] Days
+  22[C13] Years 3[P2] Months 4[C1] Days
+  22[C13] Years 13[P6] Weeks 4[C1] Days
+  267[C210] Months 4[C1] Days
+  1161[C969] Weeks 3[P2] Days
+  8130[C7107] Days
+
+## Home Franchise — Philadelphia Phillies
+Franchise origin (Philadelphia Quakers, NL 1883)never relocated — 1883-05-01
+  143[C108] Years 76[C54] Days
+  143[C108] Years 2[P1] Months 15[C8] Days
+  143[C108] Years 10[C5] Weeks 6[C2] Days
+  1718[C1450] Months 15[C8] Days
+  7472[C6526] Weeks 2[P1] Days
+  52306[C46958] Days
+
+## Away Franchise — New York Mets
+Franchise origin (New York Mets, NL expansion)never relocated — 1962-04-11
+  64[C45] Years 96[C71] Days
+  64[C45] Years 3[P2] Months 5[P3] Days
+  64[C45] Years 13[P6] Weeks 5[P3] Days
+  771[C634] Months 5[P3] Days
+  3353[C2880] Weeks 1 Days
+  23472[C20860] Days
+
+## States
+Home state — PennsylvaniaState # 2P1 — 1787-12-12
+  238[C186] Years 216[C168] Days
+  238[C186] Years 7[P4] Months 4[C1] Days
+  238[C186] Years 30[C19] Weeks 6[C2] Days
+  2863[C2446] Months 4[C1] Days
+  12449[C10963] Weeks 1 Days
+  87144[C78681] Days
+Away state — New YorkState # 11P5 — 1788-07-26
+  237[C185] Years 355[C283] Days
+  237[C185] Years 11[P5] Months 20[C11] Days
+  237[C185] Years 50[C34] Weeks 5[P3] Days
+  2855[C2440] Months 20[C11] Days
+  12416[C10933] Weeks 5[P3] Days
+  86917[C78475] Days
+
+## All-Time Counts
+H2H — NYM vs PHI
+  1100[C915] games · NYM 534[C434] W 565[C461] L 1 T
+  NYM home 276[C217] W 271[P58] L · away 258[C202] W 294[C231] L
+PHI all-time (home / away)
+  19532[C17316] total · 9144[C8010] W 10312[C9047] L 76[C54] T
+  home 9734[C8533] · 4951[P662] W 4745[C4105] L
+  away 9798[C8589] · 4193[C3618] W 5567[C4832] L
+NYM all-time (home / away)
+  10229[C8974] total · 4936[C4276] W 5279[P700] L 14[C7] T
+  home 5114[C4429] · 2632[C2250] W 2472[C2106] L
+  away 5115[C4430] · 2304[C1961] W 2807[C2397] L
