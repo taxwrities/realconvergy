@@ -6,6 +6,7 @@
 ================================================================ */
 import {calcAll,ALL_CIPHERS} from './gematria.js';
 import {primeIndex,compositeIndex,chainBase,numberToWords} from './numbers.js';
+import {daysBetween} from './clocks.js';
 
 export const COUNTERS=[
   {id:'rung:HR',label:'HR rung'},{id:'rung:TB',label:'TB rung'},{id:'rung:SO',label:'K rung'},
@@ -19,6 +20,10 @@ export const COUNTERS=[
   {id:'doy',label:'DOY'},{id:'dn',label:'date numerology'},{id:'dow',label:'day-of-week value'},
   {id:'age',label:'batter age figures'},
   {id:'oppPitcherClock',label:'opp SP birthday clock'},
+  {id:'sinceLast:HR',label:'days since last HR'},{id:'sinceLast:H',label:'days since last hit'},
+  {id:'sinceLast:2B',label:'days since last 2B'},{id:'sinceLast:3B',label:'days since last 3B'},
+  {id:'sinceLast:XBH',label:'days since last XBH'},{id:'sinceLast:RBI',label:'days since last RBI'},
+  {id:'sinceLast:SO',label:'days since last K'},
 ];
 export const SCOPES=['season','career','vsTeam','vsDivision','vsLeague','venue','month','dow'];
 export const MODS=[{id:'',label:'—'},{id:'primeIdx',label:'prime # of'},{id:'compIdx',label:'composite # of'},{id:'chain',label:'chain-to'}];
@@ -35,7 +40,7 @@ const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B'
   RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
 export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
 
-export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter));
+export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter)||c.counter?.startsWith('sinceLast'));
 
 const enabledVals=(s,ciphers)=>{
   const v=calcAll(s);
@@ -85,6 +90,13 @@ export function resolveCounter(cond,ctx){
     (ctx.batter.ageFigures||[]).forEach(x=>out.push({n:x.n,label:x.label}));
   }else if(kind==='oppPitcherClock'){
     (ctx.oppPitcherClock||[]).forEach(x=>out.push({n:x.n,label:x.label}));
+  }else if(kind==='sinceLast'){
+    /* needs the DEEP tier (p.deep.lastEvent from the gameLog pull) */
+    const d=ctx.batter.p.deep?.lastEvent?.[stat];
+    if(d&&ctx.date){
+      const n=daysBetween(d,ctx.date);
+      if(n>0)out.push({n,label:`${n}d since last ${stat}`});
+    }
   }
   return out;
 }

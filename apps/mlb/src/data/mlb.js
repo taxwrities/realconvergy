@@ -227,6 +227,22 @@ export async function deepFetchGame(game,people,dstr,onProgress){
         }
       });
     }catch{/* degrade per player */}
+    // last-event dates for the sinceLast:* counters (PATTERN-RECIPES §5):
+    // one gameLog pull per batter, latest date each lane ticked. Own try —
+    // a gameLog failure must not cost the splits above.
+    try{
+      const gl=await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`);
+      const ev={};
+      ((gl.stats?.[0]?.splits)||[]).forEach(x=>{
+        if(!x.date)return;
+        const s=deriveStats({...x.stat});
+        [['HR','homeRuns'],['H','hits'],['2B','doubles'],['3B','triples'],
+         ['XBH','XBH'],['RBI','rbi'],['SO','strikeOuts']].forEach(([k,f])=>{
+          if(+s[f]>0&&(!ev[k]||x.date>ev[k]))ev[k]=x.date;
+        });
+      });
+      (p.deep=p.deep||{}).lastEvent=ev;
+    }catch{/* degrade per player */}
   }
   game.deepDone=true;
   prog('');

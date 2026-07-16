@@ -235,6 +235,27 @@ import {summarizeCondition} from '../src/engine/patterns.js';
     isDateDependent({conditions:[{counter:'oppPitcherClock'}]}),true);
 }
 
+/* ---- sinceLast counter (§5): Stott leg 3 in full ---- */
+{
+  /* 23 days after his last HR; Bryson Stott Homerun = 83 Red; 83 = 23rd prime */
+  const ctx=mkCtx({
+    date:'2026-07-16',
+    templates:[{id:'tpl-hr',tokens:['{batter full}'],word:'HOMERUN',label:'{batter full} + HOMERUN'}],
+    batter:{p:{id:4,fullName:'Bryson Stott',lastName:'Stott',
+      season:{homeRuns:7},deep:{lastEvent:{HR:'2026-06-23'}}},
+      side:'home',nameVals:[],ageFigures:[]}});
+  const r=evalCondition({counter:'sinceLast:HR',scope:'season',lmod:'',rmod:'primeIdx',
+    source:'template',sourceArg:'tpl-hr',hard:true},ctx);
+  eq('sinceLast: 23d since HR = prime# of Stott Homerun 83',r.pass,true);
+  eq('sinceLast: match n is 23',r.matches[0].n,23);
+  eq('sinceLast: date-dependent → feeds Forecast',
+    isDateDependent({conditions:[{counter:'sinceLast:HR'}]}),true);
+  /* no deep data → resolves empty, flagged noData, never throws */
+  const r2=evalCondition({counter:'sinceLast:HR',scope:'season',lmod:'',rmod:'',
+    source:'word',sourceArg:'X',hard:true},mkCtx({date:'2026-07-16'}));
+  eq('sinceLast: no deep data → noData',r2.noData,true);
+}
+
 /* ---- oppTeam/team sources resolve all name variants (§3) ---- */
 import {resolveSource} from '../src/engine/patterns.js';
 {
