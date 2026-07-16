@@ -62,7 +62,6 @@ function FreshnessBanner(){
 function DateStrip(){
   const {date,dn,seasonInfo,game,h2h}=useApp();
   const seasonDay=seasonInfo?daysBetween(seasonInfo.start,date)+1:null;
-  const hscroll=useHScroll();
   return(
     <div className="date-strip">
       <div className="panel">
@@ -75,14 +74,11 @@ function DateStrip(){
       </div>
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
-        <div className="dn-vals" ref={hscroll}>
+        <div className="dn-vals">
           {dateFigures(date).map((f,i)=>(
-            <span key={i} className="dn-fig" title={f.calc}>
-              <b className={f.top?'v-gold':'v-cyan'}>
-                <FactNum value={f.n}>{f.n}</FactNum>
-              </b>
-              <em className="dn-calc">{f.calc}</em>
-            </span>
+            <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>
+              <FactNum value={f.n}>{f.n}</FactNum>
+            </b>
           ))}
         </div>
       </div>
