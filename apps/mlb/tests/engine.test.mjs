@@ -188,5 +188,22 @@ import {isSlateCacheValid} from '../src/data/storage.js';
   eq('slateCache: null rejected',isSlateCacheValid(null,today),false);
 }
 
+/* ---- numberToWords (PATTERN-RECIPES §1) — Zach convention: no hyphens, no AND ---- */
+import {numberToWords} from '../src/engine/numbers.js';
+eq('words 0',numberToWords(0),'ZERO');
+eq('words 8',numberToWords(8),'EIGHT');
+eq('words 13',numberToWords(13),'THIRTEEN');
+eq('words 31',numberToWords(31),'THIRTY ONE');
+eq('words 40',numberToWords(40),'FORTY');
+eq('words 57',numberToWords(57),'FIFTY SEVEN');
+eq('words 100',numberToWords(100),'ONE HUNDRED');
+eq('words 168',numberToWords(168),'ONE HUNDRED SIXTY EIGHT');
+eq('words 197',numberToWords(197),'ONE HUNDRED NINETY SEVEN');
+eq('words 1000',numberToWords(1000),'ONE THOUSAND');
+eq('words 2026',numberToWords(2026),'TWO THOUSAND TWENTY SIX');
+eq('words out of range',numberToWords(10000),'');
+/* the Stott lock: season HR count 8, spelled, hits the career-home rung */
+eq('EIGHT Red = 31',calcAll('EIGHT').Red,31);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
