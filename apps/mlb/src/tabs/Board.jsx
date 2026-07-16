@@ -176,17 +176,21 @@ function TeamToggle(){
 
 /* zones 6+7 — batter list (sticky left) + batter card */
 function BatterZone(){
-  const {board,side,batterId,setBatterId,contextFilter,dayState}=useApp();
+  const {board,side,batterId,setBatterId,contextFilter,patternFilter,dayState}=useApp();
   const rows=board[side]||[];
-  const filtered=contextFilter==null?rows
-    :rows.filter(r=>r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length));
+  const inFilter=r=>{
+    if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
+    if(patternFilter!=null&&!r.patternHits.some(x=>x.pattern.id===patternFilter))return false;
+    return true;
+  };
+  const filtered=rows.filter(inFilter);
   const sel=rows.find(r=>r.id===batterId)||filtered[0]||rows[0];
   if(!rows.length)return <div className="panel muted">No lineup yet — roster projection loads with the slate.</div>;
   return(
     <div className="batter-zone">
       <div className="batter-list">
         {rows.map(r=>{
-          const dim=contextFilter!=null&&!filtered.includes(r);
+          const dim=(contextFilter!=null||patternFilter!=null)&&!filtered.includes(r);
           const labels=dayState.labels[r.id]||[];
           return(
             <button key={r.id} className={`batter-row${sel?.id===r.id?' on':''}${dim?' skip':''}`}
@@ -213,7 +217,64 @@ function BatterZone(){
       </div>
       <div className="card-col">
         {sel&&<BatterCard row={sel}/>}
+        <PatternHitsPanel/>
         {sel&&<TotalsPanel row={sel}/>}
+      </div>
+    </div>
+  );
+}
+
+/* pattern-hits — surfaces the Patterns tab's live matches on the board.
+   Pills filter the batter list (dim non-hitters); names tap through to the
+   matching batter's card. Game-scoped (both sides); hidden when no hits. */
+function PatternHitsPanel(){
+  const {board,game,patterns,patternFilter,setPatternFilter,patternCounts,setSide,setBatterId}=useApp();
+  const [expanded,setExpanded]=useState(null); // pattern id whose full name-list is open
+  if(!game)return null;
+  const abbrev={away:game.away.abbrev||game.away.teamName,home:game.home.abbrev||game.home.teamName};
+  const groups=patterns.filter(pt=>pt.enabled).map(pt=>{
+    const hits=[];
+    ['away','home'].forEach(s=>(board[s]||[]).forEach(r=>{
+      if(r.patternHits.some(x=>x.pattern.id===pt.id))
+        hits.push({id:r.id,side:s,name:r.ev.p.fullName,abbr:abbrev[s]});
+    }));
+    return{pt,hits};
+  }).filter(g=>g.hits.length>0);
+  if(!groups.length)return null;
+  const jump=h=>{setSide(h.side);setBatterId(h.id)};
+  return(
+    <div className="panel pattern-hits">
+      <h3>Pattern hits — this game</h3>
+      <div className="rail" style={{flexWrap:'wrap',overflowX:'visible'}}>
+        {groups.map(({pt,hits})=>(
+          <button key={pt.id}
+            className={`chip gold${patternFilter===pt.id?' on':''}`}
+            onClick={()=>setPatternFilter(patternFilter===pt.id?null:pt.id)}>
+            {pt.name} <span className="n">{hits.length}</span>
+            {patternCounts[pt.id]>hits.length&&<span className="cnt">{patternCounts[pt.id]} slate</span>}
+          </button>
+        ))}
+      </div>
+      <div className="pat-names">
+        {groups.map(({pt,hits})=>{
+          const open=expanded===pt.id;
+          const shown=open?hits:hits.slice(0,4);
+          return(
+            <div key={pt.id} className={`pat-name-row${patternFilter===pt.id?' on':''}`}>
+              <span className="pat-lbl">{pt.name}</span>
+              {shown.map(h=>(
+                <button key={h.id} className="pat-who" onClick={()=>jump(h)}>
+                  {h.name}<span className="muted"> {h.abbr}</span>
+                </button>
+              ))}
+              {hits.length>4&&(
+                <button className="pat-more" onClick={()=>setExpanded(open?null:pt.id)}>
+                  {open?'less':`+${hits.length-4} more`}
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

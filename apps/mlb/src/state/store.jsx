@@ -61,6 +61,7 @@ export function AppStateProvider({children}){
   const [side,setSide]=useState('away');
   const [batterId,setBatterId]=useState(null);
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
+  const [patternFilter,setPatternFilter]=useState(null); // pattern id filtering batter list
 
   const refresh=useCallback(async()=>{
     setError('');setLoading('Loading slate…');
@@ -521,7 +522,7 @@ export function AppStateProvider({children}){
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,game,gamePk,setGamePk,side,setSide,
-    batterId,setBatterId,contextFilter,setContextFilter,
+    batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,

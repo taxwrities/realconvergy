@@ -156,6 +156,31 @@ body { background: #101319; overscroll-behavior-y: none; }
 .call-line.alt { border-left-color: var(--cvg-green); }
 .call-line .tag { font-size: 9.5px; letter-spacing: 1px; font-weight: 800; color: #8a90a0; margin-right: 7px; }
 
+/* pattern-hits panel (below the batter card) */
+.pattern-hits { margin-bottom: 0; }
+.pattern-hits .chip .n { color: inherit; }
+.pattern-hits .chip .cnt { font-size: 9px; opacity: .8; }
+.pat-names { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.pat-name-row {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px;
+  padding: 5px 7px; border-radius: 7px; background: #101319; font-size: 12px;
+}
+.pat-name-row.on { box-shadow: 0 0 0 1px var(--cvg-gold) inset; }
+.pat-name-row .pat-lbl {
+  font-family: var(--cvg-mono); font-size: 9.5px; letter-spacing: .4px;
+  color: var(--cvg-gold); text-transform: uppercase; flex: 0 0 100%;
+}
+.pat-who {
+  background: none; border: none; padding: 0; cursor: pointer; font: inherit;
+  color: #e8eaf0; border-bottom: 1px dotted #3a4252;
+}
+.pat-who:hover { color: var(--cvg-purple); }
+.pat-who .muted { font-family: var(--cvg-mono); font-size: 10px; }
+.pat-more {
+  background: none; border: none; padding: 0; cursor: pointer; font: inherit;
+  color: #8a90a0; font-size: 11px; text-decoration: underline;
+}
+
 /* matchup panel */
 .cross-row { border-left: 3px solid var(--cvg-green); padding: 6px 9px; background: #101319; border-radius: 8px; margin-top: 5px; font-size: 12.5px; }
 .name-run { display: flex; flex-wrap: wrap; gap: 4px 10px; font-family: var(--cvg-mono); font-size: 12px; margin-top: 4px; }
