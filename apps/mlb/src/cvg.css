@@ -83,6 +83,13 @@ body { background: #101319; overscroll-behavior-y: none; }
 .chip.purple { border-color: var(--cvg-purple); color: var(--cvg-purple); }
 .chip.gray { color: #8a90a0; }
 .chip.active-hit { box-shadow: 0 0 0 1px currentColor inset; }
+/* Selected state for a colour-variant chip. .chip.on alone stays purple (lane +
+   game chips rely on it), but on a gold/blue/purple/gray chip the variant rule
+   below would out-cascade it at equal specificity and the chip would show no
+   selected state at all. Ring + fill in the chip's OWN colour instead. */
+.chip.gold.on, .chip.blue.on, .chip.purple.on, .chip.gray.on {
+  background: #1b2130; box-shadow: 0 0 0 2px currentColor inset;
+}
 .chip .n { font-family: var(--cvg-mono); font-weight: 700; }
 .chip .cnt {
   background: #101319; border-radius: 999px; font-size: 10px; padding: 1px 6px;
@@ -152,6 +159,8 @@ body { background: #101319; overscroll-behavior-y: none; }
 .rung.hit { background: #101319; }
 /* rung matches the active context chip — the "why did this batter match" row */
 .rung.hit.flt { background: #0e1826; box-shadow: 0 0 0 1px var(--cvg-blue) inset; }
+/* pattern-tile selection — gold twin of .flt (blue = context chip) */
+.rung.hit.pflt { background: #1a1508; box-shadow: 0 0 0 1px var(--cvg-gold) inset; }
 .rung .st { color: #8a90a0; min-width: 62px; font-size: 11px; }
 .rung .why { color: #8a90a0; font-size: 11px; flex: 1; }
 .call-line { font-size: 13px; margin-top: 4px; padding: 7px 9px; border-radius: 8px; background: #101319; border-left: 3px solid var(--cvg-gold); }
