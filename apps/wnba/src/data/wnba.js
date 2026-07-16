@@ -194,7 +194,10 @@ export async function fetchSlate(dstr,onProgress){
       try{
         const rows=await pull('games',{'seasons[]':[season],'team_ids[]':[tid],per_page:100});
         g.seasonGames[tid]=rows;
-        const done=rows.filter(x=>String(x.status).toLowerCase()==='post');
+        /* season game # follows bbref: regular-season games only (no
+           playoffs / Cup final), same convention as the stat totals */
+        const done=rows.filter(x=>String(x.status).toLowerCase()==='post'
+          &&!x.postseason&&!CUP_FINAL_DATES.has(etDate(x.date)));
         g.gameNumber[side]=done.length+1;
       }catch(e){g.seasonGames[tid]=[]}
     }
@@ -315,11 +318,14 @@ export function h2hFor(game,dstr){
   if(!la||!lh)return null;
   const key=[la,lh].sort().join('|');
   const st=H2H.pairs[key]||{regularSeason:{games:0,wins:{},firstMeeting:null,lastMeeting:null},playoffs:{games:0,wins:{},firstMeeting:null,lastMeeting:null}};
-  // live top-up: completed current-season meetings (static file stops at 2025)
+  // live top-up: completed current-season meetings (static file stops at 2025).
+  // tops up the REGULAR bucket only — playoffs/Cup-final meetings stay out,
+  // matching the file's regularSeason/playoffs split + the bbref convention.
   const cur=(game.seasonGames[game.home.id]||[]).filter(x=>{
     const a=x.home_team&&x.home_team.id,b=x.visitor_team&&x.visitor_team.id;
     return((a===game.home.id&&b===game.away.id)||(a===game.away.id&&b===game.home.id))
-      &&String(x.status).toLowerCase()==='post';
+      &&String(x.status).toLowerCase()==='post'
+      &&!x.postseason&&!CUP_FINAL_DATES.has(etDate(x.date));
   });
   let curAway=0,curHome=0,lastCur=null,firstCur=null;
   cur.forEach(x=>{

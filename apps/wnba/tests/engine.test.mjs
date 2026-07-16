@@ -188,7 +188,8 @@ eq('filter: regular game kept',excl.has(1),false);
 eq('filter: playoff excluded',excl.has(2),true);
 eq('filter: 2025 cup final excluded',excl.has(3),true);
 eq('filter: 2022 cup final excluded',excl.has(4),true);
-eq('filter: 5 cup finals on record',CUP_FINAL_DATES.size,5);
+eq('filter: 6 cup finals on record',CUP_FINAL_DATES.size,6);
+eq('filter: 2026 cup final on record',CUP_FINAL_DATES.has('2026-06-30'),true);
 
 const REAL=new Set([9,6]); // SEA, CHI
 eq('filter: real-team regular row kept',

@@ -19,6 +19,7 @@ export const CUP_FINAL_DATES=new Set([
   '2023-08-15', // NY 82-63 LV
   '2024-06-25', // MIN 94-89 NY
   '2025-07-01', // IND 74-59 MIN
+  '2026-06-30', // NY 93-85 LV (bdl game 24896, verified standalone + postseason:false)
 ]);
 
 /* games rows → Set of game ids bbref excludes (playoffs + cup finals).
