@@ -91,11 +91,26 @@ function Editor({pattern,onDone}){
                 <select style={sel} value={c.rmod} onChange={e=>upCond(i,{rmod:e.target.value})}>
                   {MODS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
                 </select>
-                <select style={sel} value={c.source} onChange={e=>upCond(i,{source:e.target.value})}>
+                <select style={sel} value={c.source} onChange={e=>{const s=e.target.value;
+                  upCond(i,{source:s,sourceArg:s==='numberWord'?{counter:'rung:HR',scope:'season',off:1}:''})}}>
                   {SOURCES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
                 {c.source==='word'&&<input type="text" style={{...sel,width:110}} placeholder="word…"
-                  value={c.sourceArg} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
+                  value={typeof c.sourceArg==='string'?c.sourceArg:''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
+                {c.source==='numberWord'&&(()=>{
+                  const a=c.sourceArg?.counter?c.sourceArg:{counter:'rung:HR',scope:'season',off:1};
+                  return(<>
+                    <select style={sel} value={a.counter} onChange={e=>upCond(i,{sourceArg:{...a,counter:e.target.value}})}>
+                      {COUNTERS.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}
+                    </select>
+                    <select style={sel} value={a.scope} onChange={e=>upCond(i,{sourceArg:{...a,scope:e.target.value}})}>
+                      {SCOPES.map(s=><option key={s}>{s}</option>)}
+                    </select>
+                    <select style={sel} value={a.off||1} onChange={e=>upCond(i,{sourceArg:{...a,off:+e.target.value}})}>
+                      {[1,2,3,4,5].map(k=><option key={k} value={k}>+1..{k}</option>)}
+                    </select>
+                  </>);
+                })()}
                 {c.source==='template'&&(
                   <select style={sel} value={c.sourceArg} onChange={e=>upCond(i,{sourceArg:e.target.value})}>
                     <option value="">template…</option>

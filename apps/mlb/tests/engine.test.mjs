@@ -205,5 +205,25 @@ eq('words out of range',numberToWords(10000),'');
 /* the Stott lock: season HR count 8, spelled, hits the career-home rung */
 eq('EIGHT Red = 31',calcAll('EIGHT').Red,31);
 
+/* ---- numberWord source (PATTERN-RECIPES §2): counter-reference, spelled ---- */
+import {summarizeCondition} from '../src/engine/patterns.js';
+{
+  /* Stott leg 2: career-home HR sits 30 → 31; season HR sits 7 → 8 → EIGHT = 31 Red */
+  const cond={counter:'rung:HR',counterArg:{off:1},scope:'venue',lmod:'',rmod:'',
+    source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:true};
+  const ctx=mkCtx({batter:{p:{id:3,fullName:'Bryson Stott',lastName:'Stott',
+    season:{homeRuns:7},career:{homeRuns:56},split:{'career-home':{homeRuns:30}}},
+    side:'home',nameVals:[],ageFigures:[]}});
+  const r=evalCondition(cond,ctx);
+  eq('numberWord: career-home HR 31 = EIGHT Red 31',r.pass,true);
+  eq('numberWord: match n',r.matches[0].n,31);
+  eq('numberWord: label carries the spelled word',r.matches[0].right.includes('EIGHT Red'),true);
+  eq('numberWord: label carries the referenced counter',r.matches[0].right.includes('season HR 7+1'),true);
+  eq('numberWord: summarize handles object arg',summarizeCondition(cond).includes('spell'),true);
+  /* empty/missing reference resolves empty, never throws */
+  const r2=evalCondition({...cond,sourceArg:''},ctx);
+  eq('numberWord: no ref → no match',r2.pass,false);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

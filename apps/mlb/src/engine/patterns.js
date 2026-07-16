@@ -5,7 +5,7 @@
    Soft conditions never block a match; they upgrade it.
 ================================================================ */
 import {calcAll,ALL_CIPHERS} from './gematria.js';
-import {primeIndex,compositeIndex,chainBase} from './numbers.js';
+import {primeIndex,compositeIndex,chainBase,numberToWords} from './numbers.js';
 
 export const COUNTERS=[
   {id:'rung:HR',label:'HR rung'},{id:'rung:TB',label:'TB rung'},{id:'rung:SO',label:'K rung'},
@@ -27,6 +27,7 @@ export const SOURCES=[
   {id:'template',label:'phrase template'},{id:'oppPitcher',label:'opp pitcher name'},
   {id:'oppTeam',label:'opponent team'},{id:'team',label:'team'},{id:'stadium',label:'stadium'},
   {id:'word',label:'free word'},{id:'loaded',label:'any loaded value'},
+  {id:'numberWord',label:'spelled counter'},
 ];
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
@@ -97,7 +98,19 @@ export function resolveSource(cond,ctx){
   if(src==='oppTeam')return enabledVals(ctx.oppTeamName||'',ctx.ciphers);
   if(src==='team')return enabledVals(ctx.teamName||'',ctx.ciphers);
   if(src==='stadium')return enabledVals(ctx.stadium||'',ctx.ciphers);
-  if(src==='word')return cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
+  if(src==='word')return typeof cond.sourceArg==='string'&&cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
+  if(src==='numberWord'){
+    /* counter reference on the source side (PATTERN-RECIPES §2): resolve the
+       referenced counter, SPELL each candidate value, run the ciphers. The
+       Zach convention — season HR next 8 → "EIGHT" → 31 Red. */
+    const a=cond.sourceArg&&typeof cond.sourceArg==='object'?cond.sourceArg:null;
+    if(!a?.counter)return[];
+    const ref=resolveCounter({counter:a.counter,scope:a.scope||'season',counterArg:{off:a.off||1}},ctx);
+    return ref.flatMap(x=>{
+      const w=numberToWords(x.n);
+      return w?enabledVals(w,ctx.ciphers).map(v=>({n:v.n,label:`${v.label} ${v.n} (${x.label})`})):[];
+    });
+  }
   if(src==='template'){
     const t=(ctx.templates||[]).find(x=>x.id===cond.sourceArg);
     if(!t)return[];
@@ -174,7 +187,9 @@ export const summarizeCondition=c=>{
   const lm=c.lmod?MODS.find(m=>m.id===c.lmod).label+' ':'';
   const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
   const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
-  const arg=c.sourceArg?` "${c.sourceArg}"`:'';
+  const arg=c.source==='numberWord'&&c.sourceArg?.counter
+    ?` [spell ${COUNTERS.find(x=>x.id===c.sourceArg.counter)?.label||c.sourceArg.counter} · ${c.sourceArg.scope||'season'}]`
+    :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
   const rung=c.counter.startsWith('rung');
   return`${lm}${cnt}${rung?` ${off} (${c.scope})`:''} = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
 };
