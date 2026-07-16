@@ -35,12 +35,26 @@ export default function BoardTab(){
       <DateStrip/>
       <RefineBox/>
       {loading&&<div className="warn-banner">{loading}</div>}
+      <FreshnessBanner/>
       <NoGames/>
       <GameRail/>
       <ContextRail/>
       <TeamToggle/>
       <PlayerZone/>
       <MatchupPanel/>
+    </div>
+  );
+}
+
+/* cached-slate freshness + manual refresh (§ persist, Tony 2026-07) */
+function FreshnessBanner(){
+  const {slate,loading,slateSavedAt,refresh}=useApp();
+  if(loading||!slate||!slateSavedAt)return null;
+  const t=new Date(slateSavedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  return(
+    <div className="warn-banner fresh" onClick={refresh} role="button" tabIndex={0}
+      onKeyDown={e=>{if(e.key==='Enter')refresh()}}>
+      slate cached from {t} · tap to refresh ↻
     </div>
   );
 }
@@ -52,10 +66,11 @@ function DateStrip(){
     <div className="date-strip">
       <div className="panel">
         <h3>Season</h3>
-        <div className="big">{seasonDay?`Day ${seasonDay}`:'—'}</div>
+        <div className="big">{seasonDay?<>Day <FactNum value={seasonDay}>{seasonDay}</FactNum></>:'—'}</div>
         {game&&<div className="muted mono" style={{fontSize:11,marginTop:4}}>
-          season game #{game.gameNumber.away??'–'}/{game.gameNumber.home??'–'}
-          {h2h&&<> · H2H #{h2h.gameNo}</>}</div>}
+          season game #{game.gameNumber.away!=null?<FactNum value={game.gameNumber.away}>{game.gameNumber.away}</FactNum>:'–'}
+          /{game.gameNumber.home!=null?<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum>:'–'}
+          {h2h&&<> · H2H #<FactNum value={h2h.gameNo}>{h2h.gameNo}</FactNum></>}</div>}
       </div>
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
@@ -145,7 +160,7 @@ function ContextRail(){
           title={c.lineage||undefined}
           className={`chip ${cls[c.kind]||'gray'}${c.cnt>0?' active-hit':''}${contextFilter===c.n?' on':''}`}
           onClick={()=>setContextFilter(contextFilter===c.n?null:c.n)}>
-          {c.label} <span className="n">{c.n}</span>
+          {c.label} <span className="n"><FactNum value={c.n}>{c.n}</FactNum></span>
           {c.lineage&&<span style={{fontSize:9,opacity:.8}}> ⛓</span>}
           {c.cnt>0&&<span className="cnt">{c.cnt}</span>}
         </button>
@@ -173,19 +188,23 @@ function TeamToggle(){
   );
 }
 
-/* player list (sticky left, starters first) + player card */
+/* player list (sticky left, starters first) + player card + pattern-hits panel */
 function PlayerZone(){
-  const {board,side,batterId,setBatterId,contextFilter,dayState}=useApp();
+  const {board,side,batterId,setBatterId,contextFilter,patternFilter,dayState}=useApp();
   const rows=board[side]||[];
-  const filtered=contextFilter==null?rows
-    :rows.filter(r=>r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length));
+  const inFilter=r=>{
+    if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
+    if(patternFilter!=null&&!r.patternHits.some(x=>x.pattern.id===patternFilter))return false;
+    return true;
+  };
+  const filtered=rows.filter(inFilter);
   const sel=rows.find(r=>r.id===batterId)||filtered[0]||rows[0];
   if(!rows.length)return <div className="panel muted">No roster yet — it loads with the slate.</div>;
   return(
     <div className="batter-zone">
       <div className="batter-list">
         {rows.map(r=>{
-          const dim=contextFilter!=null&&!filtered.includes(r);
+          const dim=(contextFilter!=null||patternFilter!=null)&&!filtered.includes(r);
           const labels=dayState.labels[r.id]||[];
           return(
             <button key={r.id} className={`batter-row${sel?.id===r.id?' on':''}${dim?' skip':''}`}
@@ -211,7 +230,66 @@ function PlayerZone(){
           );
         })}
       </div>
-      {sel&&<PlayerCard row={sel}/>}
+      <div className="card-col">
+        {sel&&<PlayerCard row={sel}/>}
+        <PatternHitsPanel/>
+      </div>
+    </div>
+  );
+}
+
+/* pattern-hits — surfaces the Patterns tab's live matches on the board.
+   Pills filter the player list (dim non-hitters); names tap through to the
+   matching player's card. Game-scoped (both sides); hidden when no hits. */
+function PatternHitsPanel(){
+  const {board,game,patterns,patternFilter,setPatternFilter,patternCounts,side,setSide,setBatterId}=useApp();
+  const [expanded,setExpanded]=useState(null); // pattern id whose full name-list is open
+  if(!game)return null;
+  const abbrev={away:game.away.abbrev,home:game.home.abbrev};
+  const groups=patterns.filter(pt=>pt.enabled).map(pt=>{
+    const hits=[];
+    ['away','home'].forEach(s=>(board[s]||[]).forEach(r=>{
+      if(r.patternHits.some(x=>x.pattern.id===pt.id))
+        hits.push({id:r.id,side:s,name:r.ev.p.fullName,abbr:abbrev[s]});
+    }));
+    return{pt,hits};
+  }).filter(g=>g.hits.length>0);
+  if(!groups.length)return null;
+  const jump=h=>{setSide(h.side);setBatterId(h.id)};
+  return(
+    <div className="panel pattern-hits">
+      <h3>Pattern hits — this game</h3>
+      <div className="rail" style={{flexWrap:'wrap',overflowX:'visible'}}>
+        {groups.map(({pt,hits})=>(
+          <button key={pt.id}
+            className={`chip gold${patternFilter===pt.id?' on':''}`}
+            onClick={()=>setPatternFilter(patternFilter===pt.id?null:pt.id)}>
+            {pt.name} <span className="n">{hits.length}</span>
+            {patternCounts[pt.id]>hits.length&&<span className="cnt">{patternCounts[pt.id]} slate</span>}
+          </button>
+        ))}
+      </div>
+      <div className="pat-names">
+        {groups.map(({pt,hits})=>{
+          const open=expanded===pt.id;
+          const shown=open?hits:hits.slice(0,4);
+          return(
+            <div key={pt.id} className={`pat-name-row${patternFilter===pt.id?' on':''}`}>
+              <span className="pat-lbl">{pt.name}</span>
+              {shown.map(h=>(
+                <button key={h.id} className="pat-who" onClick={()=>jump(h)}>
+                  {h.name}<span className="muted"> {h.abbr}</span>
+                </button>
+              ))}
+              {hits.length>4&&(
+                <button className="pat-more" onClick={()=>setExpanded(open?null:pt.id)}>
+                  {open?'less':`+${hits.length-4} more`}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -232,7 +310,7 @@ function PlayerCard({row}){
     <div className="bcard">
       <div className="who">
         <span className="nm">{p.fullName}</span>
-        {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#{p.jersey}</span>}
+        {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#<FactNum value={p.jersey}>{p.jersey}</FactNum></span>}
         <span className="muted" style={{fontSize:11}}>{p.position}{p.starter?' · ⭐ starter':''}</span>
       </div>
       {ev.bday&&(
@@ -395,10 +473,17 @@ function RungPopup({stat,value,anchor,onClose}){
    composite), 9s chain, T-family, and spine hits (with prime-index bridge). */
 function FactNum({value,children,className='',style}){
   const [anchor,setAnchor]=useState(null);
-  const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  /* span (not button) so it can live INSIDE chip buttons; stopPropagation
+     keeps the chip's own filter toggle from firing on a number tap */
+  const open=e=>{
+    e.stopPropagation();
+    const r=e.currentTarget.getBoundingClientRect();
+    setAnchor({x:r.left,y:r.bottom,top:r.top});
+  };
   return(
     <>
-      <button type="button" className={`rungnum ${className}${anchor?' active':''}`} style={style} onClick={open}>{children}</button>
+      <span role="button" tabIndex={0} className={`rungnum ${className}${anchor?' active':''}`} style={style}
+        onClick={open} onKeyDown={e=>{if(e.key==='Enter')open(e)}}>{children}</span>
       {anchor&&<NumPopup n={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
     </>
   );

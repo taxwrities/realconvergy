@@ -219,5 +219,16 @@ import {resolveSource} from '../src/engine/patterns.js';
   eq('template: {opp center} uses matchup center',v3.some(x=>x.n===calcAll('Kiah Stokes BASKET').Ord),true);
 }
 
+/* ---- slate cache validity (instant rehydrate guard) ---- */
+import {isSlateCacheValid} from '../src/data/storage.js';
+{
+  const today='2026-07-15';
+  const good={schema:'cvg-slateCache/v1',date:today,savedAt:1,slate:{},seasonInfo:null};
+  eq('slateCache: valid today entry accepted',isSlateCacheValid(good,today),true);
+  eq('slateCache: yesterday rejected',isSlateCacheValid({...good,date:'2026-07-14'},today),false);
+  eq('slateCache: wrong schema rejected',isSlateCacheValid({...good,schema:'x'},today),false);
+  eq('slateCache: null rejected',isSlateCacheValid(null,today),false);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
