@@ -25,7 +25,7 @@ export default function SettingsSheet({onClose}){
       <div className="panel" style={{background:'#101319'}}>
         <h3>Sport profile</h3>
         <div className="chip on" style={{cursor:'default'}}>{profile.toUpperCase()}</div>
-        <span className="muted" style={{fontSize:11,marginLeft:8}}>WNBA profile ships later — schema ready</span>
+        <span className="muted" style={{fontSize:11,marginLeft:8}}>active — ciphers & vocab scoped to this profile</span>
       </div>
       <div className="panel" style={{background:'#101319'}}>
         <h3>Color rules — first match wins</h3>

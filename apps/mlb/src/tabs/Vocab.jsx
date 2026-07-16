@@ -127,7 +127,7 @@ function Phrases(){
       {templates.map(t=>(
         <div key={t.id} className="occ">
           <span className="v-purple">{t.label}</span>
-          <span className="muted" style={{fontSize:11}}> — resolves per entity at scan time (pattern source, Phase 2)</span>
+          <span className="muted" style={{fontSize:11}}> — resolves per batter/game in Patterns via the "phrase template" source</span>
           <button className="btn" style={{marginLeft:8,padding:'1px 7px',fontSize:10}}
             onClick={()=>setTemplates(templates.filter(x=>x.id!==t.id))}>×</button>
         </div>
