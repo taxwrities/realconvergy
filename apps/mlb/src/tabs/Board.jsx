@@ -1,10 +1,31 @@
-import {useState} from 'react';
+import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON} from '../data/defaults.js';
 import {daysBetween} from '../engine/clocks.js';
 import {cl} from '../engine/gematria.js';
 import {classifyRungs} from '../engine/rungs.js';
+
+/* Desktop horizontal scroll: a callback ref that turns vertical wheel into
+   horizontal scroll on overflowing rails/tables (mouse users have no h-track).
+   Yields to the page once the strip is scrolled to its end. */
+function useHScroll(){
+  const cleanup=useRef(null);
+  return useCallback(node=>{
+    if(cleanup.current){cleanup.current();cleanup.current=null;}
+    if(!node)return;
+    const onWheel=e=>{
+      if(node.scrollWidth<=node.clientWidth)return;
+      if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+      const atStart=node.scrollLeft<=0;
+      const atEnd=node.scrollLeft+node.clientWidth>=node.scrollWidth-1;
+      if((e.deltaY<0&&atStart)||(e.deltaY>0&&atEnd))return;
+      node.scrollLeft+=e.deltaY;e.preventDefault();
+    };
+    node.addEventListener('wheel',onWheel,{passive:false});
+    cleanup.current=()=>node.removeEventListener('wheel',onWheel);
+  },[]);
+}
 
 /* Board tab — LAYOUT-SPEC §4, zones top to bottom. */
 export default function BoardTab(){
@@ -88,11 +109,12 @@ function NoGames(){
 function GameRail(){
   const {slate,gamePk,setGamePk,setBatterId,setContextFilter}=useApp();
   const [expanded,setExpanded]=useState(false);
+  const hRail=useHScroll();
   if(!slate?.games.length)return null;
   const shown=expanded?slate.games:slate.games.slice(0,4);
   const pick=pk=>{setGamePk(pk);setBatterId(null);setContextFilter(null)};
   return(
-    <div className="rail">
+    <div className="rail" ref={hRail}>
       {shown.map(g=>(
         <button key={g.pk} className={`chip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
           {g.away.abbrev||g.away.teamName} @ {g.home.abbrev||g.home.teamName}
@@ -113,10 +135,11 @@ function GameRail(){
    hit counts, tap to filter batter list to carriers */
 function ContextRail(){
   const {contextChips,contextFilter,setContextFilter}=useApp();
+  const hRail=useHScroll();
   if(!contextChips.length)return null;
   const cls={theme:'purple',thread:'blue',h2h:'blue',date:'gray'};
   return(
-    <div className="rail">
+    <div className="rail" ref={hRail}>
       {contextChips.map((c,i)=>(
         <button key={i}
           className={`chip ${cls[c.kind]||'gray'}${c.cnt>0?' active-hit':''}${contextFilter===c.n?' on':''}`}
@@ -281,9 +304,10 @@ function BatterCard({row}){
 function RungNum({stat,value,children,className='',style}){
   const [anchor,setAnchor]=useState(null);
   const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
+  /* .active = this number's menu is open → feedback on which stat you tapped */
   return(
     <>
-      <button type="button" className={`rungnum ${className}`} style={style} onClick={open}>{children}</button>
+      <button type="button" className={`rungnum ${className}${anchor?' active':''}`} style={style} onClick={open}>{children}</button>
       {anchor&&<RungPopup stat={stat} value={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
     </>
   );
@@ -291,6 +315,7 @@ function RungNum({stat,value,children,className='',style}){
 
 function RungPopup({stat,value,anchor,onClose}){
   const {loaded,colorFor}=useApp();
+  const [sel,setSel]=useState(null); // clicked rung → highlighted for feedback
   const ladder=classifyRungs(stat,value,{loaded});
   /* clamp to viewport; flip above the number if it would run off the bottom */
   const W=248,vw=window.innerWidth,vh=window.innerHeight;
@@ -318,7 +343,9 @@ function RungPopup({stat,value,anchor,onClose}){
             if(r.institutional)tags.push(['CORE','var(--cvg-gold)']);
             const srcs=r.hits.map(h=>h.src).filter(Boolean);
             return(
-              <div key={r.off} className={`rung-pop-row${r.hit?' hit':''}`}>
+              <div key={r.off}
+                className={`rung-pop-row${r.hit?' hit':''}${sel===r.off?' sel':''}`}
+                onClick={()=>setSel(sel===r.off?null:r.off)}>
                 <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
                 <span className="muted mono off">+{r.off}</span>
                 <span className="tags">
@@ -355,12 +382,13 @@ function TotalsCell({col,line}){
 }
 
 function TotalsTable({player}){
+  const hWrap=useHScroll();
   const rows=[];
   if(player?.career)rows.push({scope:'Career',line:player.career});
   if(player?.season)rows.push({scope:'Season',line:player.season});
   if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
   return(
-    <div className="totals-wrap">
+    <div className="totals-wrap" ref={hWrap}>
       <table className="totals">
         <thead>
           <tr><th className="pl">Scope</th>{TOTALS_COLS.map(c=><th key={c.h}>{c.h}</th>)}</tr>

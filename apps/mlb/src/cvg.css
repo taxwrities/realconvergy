@@ -160,11 +160,17 @@ body { background: #101319; overscroll-behavior-y: none; }
 
 /* clickable rung number (looks like the text it replaces, not a button) */
 .rungnum {
-  background: none; border: none; padding: 0; margin: 0; cursor: pointer;
+  background: none; border: none; padding: 0 1px; margin: 0; cursor: pointer;
   font: inherit; color: inherit; line-height: inherit; font-weight: 700;
-  border-bottom: 1px dotted currentColor;
+  border-bottom: 1px dotted currentColor; border-radius: 4px;
 }
 .rungnum:active { opacity: .6; }
+.rungnum:hover { background: rgba(208, 70, 255, .1); }
+/* active = this number's rung menu is open — highlight which stat you tapped */
+.rungnum.active {
+  background: rgba(208, 70, 255, .18); box-shadow: 0 0 0 1px var(--cvg-purple);
+  border-bottom-color: transparent; color: var(--cvg-purple);
+}
 
 /* baseball-reference-style totals table — data, neutral, tight */
 .totals-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 2px; border: 1px solid #2a303c; border-radius: 8px; }
@@ -196,8 +202,12 @@ body { background: #101319; overscroll-behavior-y: none; }
 .rung-pop-body { max-height: 44vh; overflow-y: auto; padding: 4px 0; }
 .rung-pop-row {
   display: flex; align-items: baseline; gap: 7px; padding: 4px 10px; font-size: 12px;
+  cursor: pointer; border-left: 2px solid transparent;
 }
+.rung-pop-row:hover { background: #1c212b; }
+.rung-pop-row.sel { background: #20252f; border-left-color: var(--cvg-purple); }
 .rung-pop-row:not(.hit) { opacity: .5; }
+.rung-pop-row.sel:not(.hit) { opacity: .85; }
 .rung-pop-row .val { min-width: 44px; }
 .rung-pop-row .off { font-size: 10.5px; min-width: 26px; }
 .rung-pop-row .tags { display: inline-flex; gap: 3px; }
@@ -255,4 +265,17 @@ body { background: #101319; overscroll-behavior-y: none; }
 @media (max-width: 400px) {
   .batter-zone { grid-template-columns: 104px 1fr; }
   .date-strip { grid-template-columns: 1fr 1.4fr; }
+}
+
+/* desktop (mouse) — expose horizontal scrollbars so wide rails + the totals
+   table are scrollable without a touch surface. useHScroll also maps the
+   vertical wheel to horizontal on these strips. */
+@media (hover: hover) and (pointer: fine) {
+  .rail { scrollbar-width: thin; scrollbar-color: #3a4252 transparent; padding-bottom: 8px; }
+  .rail::-webkit-scrollbar { display: block; height: 7px; }
+  .rail::-webkit-scrollbar-thumb { background: #3a4252; border-radius: 4px; }
+  .rail::-webkit-scrollbar-track { background: transparent; }
+  .totals-wrap { scrollbar-width: thin; scrollbar-color: #3a4252 transparent; }
+  .totals-wrap::-webkit-scrollbar-thumb { background: #3a4252; border-radius: 4px; }
+  .totals-wrap::-webkit-scrollbar-track { background: transparent; }
 }
