@@ -8,7 +8,7 @@
 import {createContext,useContext,useEffect,useMemo,useState,useCallback} from 'react';
 import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/numbers.js';
-import {clockFrom,dateNumerology,daysBetween,todayISO} from '../engine/clocks.js';
+import {clockFrom,dateNumerology,dateFigures,daysBetween,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
@@ -204,6 +204,12 @@ export function AppStateProvider({children}){
     const run=nameRun(p.fullName,ciphers);
     if(p.legalName)run.push(...nameRun(p.legalName,ciphers).map(x=>({...x,legal:true})));
     const nameNums=new Set(run.map(x=>x.n));
+    /* name = date figure (Tony 2026-07-16: A.J. Ewing 69 Ord / 33 Red hit both
+       top figures). Precise dateFigures set only — the wide dn map would light
+       half the roster. */
+    const figMap=new Map(dateFigures(date).map(f=>[f.n,f]));
+    const dateNameHits=run.filter(x=>figMap.has(x.n))
+      .map(x=>({...x,calc:figMap.get(x.n).calc,top:!!figMap.get(x.n).top}));
     const bday=p.birthDate?clockFrom(p.birthDate,date):null;
     const bdayNums=bday?[
       {n:bday.since,label:`${bday.since}d after bday`},
@@ -264,7 +270,7 @@ export function AppStateProvider({children}){
     const candidates=rungs
       .filter(r=>laneStats.has(r.stat)&&r.hits.length>0)
       .sort((a,b)=>b.hits.length-a.hits.length||a.off-b.off);
-    return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,
+    return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,dateNameHits,
       primary:candidates[0]||null,alt:candidates[1]||null,nameNums};
   },[ciphers,date,loaded,dn,settings.lanesOn]);
 

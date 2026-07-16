@@ -227,6 +227,12 @@ function BatterZone(){
                     ⟡ {r.forecast.date.slice(5).replace('-','/')}
                   </span>
                 )}
+                {r.ev.dateNameHits.length>0&&(
+                  <span className="badge cyan"
+                    title={r.ev.dateNameHits.map(h=>`${h.label} ${h.cipher} ${h.n} = ${h.calc}`).join(' · ')}>
+                    ◈ {[...new Set(r.ev.dateNameHits.map(h=>h.n))].join('/')}
+                  </span>
+                )}
                 {r.ev.threadHit&&<span className="badge blue">THR</span>}
                 {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
               </span>
@@ -338,6 +344,16 @@ function BatterCard({row}){
           {row.patternHits.map(({pattern,res})=>(
             <span key={pattern.id} className="badge gold">
               {pattern.name} {res.hardPass}✓{res.softPass?` +${res.softPass} soft`:''}
+            </span>
+          ))}
+        </div>
+      )}
+      {ev.dateNameHits.length>0&&(
+        <div className="call-line" style={{borderLeftColor:'var(--cvg-cyan)',marginBottom:6}}>
+          <span className="tag" style={{color:'var(--cvg-cyan)'}}>NAME = DATE</span>
+          {ev.dateNameHits.map((h,i)=>(
+            <span key={i} className="mono">
+              {i>0&&' · '}{h.label} {h.cipher} <FactNum value={h.n}><b className={h.top?'v-gold':'v-cyan'}>{h.n}</b></FactNum>
             </span>
           ))}
         </div>
