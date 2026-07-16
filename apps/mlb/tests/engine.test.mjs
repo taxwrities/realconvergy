@@ -118,7 +118,8 @@ eq('pattern: hard pass + soft fail still matches',pr.match,true);
 eq('pattern: hardPass 1/1',pr.hardPass,1);
 
 /* seeds: shapes + date-dependence */
-eq('seeds: 4 shipped',SEED_PATTERNS.length,4);
+eq('seeds: 5 shipped',SEED_PATTERNS.length,5);
+eq('seeds: Stott example ships disabled',SEED_PATTERNS[4].enabled,false);
 eq('seeds: HR Convergence not date-dependent',isDateDependent(SEED_PATTERNS[0]),false);
 eq('date-dependence detected',isDateDependent({conditions:[{counter:'dn'}]}),true);
 eq('dow counter date-dependent',isDateDependent({conditions:[{counter:'dow'}]}),true);
@@ -281,6 +282,44 @@ import {resolveSource} from '../src/engine/patterns.js';
   const ns2=new Set(resolveSource({source:'oppTeam'},mkCtx({oppTeamName:'Mets'})).map(x=>x.n));
   eq('oppTeam fallback: nickname-only still works',ns2.has(57),true);
   eq('oppTeam fallback: no phantom 168',ns2.has(168),false);
+}
+
+/* ---- PATTERN-RECIPES §7: the Bryson Stott post, end-to-end ----
+   Every leg of the 2026-07-16 blog line as one recipe. Synthetic batter
+   mirrors the real setup: 56 career HR, 30 career-home HR, 7 season HR,
+   last HR 23 days back, opp = Mets, SP birthday 31 days back. */
+{
+  const recipe={id:'stott',name:'MILESTONE SPELL',lane:'HR',enabled:true,conditions:[
+    /* leg 1: 57th career HR · Mets=57 */
+    {counter:'rung:HR',counterArg:{off:1},scope:'career',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:true},
+    /* leg 2: 31st career HR at home · season count spells EIGHT=31 */
+    {counter:'rung:HR',counterArg:{off:1},scope:'venue',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:true},
+    /* leg 1b: 168 days left · New York Mets=168 */
+    {counter:'dateFig',scope:'season',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:false},
+    /* leg 2b: 31 days after the pitcher's birthday · same 31 */
+    {counter:'oppPitcherClock',scope:'season',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:false},
+    /* leg 3: 23 days since last HR · Bryson Stott Homerun=83=23rd prime */
+    {counter:'sinceLast:HR',scope:'season',lmod:'',rmod:'primeIdx',source:'template',sourceArg:'tpl-hr',hard:false},
+  ]};
+  const ctx=mkCtx({
+    date:'2026-07-16',dn:dateNumerology('2026-07-16'),
+    oppTeamName:'Mets',oppTeamNames:['Mets','New York Mets','New York'],
+    oppPitcherClock:[{n:31,label:'31d after SP bday'}],
+    templates:[{id:'tpl-hr',tokens:['{batter full}'],word:'HOMERUN',label:'{batter full} + HOMERUN'}],
+    batter:{p:{id:5,fullName:'Bryson Stott',lastName:'Stott',
+      season:{homeRuns:7},career:{homeRuns:56},split:{'career-home':{homeRuns:30}},
+      deep:{lastEvent:{HR:'2026-06-23'}}},
+      side:'home',nameVals:[],ageFigures:[]}});
+  const res=evalPattern(recipe,ctx);
+  eq('Stott: MATCH',res.match,true);
+  eq('Stott: 2/2 hard',res.hardPass,2);
+  eq('Stott: 3/3 soft',res.softPass,3);
+  eq('Stott leg 1: 57 = Mets',res.details[0].matches.some(m=>m.n===57),true);
+  eq('Stott leg 2: 31 = EIGHT',res.details[1].matches.some(m=>m.n===31),true);
+  eq('Stott leg 1b: 168 = New York Mets',res.details[2].matches.some(m=>m.n===168),true);
+  eq('Stott leg 2b: SP bday 31 = EIGHT',res.details[3].matches.some(m=>m.n===31),true);
+  eq('Stott leg 3: 23 = prime# of 83',res.details[4].matches.some(m=>m.n===23),true);
+  eq('Stott: recipe is date-dependent → Forecast',isDateDependent(recipe),true);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

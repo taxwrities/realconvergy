@@ -200,6 +200,18 @@ export const SEED_PATTERNS=[
     {counter:'rung:*',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true},
     {counter:'rung:*',counterArg:{off:1},scope:'season',lmod:'primeIdx',rmod:'',source:'core',sourceArg:'',hard:true},
   ]},
+  /* Worked example of the PATTERN-RECIPES vocabulary — the Bryson Stott post
+     (2026-07-16), shipped DISABLED as living documentation: open it in the
+     editor to see numberWord / dateFig / oppPitcherClock / sinceLast in use.
+     The sinceLast leg needs a '{batter full} + HOMERUN' phrase template
+     (Vocab tab) picked as its source before it can fire. */
+  {id:'seed-milestone-spell',name:'MILESTONE SPELL (Stott ex.)',lane:'HR',enabled:false,seed:true,conditions:[
+    {counter:'rung:HR',counterArg:{off:1},scope:'career',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:true},
+    {counter:'rung:HR',counterArg:{off:1},scope:'venue',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:true},
+    {counter:'dateFig',scope:'season',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:false},
+    {counter:'oppPitcherClock',scope:'season',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:false},
+    {counter:'sinceLast:HR',scope:'season',lmod:'',rmod:'primeIdx',source:'template',sourceArg:'',hard:false},
+  ]},
 ];
 
 export const summarizeCondition=c=>{

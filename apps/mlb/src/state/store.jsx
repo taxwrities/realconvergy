@@ -32,7 +32,14 @@ export function AppStateProvider({children}){
   const [colorRules,setColorRules]=useState(()=>load('cvg.colorRules',DEFAULT_COLOR_RULES));
   const [registry,setRegistry]=useState(()=>load('cvg.registry',[]));
   const [settings,setSettings]=useState(()=>({...DEFAULT_SETTINGS,...load('cvg.settings',{})}));
-  const [patterns,setPatterns]=useState(()=>load('cvg.patterns',null)||SEED_PATTERNS);
+  const [patterns,setPatterns]=useState(()=>{
+    const saved=load('cvg.patterns',null);
+    if(!saved)return SEED_PATTERNS;
+    /* one-time merge: seeds added in later releases reach existing storage */
+    const have=new Set(saved.map(p=>p.id));
+    const missing=SEED_PATTERNS.filter(s=>!have.has(s.id));
+    return missing.length?[...saved,...missing]:saved;
+  });
   const [forecasts,setForecasts]=useState(()=>load('cvg.forecasts',[]));
   const date=todayISO();
   const [dayState,setDayState]=useState(()=>loadDay(date));
