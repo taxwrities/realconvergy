@@ -100,9 +100,9 @@ function CoreTable(){
 function Phrases(){
   const {phrases,setPhrases,addPhrase,templates,setTemplates,ciphers}=useApp();
   const [txt,setTxt]=useState('');
-  const [tok,setTok]=useState('{batter full}');
-  const [word,setWord]=useState('HOME RUN');
-  const TOKENS=['{batter full}','{batter last}','{batter first}','{opp pitcher}','{team}','{opp team}','{stadium}','{theme figure}','{day of week}'];
+  const [tok,setTok]=useState('{player full}');
+  const [word,setWord]=useState('FIRST BASKET');
+  const TOKENS=['{player full}','{player last}','{player first}','{opp center}','{team}','{opp team}','{arena}','{theme figure}','{day of week}'];
   const enabled=ALL_CIPHERS.filter(c=>ciphers[c]);
   return(
     <div className="panel">
@@ -127,7 +127,7 @@ function Phrases(){
       {templates.map(t=>(
         <div key={t.id} className="occ">
           <span className="v-purple">{t.label}</span>
-          <span className="muted" style={{fontSize:11}}> — resolves per entity at scan time (pattern source, Phase 2)</span>
+          <span className="muted" style={{fontSize:11}}> — resolves per player at scan time; use as the "phrase template" source in Patterns</span>
           <button className="btn" style={{marginLeft:8,padding:'1px 7px',fontSize:10}}
             onClick={()=>setTemplates(templates.filter(x=>x.id!==t.id))}>×</button>
         </div>

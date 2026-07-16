@@ -201,5 +201,23 @@ eq('filter: playoff row dropped',
 eq('filter: cup-final row dropped',
   keepStatRow({team:{id:6},game:{id:4}},REAL,excl),false);
 
+/* ---- phrase templates resolve per player (WNBA tokens + legacy aliases) ---- */
+import {resolveSource} from '../src/engine/patterns.js';
+{
+  const ctx=mkCtx({templates:[
+    {id:'t1',tokens:['{player full}'],word:'FIRST BASKET',label:''},
+    {id:'t2',tokens:['{batter full}'],word:'FIRST BASKET',label:''},  // pre-rename save
+    {id:'t3',tokens:['{opp center}'],word:'BASKET',label:''},
+  ]});
+  ctx.oppPitcherName='Kiah Stokes';
+  const want=calcAll('Leila Lacan FIRST BASKET').Ord;
+  const v1=resolveSource({source:'template',sourceArg:'t1'},ctx);
+  const v2=resolveSource({source:'template',sourceArg:'t2'},ctx);
+  eq('template: {player full}+word resolves',v1.some(x=>x.n===want),true);
+  eq('template: legacy {batter full} still resolves',v2.some(x=>x.n===want),true);
+  const v3=resolveSource({source:'template',sourceArg:'t3'},ctx);
+  eq('template: {opp center} uses matchup center',v3.some(x=>x.n===calcAll('Kiah Stokes BASKET').Ord),true);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

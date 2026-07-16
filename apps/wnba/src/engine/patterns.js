@@ -100,9 +100,15 @@ export function resolveSource(cond,ctx){
     const t=(ctx.templates||[]).find(x=>x.id===cond.sourceArg);
     if(!t)return[];
     const tok=t.tokens[0];
-    const ent={'{batter full}':ctx.batter.p.fullName,'{batter last}':ctx.batter.p.lastName,
-      '{batter first}':ctx.batter.p.fullName.split(' ')[0],'{opp pitcher}':ctx.oppPitcherName,
-      '{team}':ctx.teamName,'{opp team}':ctx.oppTeamName,'{stadium}':ctx.stadium,
+    /* WNBA token names; the {batter…}/{opp pitcher}/{stadium} aliases keep
+       templates saved before the rename resolving (cvg.templates persists). */
+    const ent={
+      '{player full}':ctx.batter.p.fullName,'{batter full}':ctx.batter.p.fullName,
+      '{player last}':ctx.batter.p.lastName,'{batter last}':ctx.batter.p.lastName,
+      '{player first}':ctx.batter.p.fullName.split(' ')[0],'{batter first}':ctx.batter.p.fullName.split(' ')[0],
+      '{opp center}':ctx.oppPitcherName,'{opp pitcher}':ctx.oppPitcherName,
+      '{team}':ctx.teamName,'{opp team}':ctx.oppTeamName,
+      '{arena}':ctx.stadium,'{stadium}':ctx.stadium,
       '{day of week}':ctx.dn.dayName,'{theme figure}':null}[tok];
     if(tok==='{theme figure}')
       return (ctx.themeNames||[]).flatMap(nm=>enabledVals(`${nm} ${t.word}`,ctx.ciphers));

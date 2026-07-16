@@ -3,7 +3,7 @@ import Sheet from './Sheet.jsx';
 import {useApp} from '../state/store.jsx';
 
 /* Settings (§3): color rules (ordered, first match wins, drag→arrows),
-   sport profile (future), config export/import. */
+   sport profile badge, config export/import. */
 export default function SettingsSheet({onClose}){
   const {colorRules,setColorRules,profile,exportConfig,importConfig,refresh,exportDayLog}=useApp();
   const fileRef=useRef(null);
@@ -25,7 +25,7 @@ export default function SettingsSheet({onClose}){
       <div className="panel" style={{background:'#101319'}}>
         <h3>Sport profile</h3>
         <div className="chip on" style={{cursor:'default'}}>{profile.toUpperCase()}</div>
-        <span className="muted" style={{fontSize:11,marginLeft:8}}>WNBA profile ships later — schema ready</span>
+        <span className="muted" style={{fontSize:11,marginLeft:8}}>active — ciphers &amp; vocab are scoped to this profile</span>
       </div>
       <div className="panel" style={{background:'#101319'}}>
         <h3>Color rules — first match wins</h3>
@@ -48,9 +48,14 @@ export default function SettingsSheet({onClose}){
           <button className="btn" onClick={refresh}>↻ Reload slate</button>
           <input ref={fileRef} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
         </div>
+        <div className="muted" style={{fontSize:10.5,marginBottom:8}}>
+          config.json = full backup of your setup (ciphers, vocab, phrases, templates,
+          patterns, color rules, themes, threads/day notes). Import restores it —
+          move between devices or recover after a cleared browser.
+        </div>
         <div className="sheet-row">
           <button className="btn" onClick={exportDayLog}>Export day log (.json + .md)</button>
-          <span className="muted" style={{fontSize:10.5}}>drop into the repo's data/ and logs/</span>
+          <span className="muted" style={{fontSize:10.5}}>today's board snapshot — calls, lanes, patterns per player</span>
         </div>
       </div>
     </Sheet>
