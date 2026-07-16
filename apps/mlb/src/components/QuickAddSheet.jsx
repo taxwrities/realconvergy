@@ -6,7 +6,8 @@ import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
 /* Quick-add (§8): four actions, live board re-score, persisted for the day.
    Today's themes list a graduation flow into the registry (§10.4). */
 export default function QuickAddSheet({onClose}){
-  const {addTheme,addThread,addPhrase,addLabel,board,ciphers,dayState,graduateTheme,game}=useApp();
+  const {addTheme,removeTheme,removeRegistryTheme,addThread,addPhrase,addLabel,
+    board,ciphers,dayState,registry,graduateTheme,game}=useApp();
   const [theme,setTheme]=useState('');
   const [num,setNum]=useState('');
   const [word,setWord]=useState('');
@@ -60,6 +61,21 @@ export default function QuickAddSheet({onClose}){
                 game?[game.home.teamName,game.away.teamName]:[])}>
                 → registry{game?` (${game.away.abbrev||game.away.teamName}/${game.home.abbrev||game.home.teamName})`:''}
               </button>
+              <button className="btn" title="remove from today"
+                onClick={()=>removeTheme(t.name)}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {registry.length>0&&(
+        <div className="panel" style={{background:'#101319',marginTop:4}}>
+          <h3>Theme registry — persists across days</h3>
+          {registry.map(t=>(
+            <div key={t.name} className="sheet-row" style={{marginBottom:6}}>
+              <span className="v-purple" style={{flex:1,fontWeight:600}}>{t.name}</span>
+              {t.teams?.length>0&&<span className="muted" style={{fontSize:11}}>{t.teams.join(' / ')}</span>}
+              <button className="btn" title="delete from registry"
+                onClick={()=>removeRegistryTheme(t.name)}>×</button>
             </div>
           ))}
         </div>

@@ -520,7 +520,16 @@ export function AppStateProvider({children}){
   /* ---------- quick-add actions (§8, all persist for the day) ---------- */
   const addTheme=useCallback(name=>{
     const t={name:name.trim(),values:calcAll(name)};
-    if(t.name)setDayState(s=>({...s,adhocThemes:[...s.adhocThemes,t]}));
+    if(!t.name)return;
+    const dupe=nm=>nm.toLowerCase()===t.name.toLowerCase();
+    if(registry.some(r=>dupe(r.name)))return;
+    setDayState(s=>s.adhocThemes.some(x=>dupe(x.name))?s:{...s,adhocThemes:[...s.adhocThemes,t]});
+  },[registry]);
+  const removeTheme=useCallback(name=>{
+    setDayState(s=>({...s,adhocThemes:s.adhocThemes.filter(x=>x.name!==name)}));
+  },[]);
+  const removeRegistryTheme=useCallback(name=>{
+    setRegistry(r=>r.filter(x=>x.name!==name));
   },[]);
   const addThread=useCallback(n=>{
     n=+n;if(n>0)setDayState(s=>({...s,adhocThread:[...new Set([...s.adhocThread,n])]}));
@@ -569,7 +578,7 @@ export function AppStateProvider({children}){
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
-    addTheme,addThread,addLabel,search,exportConfig,importConfig,
+    addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,
     deepFetch,deepBusy,
     forecasts,generateForecasts,forecastBusy,grade,
