@@ -62,7 +62,7 @@ function FreshnessBanner(){
 
 /* zone 1 — date strip */
 function DateStrip(){
-  const {date,dn,seasonInfo,game}=useApp();
+  const {date,dn,seasonInfo,game,h2h}=useApp();
   const seasonDay=seasonInfo?daysBetween(seasonInfo.start,date)+1:null;
   return(
     <div className="date-strip">
@@ -71,7 +71,10 @@ function DateStrip(){
         <div className="big">{seasonDay?<>Day <FactNum value={seasonDay}>{seasonDay}</FactNum></>:'—'}</div>
         {game&&<div className="muted mono" style={{fontSize:11,marginTop:4}}>
           game #<FactNum value={game.gameNumber.away}>{game.gameNumber.away}</FactNum>
-          /<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum></div>}
+          /<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum>
+          {h2h&&<> · H2H #<FactNum value={h2h.gameNo}>{h2h.gameNo}</FactNum>
+            {' '}({game.away.abbrev} <FactNum value={h2h.awayWins}>{h2h.awayWins}</FactNum>
+            –<FactNum value={h2h.homeWins}>{h2h.homeWins}</FactNum> {game.home.abbrev})</>}</div>}
       </div>
       <div className="panel">
         <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>

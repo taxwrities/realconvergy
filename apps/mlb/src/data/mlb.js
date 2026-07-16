@@ -5,6 +5,8 @@
    House rule: API totals exclude the current day (entering counts).
 ================================================================ */
 import {deriveStats} from '../engine/rungs.js';
+import {lineageFor} from './teams.js';
+import H2H from '../../../../data/mlb-h2h.json';
 
 const API='https://statsapi.mlb.com/api/v1';
 
@@ -50,7 +52,27 @@ export async function fetchSlate(dstr,onProgress){
   const tmap={};
   tdata.teams.forEach(t=>{tmap[t.id]={teamName:t.teamName,locationName:t.locationName,
     abbrev:t.abbreviation||'',league:t.league?.id||null,venueName:t.venue?.name||''}});
-  games.forEach(g=>{Object.assign(g.home,tmap[g.home.id]||{});Object.assign(g.away,tmap[g.away.id]||{})});
+  games.forEach(g=>{
+    Object.assign(g.home,tmap[g.home.id]||{});Object.assign(g.away,tmap[g.away.id]||{});
+    g.home.lineage=lineageFor(g.home.id);g.away.lineage=lineageFor(g.away.id);
+  });
+  // per-pair current-season series → H2H live top-up past the static file
+  prog('H2H series…');
+  await Promise.all(games.map(async g=>{
+    try{
+      const d=await jget(`${API}/schedule?sportId=1&season=${season}&teamId=${g.home.id}&opponentId=${g.away.id}&gameTypes=R&fields=dates,date,games,gamePk,officialDate,gameType,status,abstractGameState,teams,home,away,team,id,score`);
+      const seen=new Set(),series=[];
+      (d.dates||[]).forEach(day=>(day.games||[]).forEach(x=>{
+        if(x.status?.abstractGameState!=='Final')return;
+        const hs=x.teams?.home?.score,as=x.teams?.away?.score;
+        if(hs==null||as==null||seen.has(x.gamePk))return; // scoreless dupes = postponed originals
+        seen.add(x.gamePk);
+        series.push({date:x.officialDate||day.date,tie:hs===as,
+          winner:hs===as?null:(hs>as?x.teams.home.team.id:x.teams.away.team.id)});
+      }));
+      g.seasonSeries=series;
+    }catch{/* H2H top-up just absent for this game */}
+  }));
   // lineup fallback → active roster position players (keep TWP), tag projected
   for(const g of games){
     for(const side of['home','away']){
@@ -105,6 +127,43 @@ export async function fetchSlate(dstr,onProgress){
   }));
   prog('');
   return{games,people,teamStats};
+}
+
+/* ---------------- H2H (MLB-PARITY.md §8, ported from Tony's Date Decoder) ----------------
+   Static all-time franchise record (data/mlb-h2h.json, statsapi crawl
+   1901→file cutoff, verified vs the decoder's NYM|PHI export) + live
+   current-season top-up from the slate's own per-pair series. Entering
+   counts: today's game is excluded (house rule). */
+export function h2hFor(game,dstr){
+  const la=game.away.lineage,lh=game.home.lineage;
+  if(!la||!lh)return null;
+  const key=[la,lh].sort().join('|');
+  const st=H2H.pairs[key]?.regularSeason||{games:0,wins:{},ties:0,firstMeeting:null,lastMeeting:null};
+  // top-up: completed meetings after the file cutoff, before today
+  const cur=(game.seasonSeries||[]).filter(x=>x.date>=H2H.meta.through&&x.date<dstr);
+  let curAway=0,curHome=0,curTies=0,firstCur=null,lastCur=null;
+  cur.forEach(x=>{
+    if(x.tie)curTies++;
+    else if(x.winner===game.home.id)curHome++;
+    else curAway++;
+    if(!lastCur||x.date>lastCur)lastCur=x.date;
+    if(!firstCur||x.date<firstCur)firstCur=x.date;
+  });
+  const games=st.games+cur.length;
+  const awayWins=(st.wins[la]||0)+curAway;
+  const homeWins=(st.wins[lh]||0)+curHome;
+  const ties=(st.ties||0)+curTies;
+  const first=st.firstMeeting||firstCur;
+  const last=lastCur||st.lastMeeting;
+  const day=d=>Math.round((new Date(dstr+'T12:00:00')-new Date(d+'T12:00:00'))/864e5);
+  const lineageNote=[la,lh].map(l=>{
+    const e=Object.values(H2H.lineage).find(x=>x.id===l);
+    return e&&e.identities&&e.identities.length>1?`${l}: ${e.identities.join(' → ')}`:null;
+  }).filter(Boolean);
+  return{key,gameNo:games+1,games,awayWins,homeWins,ties,
+    firstMeeting:first,lastMeeting:last,
+    daysSinceLast:last?day(last):null,daysSinceFirst:first?day(first):null,
+    lineageNote};
 }
 
 /* ================================================================

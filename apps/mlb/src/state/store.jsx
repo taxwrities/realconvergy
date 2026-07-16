@@ -12,7 +12,7 @@ import {clockFrom,dateNumerology,daysBetween,todayISO} from '../engine/clocks.js
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,deepFetchGame} from '../data/mlb.js';
+import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor} from '../data/mlb.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
@@ -92,6 +92,7 @@ export function AppStateProvider({children}){
   const dn=useMemo(()=>dateNumerology(date,ciphers),[date,ciphers]);
 
   const game=useMemo(()=>slate?.games.find(g=>g.pk===gamePk)||null,[slate,gamePk]);
+  const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
 
   /* ---------- loaded-value map for the active game ----------
      number → [{src, cat}]; cat drives color rules + chip typing. */
@@ -122,9 +123,17 @@ export function AppStateProvider({children}){
       if(game.venue)vals(game.venue).forEach(({cipher,n})=>add(n,`${game.venue} ${cipher}`,'context'));
       add(game.gameNumber.home,`${game.home.teamName} game #${game.gameNumber.home}`,'context');
       add(game.gameNumber.away,`${game.away.teamName} game #${game.gameNumber.away}`,'context');
+      if(h2h){
+        add(h2h.gameNo,`H2H meeting #${h2h.gameNo}`,'h2h');
+        add(h2h.awayWins,`${game.away.abbrev} series wins`,'h2h');
+        add(h2h.homeWins,`${game.home.abbrev} series wins`,'h2h');
+        if(h2h.ties)add(h2h.ties,'all-time series ties','h2h');
+        if(h2h.daysSinceLast)add(h2h.daysSinceLast,'days since last meeting','h2h');
+        if(h2h.daysSinceFirst)add(h2h.daysSinceFirst,'days since first-ever meeting','h2h');
+      }
     }
     return m;
-  },[vocab,ciphers,dn,dayState,registry,phrases,game,vals]);
+  },[vocab,ciphers,dn,dayState,registry,phrases,game,h2h,vals]);
 
   /* ---------- pattern-engine source sets + ctx builder ---------- */
   const patternSources=useMemo(()=>{
@@ -415,11 +424,20 @@ export function AppStateProvider({children}){
         });
       });
     dayState.adhocThread.forEach(n=>chips.push({kind:'thread',label:'thread',n,cnt:countHits(n)}));
+    if(h2h){
+      chips.push({kind:'h2h',label:'H2H game #',n:h2h.gameNo,cnt:countHits(h2h.gameNo),
+        lineage:h2h.lineageNote.length?h2h.lineageNote.join(' · '):null});
+      chips.push({kind:'h2h',label:`${game.away.abbrev} W`,n:h2h.awayWins,cnt:countHits(h2h.awayWins)});
+      chips.push({kind:'h2h',label:`${game.home.abbrev} W`,n:h2h.homeWins,cnt:countHits(h2h.homeWins)});
+      if(h2h.ties)chips.push({kind:'h2h',label:'series ties',n:h2h.ties,cnt:countHits(h2h.ties)});
+      if(h2h.daysSinceLast!=null)chips.push({kind:'h2h',label:'days since last',n:h2h.daysSinceLast,cnt:countHits(h2h.daysSinceLast)});
+      if(h2h.daysSinceFirst!=null)chips.push({kind:'h2h',label:'days since first',n:h2h.daysSinceFirst,cnt:countHits(h2h.daysSinceFirst)});
+    }
     chips.push({kind:'date',label:'DOY',n:dn.doy,cnt:countHits(dn.doy)});
     chips.push({kind:'date',label:`${dn.M}/${dn.DD}`,n:+(''+dn.M+dn.DD),cnt:countHits(+(''+dn.M+dn.DD))});
     chips.push({kind:'date',label:'days left',n:dn.left,cnt:countHits(dn.left)});
     return chips;
-  },[game,board,dayState,registry,ciphers,dn]);
+  },[game,board,dayState,registry,ciphers,dn,h2h]);
 
   /* ---------- matchup: pitcher + CROSS rows + team staircases ---------- */
   const matchup=useMemo(()=>{
@@ -529,7 +547,7 @@ export function AppStateProvider({children}){
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
-    board,contextChips,matchup,loaded,colorFor,evalBatter,
+    board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,
     deepFetch,deepBusy,
