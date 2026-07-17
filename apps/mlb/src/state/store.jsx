@@ -367,24 +367,33 @@ export function AppStateProvider({children}){
   },[slate,game,batterId,board,side,buildPatternCtx,dn]);
 
   /* pattern hit counts across today's whole slate ("N hits today") */
-  const patternCounts=useMemo(()=>{
+  /* slate-wide pattern hits WITH identities (who/where), so the Patterns tab
+     can name the hitters instead of a bare count (Tony 2026-07-16). Date-
+     dependent patterns are included — they evaluate fine against today's dn;
+     excluding them made their cards read '0 hits today' while hitting. */
+  const patternHitsAll=useMemo(()=>{
     if(!slate)return{};
-    const counts={};
-    const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
-    slate.games.forEach(g=>{
+    const out={};
+    const enabled=patterns.filter(pt=>pt.enabled);
+    if(enabled.length)slate.games.forEach(g=>{
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
           const p=slate.people[id];
           if(!p||(!p.career&&!p.season))return;
           const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
-          daily.forEach(pt=>{
-            if(evalPattern(pt,ctx).match)counts[pt.id]=(counts[pt.id]||0)+1;
+          enabled.forEach(pt=>{
+            if(evalPattern(pt,ctx).match)
+              (out[pt.id]=out[pt.id]||[]).push({id,side:s,pk:g.pk,
+                name:p.fullName,abbr:g[s].abbrev||g[s].teamName});
           });
         });
       });
     });
-    return counts;
+    return out;
   },[slate,patterns,buildPatternCtx,dn]);
+  const patternCounts=useMemo(
+    ()=>Object.fromEntries(Object.entries(patternHitsAll).map(([k,v])=>[k,v.length])),
+    [patternHitsAll]);
 
   /* deep splits for the active game (vsTeam / league / month / day-of-week) */
   const [deepBusy,setDeepBusy]=useState(false);
@@ -665,7 +674,7 @@ export function AppStateProvider({children}){
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,exportConfig,importConfig,
-    patterns,setPatterns,previewPattern,patternCounts,
+    patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     deepFetch,deepBusy,checkLineups,lineupBusy,
     forecasts,generateForecasts,forecastBusy,grade,
     graduateTheme,exportDayLog,

@@ -6,15 +6,18 @@ import {LANES} from '../data/defaults.js';
 
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
    with live preview against the currently selected batter. */
-export default function PatternsTab(){
+export default function PatternsTab({goBoard}){
   const [editing,setEditing]=useState(null); // pattern object being edited
   return editing
     ?<Editor pattern={editing} onDone={()=>setEditing(null)}/>
-    :<Library onEdit={setEditing}/>;
+    :<Library onEdit={setEditing} goBoard={goBoard}/>;
 }
 
-function Library({onEdit}){
-  const {patterns,setPatterns,patternCounts}=useApp();
+function Library({onEdit,goBoard}){
+  const {patterns,setPatterns,patternCounts,patternHitsAll,setGamePk,setSide,setBatterId}=useApp();
+  const [hitsOpen,setHitsOpen]=useState(null); // pattern id with the full hit list expanded
+  /* tap a name → land on that batter's card on the Board */
+  const jump=h=>{setGamePk(h.pk);setSide(h.side);setBatterId(h.id);goBoard&&goBoard()};
   const blank=()=>({id:'pat-'+Date.now(),name:'New pattern',lane:'HR',enabled:true,
     conditions:[{counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]});
   return(
@@ -43,6 +46,25 @@ function Library({onEdit}){
             </button>
           </div>
           <div className="pat-summary">{describePattern(pt)}</div>
+          {(patternHitsAll[pt.id]?.length>0)&&(()=>{
+            const hits=patternHitsAll[pt.id];
+            const open=hitsOpen===pt.id;
+            const shown=open?hits:hits.slice(0,4);
+            return(
+              <div className="pat-name-row" style={{marginTop:6}} onClick={e=>e.stopPropagation()}>
+                {shown.map(h=>(
+                  <button key={`${h.pk}-${h.side}-${h.id}`} className="pat-who" onClick={()=>jump(h)}>
+                    {h.name}<span className="muted"> {h.abbr}</span>
+                  </button>
+                ))}
+                {hits.length>4&&(
+                  <button className="pat-more" onClick={()=>setHitsOpen(open?null:pt.id)}>
+                    {open?'less':`+${hits.length-4} more`}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           {patternMissingTemplate(pt)&&(
             <div className="pat-warn">⚠ needs a phrase template picked (make one in Vocab, pick it in the editor) before that leg can fire</div>
           )}
