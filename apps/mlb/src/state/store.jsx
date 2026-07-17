@@ -92,7 +92,28 @@ export function AppStateProvider({children}){
         fetchSlate(date,setLoading),
         fetchSeasonInfo(date.slice(0,4)).catch(()=>null),
       ]);
-      setSlate({...s,_date:date});setSeasonInfo(si);setSlateSavedAt(Date.now());
+      /* preserve same-day DEEP work across a full reload: carry p.deep onto
+         matching new people, and game.deepDone by pk — the latter only when
+         every current lineup id has splits (or has no stats to split), so a
+         call-up can't leave ⚡ DEEP disabled with a starter missing data.
+         Same date ⇒ same opponents ⇒ carried vsOpp/month/dow can't be stale. */
+      setSlate(prev=>{
+        if(prev&&prev._date===date){
+          Object.values(s.people).forEach(p=>{
+            const old=prev.people?.[p.id];
+            if(old?.deep)p.deep=old.deep;
+          });
+          s.games.forEach(g=>{
+            const og=prev.games?.find(x=>x.pk===g.pk);
+            if(og?.deepDone&&[...g.homeIds,...g.awayIds].every(id=>{
+              const p=s.people[id];
+              return!p||p.deep||(!p.career&&!p.season);
+            }))g.deepDone=true;
+          });
+        }
+        return{...s,_date:date};
+      });
+      setSeasonInfo(si);setSlateSavedAt(Date.now());
       /* functional update — validate the pk against the NEW slate's games so a
          date switch can't leave a stale pk from the old day selected */
       setGamePk(pk=>s.games.some(g=>g.pk===pk)?pk:(s.games[0]?.pk??null));
