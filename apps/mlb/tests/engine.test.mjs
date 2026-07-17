@@ -394,6 +394,56 @@ import {describePattern,describeCondition,patternNeedsDeep,patternMissingTemplat
   eq('seeds: examples carry the source line',stott.example.includes('Mets=57'),true);
 }
 
+/* ---- PATTERN-RECIPES §8 (Phase 2): board evidence → draft conditions ---- */
+import {inferSource,draftFromRung,draftFromCross,draftsToPattern} from '../src/engine/recipe.js';
+import {LANE_STAT} from '../src/data/defaults.js';
+{
+  eq('recipe: core hit → core source',inferSource('core').source,'core');
+  eq('recipe: theme hit → theme source',inferSource('theme').source,'theme');
+  eq('recipe: name hit → ownName source',inferSource('name').source,'ownName');
+  eq('recipe: date hit → counterRef(dateFig)',inferSource('date').sourceArg.counter,'dateFig');
+  eq('recipe: bday hit → counterRef(age)',inferSource('bday').sourceArg.counter,'age');
+  eq('recipe: h2h hit → dateThread',inferSource('h2h').source,'dateThread');
+  eq('recipe: thread hit → dateThread',inferSource('thread').source,'dateThread');
+  eq('recipe: context falls back to loaded',inferSource('context').source,'loaded');
+
+  /* venue split scope maps; a specific cat beats the loaded fallback even
+     when it isn't the first hit on the row */
+  const d=draftFromRung({stat:'HR',scope:'career·home',n:31,cur:30,off:1,
+    hits:[{src:'Citizens Bank Park Ord',cat:'context'},{src:'EIGHT Red',cat:'core'}]});
+  eq('recipe: venue scope mapped',d.cond.scope,'venue');
+  eq('recipe: counter from stat',d.cond.counter,'rung:HR');
+  eq('recipe: off carried',d.cond.counterArg.off,1);
+  eq('recipe: specific cat wins over loaded fallback',d.cond.source,'core');
+  eq('recipe: drafts default hard',d.cond.hard,true);
+  eq('recipe: no hits → loaded fallback',
+    draftFromRung({stat:'TB',scope:'season',n:151,cur:150,off:1,hits:[]}).cond.source,'loaded');
+
+  /* the drafted condition is grammar-legal end-to-end */
+  const dr=draftFromRung({stat:'HR',scope:'season',n:78,cur:77,off:1,hits:[{src:'X Ord',cat:'core'}]});
+  const r=evalCondition(dr.cond,mkCtx({sources:{core:[{n:78,label:'X Ord'}],theme:[],loadedAll:[],dateThread:[]}}));
+  eq('recipe: drafted rung condition evaluates',r.pass,true);
+
+  /* CROSS rows: rung-anchored + game# expressible, name-vs-name is not */
+  const cr=draftFromCross({n:78,text:'…',rung:{stat:'HR',scope:'season',off:1}});
+  eq('recipe: rung cross → rung counter',cr.cond.counter,'rung:HR');
+  eq('recipe: rung cross → oppPitcher source',cr.cond.source,'oppPitcher');
+  const cg=draftFromCross({n:95,text:'…',gameNo:true});
+  eq('recipe: game# cross → teamGame counter',cg.cond.counter,'teamGame');
+  eq('recipe: inexpressible cross → null',draftFromCross({n:5,text:'name=name'}),null);
+  const rc=evalCondition(cg.cond,mkCtx({oppPitcherVals:[{n:95,label:'SP Rev'}]}));
+  eq('recipe: drafted cross condition evaluates',rc.pass,true);
+
+  /* drafts → pattern: lane guessed from the first rung stat */
+  const pat=draftsToPattern([dr,cg],LANE_STAT);
+  eq('recipe: lane from first rung stat',pat.lane,'HR');
+  eq('recipe: conditions carried in order',pat.conditions.length,2);
+  eq('recipe: pattern ships enabled',pat.enabled,true);
+  eq('recipe: SO stat maps to K lane',
+    draftsToPattern([draftFromRung({stat:'SO',scope:'season',n:61,cur:60,off:1,hits:[]})],LANE_STAT).lane,'K');
+  eq('recipe: no rung drafts → HR lane default',draftsToPattern([cg],LANE_STAT).lane,'HR');
+}
+
 /* ---- applyLineups: projected roster → confirmed lineup transition ---- */
 import {applyLineups,isProjected} from '../src/data/lineups.js';
 {
