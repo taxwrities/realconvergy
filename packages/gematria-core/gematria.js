@@ -17,21 +17,22 @@ export function calcAll(s){
     Rev:L.reduce((a,c)=>a+(27-(c.charCodeAt(0)-96)),0),
     RR:L.reduce((a,c)=>a+red1(27-(c.charCodeAt(0)-96)),0),
     Sat:ord+35*L.length,
+    RevSat:L.reduce((a,c)=>a+(62-(c.charCodeAt(0)-96)),0),
     Chal:L.reduce((a,c)=>a+CHALDEAN[c],0),
     Sept:L.reduce((a,c)=>a+SEPTENARY[c],0),
     Latin:L.reduce((a,c)=>a+LATIN[c],0)};
 }
 
 export const CIPHER_LABEL={Ord:'Ordinal',Red:'Reduction',Rev:'Rev Ordinal',RR:'Rev Reduction',
-  Sat:'Satanic',Chal:'Chaldean',Sept:'Septenary',Latin:'Jewish'};
+  Sat:'Satanic',RevSat:'Rev Satanic',Chal:'Chaldean',Sept:'Septenary',Latin:'Jewish'};
 export const cl=c=>CIPHER_LABEL[c]||c;
-export const ALL_CIPHERS=['Ord','Red','Rev','RR','Sat','Chal','Sept','Latin'];
+export const ALL_CIPHERS=['Ord','Red','Rev','RR','Sat','RevSat','Chal','Sept','Latin'];
 
 /* Cipher defaults per sport profile (§7): MLB may run Chaldean OFF;
    WNBA runs Chaldean + Satanic ON. Stored per profile in cvg.ciphers.{profile}. */
 export const CIPHER_DEFAULTS={
-  mlb:{Ord:true,Red:true,Rev:true,RR:true,Sat:true,Chal:true,Sept:false,Latin:true},
-  wnba:{Ord:true,Red:true,Rev:true,RR:true,Sat:true,Chal:true,Sept:false,Latin:true},
+  mlb:{Ord:true,Red:true,Rev:true,RR:true,Sat:true,RevSat:true,Chal:true,Sept:false,Latin:true},
+  wnba:{Ord:true,Red:true,Rev:true,RR:true,Sat:true,RevSat:true,Chal:true,Sept:false,Latin:true},
 };
 
 /* Verification checksum (§2): runs on boot and on any vocab save.

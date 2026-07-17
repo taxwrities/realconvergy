@@ -35,6 +35,14 @@ eq('Rangers Red',calcAll('Rangers').Red,37);
 eq('Luis Garcia Jr Homer Ord',calcAll('Luis Garcia Jr Homer').Ord,187);
 eq('Astros Chal',calcAll('Astros').Chal,20);
 
+/* Reverse Satanic locks (A=61…Z=36; per-letter = 62 − ordinal) */
+eq('A RevSat',calcAll('A').RevSat,61);
+eq('Z RevSat',calcAll('Z').RevSat,36);
+eq('Tuesday RevSat',calcAll('Tuesday').RevSat,339);
+eq('Olivia RevSat',calcAll('Olivia').RevSat,304);
+/* identity: Rev Satanic = Rev Ordinal + 35 per letter (single letter len 1) */
+eq('B RevSat = Rev+35',calcAll('B').RevSat,calcAll('B').Rev+35);
+
 /* number theory */
 eq('nthPrime(12)',nthPrime(12),37);
 eq('nthPrime(8)',nthPrime(8),19);
