@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useApp} from '../state/store.jsx';
-import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent} from '../engine/patterns.js';
+import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent,
+  describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
 import {LANES} from '../data/defaults.js';
 
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
@@ -20,11 +21,18 @@ function Library({onEdit}){
     <div>
       {patterns.map(pt=>(
         <div key={pt.id} className="panel" style={{cursor:'pointer'}} onClick={()=>onEdit(structuredClone(pt))}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
             <b style={{fontSize:14}}>{pt.name}</b>
             <span className="badge gold">{pt.lane}</span>
+            {pt.example&&<span className="badge cyan">EXAMPLE</span>}
             {isDateDependent(pt)&&<span className="badge purple">⟡ FORECAST</span>}
             {pt.autoPromote&&<span className="badge green">AUTO-PROMOTE</span>}
+            {patternNeedsDeep(pt)&&(
+              <span className="badge blue"
+                title="uses vs-team / vs-league / month / day-of-week / game-log data — 0 hits until you tap DEEP on the game">
+                needs DEEP
+              </span>
+            )}
             <span style={{marginLeft:'auto'}} className="mono v-green">
               {patternCounts[pt.id]||0} hits today
             </span>
@@ -34,9 +42,15 @@ function Library({onEdit}){
               {pt.enabled?'ON':'off'}
             </button>
           </div>
-          <div className="muted" style={{fontSize:11.5,marginTop:5,fontFamily:'var(--cvg-mono)'}}>
-            {pt.conditions.map(summarizeCondition).join('  AND  ')}
-          </div>
+          <div className="pat-summary">{describePattern(pt)}</div>
+          {patternMissingTemplate(pt)&&(
+            <div className="pat-warn">⚠ needs a phrase template picked (make one in Vocab, pick it in the editor) before that leg can fire</div>
+          )}
+          {pt.example&&<div className="pat-example">{pt.example}</div>}
+          <details className="pat-tech" onClick={e=>e.stopPropagation()}>
+            <summary>technical rule</summary>
+            <div>{pt.conditions.map(summarizeCondition).join('  AND  ')}</div>
+          </details>
         </div>
       ))}
       <button className="chip on" onClick={()=>onEdit(blank())}>+ new pattern</button>
@@ -122,6 +136,11 @@ function Editor({pattern,onDone}){
                 <button className="chip gray" style={{padding:'4px 8px'}}
                   onClick={()=>setPt({...pt,conditions:pt.conditions.filter((_,j)=>j!==i)})}>×</button>
               </div>
+              {(()=>{
+                const ch=COUNTERS.find(x=>x.id===c.counter)?.hint;
+                const sh=SOURCES.find(x=>x.id===c.source)?.hint;
+                return(ch||sh)?<div className="hint">{[ch,sh].filter(Boolean).join('  ·  ')}</div>:null;
+              })()}
               {d&&(
                 <div style={{marginTop:6,fontSize:11.5,fontFamily:'var(--cvg-mono)'}}
                   className={d.pass?'v-green':'muted'}>
