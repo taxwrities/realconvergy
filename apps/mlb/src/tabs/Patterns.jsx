@@ -46,8 +46,17 @@ function Library({onEdit,goBoard}){
             </button>
           </div>
           <div className="pat-summary">{describePattern(pt)}</div>
-          {(patternHitsAll[pt.id]?.length>0)&&(()=>{
-            const hits=patternHitsAll[pt.id];
+          {(patternHitsAll.legs[pt.id]?.some(n=>n>0))&&!(patternHitsAll.hits[pt.id]?.length)&&(
+            <div className="hint" title="how many slate batters pass each condition individually — a 0-hit day usually means the legs fire separately but never together">
+              per-leg passes today:{' '}
+              {patternHitsAll.legs[pt.id].map((n,i)=>(
+                <span key={i}>{i>0&&' · '}<b className={pt.conditions[i]?.hard?'v-gold':''}>{n}</b></span>
+              ))}
+              {' '}(gold = hard)
+            </div>
+          )}
+          {(patternHitsAll.hits[pt.id]?.length>0)&&(()=>{
+            const hits=patternHitsAll.hits[pt.id];
             const open=hitsOpen===pt.id;
             const shown=open?hits:hits.slice(0,4);
             return(
