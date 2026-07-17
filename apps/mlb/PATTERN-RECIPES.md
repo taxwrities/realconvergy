@@ -175,7 +175,13 @@ Verified fixtures: Brett Baty 58 RR · Philadelphia 101 Ord = 26th prime ·
 
 ---
 
-# Phase 2 — reverse the authoring flow (separate session)
+# Phase 2 — reverse the authoring flow (SHIPPED 2026-07-17)
+
+Three commits: `src/engine/recipe.js` (pure draft inference, 24 locks) →
+drawer UI (§8) → editor preview select (§9). Notes: date/bday evidence rides
+`counterRef` (dateFig/age counters — there is no date "source"); name-vs-name
+CROSS rows are inexpressible in the grammar and get no ⊕; drafts persist on
+`cvg.recipeDraft`.
 
 ## 8. Tap-to-recipe drawer
 
