@@ -355,6 +355,16 @@ function PatternHitsPanel(){
   );
 }
 
+/* entering-stats line: every tracked counting stat as a career/season pair.
+   PA + AB lead and are green-lit (the green-light signals, never the bet —
+   §2 house rule) so they're never missing from the card at a glance. Each
+   number is a RungNum → tap for its next-rungs ladder. (Tony 2026-07-17) */
+const ENTER_STATS=[
+  ['PA','plateAppearances'],['AB','atBats'],['H','hits'],['1B','1B'],
+  ['2B','doubles'],['3B','triples'],['HR','homeRuns'],['XBH','XBH'],
+  ['RBI','rbi'],['TB','totalBases'],['BB','baseOnBalls'],['SO','strikeOuts'],
+];
+
 function BatterCard({row}){
   const {colorFor,contextFilter,patternFilter,addDraft}=useApp();
   const ev=row.ev;
@@ -398,6 +408,24 @@ function BatterCard({row}){
           {' · '}<FactNum value={ev.debut.years}>{ev.debut.years}</FactNum>y
           {' · '}<FactNum value={ev.debut.since}>{ev.debut.since}</FactNum>d since anniv
           {' · '}<FactNum value={ev.debut.until}>{ev.debut.until}</FactNum>d until
+        </div>
+      )}
+      {(p.career||p.season)&&(
+        <div className="ent-stats">
+          {ENTER_STATS.map(([lbl,key])=>{
+            const c=p.career?.[key],s=p.season?.[key];
+            if(c==null&&s==null)return null;
+            const green=lbl==='PA'||lbl==='AB';
+            return(
+              <span key={lbl} className={`ent${green?' green':''}`}>
+                <span className="el">{lbl}</span>
+                {c!=null?<RungNum stat={lbl} value={c}>{c}</RungNum>:<span className="muted">–</span>}
+                <span className="sl">/</span>
+                {s!=null?<RungNum stat={lbl} value={s}>{s}</RungNum>:<span className="muted">–</span>}
+              </span>
+            );
+          })}
+          <span className="ent-key muted">career/season</span>
         </div>
       )}
       {row.patternHits.length>0&&(
