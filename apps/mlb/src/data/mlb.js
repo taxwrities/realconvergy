@@ -188,25 +188,40 @@ export async function deepFetchGame(game,people,dstr,onProgress){
   const prog=onProgress||(()=>{});
   const season=dstr.slice(0,4),gameMonth=+dstr.slice(5,7);
   const dow=new Date(dstr+'T12:00:00').getDay()+1; // statsapi dayOfWeek is 1=Sunday
+  /* career month/weekday come as sitCodes on the SAME bulk call as the league
+     splits (live-verified 2026-07-16: careerStatSplits sitCodes=7 → Baty
+     career-July G=58, dth → career-Thursday G=44 — exact reference-count
+     matches). Month code = plain month number; weekday codes dsu..dsa. */
+  const dowCode=['dsu','dmo','dtu','dwe','dth','dfr','dsa'][dow-1];
+  const monthCode=String(gameMonth);
   const ids=[...game.homeIds,...game.awayIds].filter(id=>{const p=people[id];return p&&(p.career||p.season)});
-  // one bulk call for league splits (both sitCodes; pick per side)
+  // one bulk call for league + career-month + career-weekday splits
   for(let i=0;i<ids.length;i+=50){
     const chunk=ids.slice(i,i+50);
-    prog(`Deep: league splits ${Math.min(i+50,ids.length)}/${ids.length}…`);
-    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=stats(group=[hitting],type=[careerStatSplits,statSplits],sitCodes=[val,vnl],season=${season})`);
+    prog(`Deep: league/career splits ${Math.min(i+50,ids.length)}/${ids.length}…`);
+    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=stats(group=[hitting],type=[careerStatSplits,statSplits],sitCodes=[val,vnl,${monthCode},${dowCode}],season=${season})`);
     d.people.forEach(pp=>{
       const p=people[pp.id];if(!p)return;
       const isHome=game.homeIds.includes(pp.id);
       const opp=isHome?game.away:game.home;
       const sit=opp.league===103?'val':opp.league===104?'vnl':null;
-      if(!sit)return;
       const deep=p.deep=p.deep||{};
-      deep.leagueTag=sit==='val'?'AL':'NL';
+      if(sit)deep.leagueTag=sit==='val'?'AL':'NL';
       (pp.stats||[]).forEach(st=>{
+        const career=st.type.displayName==='careerStatSplits';
+        if(!career&&st.type.displayName!=='statSplits')return;
         (st.splits||[]).forEach(sp=>{
-          if(sp.split?.code!==sit)return;
-          if(st.type.displayName==='careerStatSplits')deep.leagueCareer=deriveStats(sp.stat);
-          else if(st.type.displayName==='statSplits')deep.leagueSeason=deriveStats(sp.stat);
+          const code=sp.split?.code;
+          if(sit&&code===sit){
+            if(career)deep.leagueCareer=deriveStats(sp.stat);
+            else deep.leagueSeason=deriveStats(sp.stat);
+          }else if(code===monthCode&&career){
+            deep.monthCareer=deriveStats(sp.stat);
+            deep.monthCareerTag=`career·${MONTH_NAMES[gameMonth]}`;
+          }else if(code===dowCode&&career){
+            deep.dowCareer=deriveStats(sp.stat);
+            deep.dowCareerTag=`career·${DOW_NAMES[dow]}`;
+          }
         });
       });
     });
@@ -240,9 +255,7 @@ export async function deepFetchGame(game,people,dstr,onProgress){
     // one gameLog pull per batter, latest date each lane ticked. Own try —
     // a gameLog failure must not cost the splits above.
     try{
-      const gl=await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`);
-      const ev={};
-      ((gl.stats?.[0]?.splits)||[]).forEach(x=>{
+      const scanLog=(gl,ev)=>((gl.stats?.[0]?.splits)||[]).forEach(x=>{
         if(!x.date)return;
         const s=deriveStats({...x.stat});
         [['HR','homeRuns'],['H','hits'],['2B','doubles'],['3B','triples'],
@@ -250,6 +263,15 @@ export async function deepFetchGame(game,people,dstr,onProgress){
           if(+s[f]>0&&(!ev[k]||x.date>ev[k]))ev[k]=x.date;
         });
       });
+      const ev={};
+      scanLog(await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`),ev);
+      /* cross-season fallback: no HR yet THIS season → the sinceLast:HR
+         counter would be blind, so scan last season's log once (fills any
+         other missing lanes for free). Gated on HR only — rarer lanes (3B)
+         being empty is normal and not worth a call per bench player. */
+      if(!ev.HR&&p.debutDate&&+p.debutDate.slice(0,4)<+season){
+        scanLog(await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${+season-1}`),ev);
+      }
       (p.deep=p.deep||{}).lastEvent=ev;
     }catch{/* degrade per player */}
   }

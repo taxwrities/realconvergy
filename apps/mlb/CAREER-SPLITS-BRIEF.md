@@ -1,5 +1,17 @@
 # Brief: career month / day-of-week game counts for the MLB convergence app
 
+> **RESOLVED 2026-07-16 — no game-log architecture needed for splits.**
+> `/api/v1/situationCodes` DOES carry month codes (plain numbers `1`–`10`) and
+> weekday codes (`dsu`…`dsa`), and `careerStatSplits` accepts them: Baty
+> `sitCodes=7` → career-July G=58 HR=7, `sitCodes=dth` → career-Thursday G=44 —
+> exact hand-count matches, full stat lines, and they piggyback on the app's
+> EXISTING bulk DEEP call (`sitCodes=[val,vnl,<month>,<dowCode>]`) at zero
+> extra requests. Shipped: `deep.monthCareer`/`deep.dowCareer`, month/dow
+> pattern scopes emit season + career bases. The only game-log piece kept from
+> the external suggestion: a one-call prior-season fallback for cross-season
+> `sinceLast:HR` (sitCodes can't yield dates). The brief below is retained as
+> the problem history.
+
 Self-contained problem statement — written to be pasted to another assistant for
 solution ideas. All API facts below were live-verified against statsapi on
 2026-07-16.

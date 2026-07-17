@@ -13,7 +13,7 @@ export const COUNTERS=[
   {id:'rung:H',label:'H rung'},{id:'rung:1B',label:'1B rung'},{id:'rung:XBH',label:'XBH rung'},
   {id:'rung:RBI',label:'RBI rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
   {id:'rung:3B',label:'3B rung'},{id:'rung:AB',label:'AB rung'},{id:'rung:PA',label:'PA rung'},
-  {id:'rung:G',label:'G (games) rung',hint:'games played — season/career, or month/vs-team/day-of-week with DEEP'},
+  {id:'rung:G',label:'G (games) rung',hint:'games played — month/day-of-week scopes emit BOTH season + career counts (DEEP)'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
   {id:'stair:R',label:'team next R',hint:'team total, next +1..+10'},{id:'stair:AB',label:'team next AB'},
@@ -87,9 +87,15 @@ export function resolveCounter(cond,ctx){
       else if(cond.scope==='vsLeague'){
         if(p.deep?.leagueCareer?.[key]!=null)bases.push({v:+p.deep.leagueCareer[key],tag:`career vs ${p.deep.leagueTag}`});
         if(p.deep?.leagueSeason?.[key]!=null)bases.push({v:+p.deep.leagueSeason[key],tag:`season vs ${p.deep.leagueTag}`});
-      }else if(cond.scope==='month'&&p.deep?.month?.[key]!=null)bases.push({v:+p.deep.month[key],tag:p.deep.monthTag});
-      else if(cond.scope==='dow'&&p.deep?.dow?.[key]!=null)bases.push({v:+p.deep.dow[key],tag:p.deep.dowTag});
-      else if(!cond.scope||cond.scope==='season'){/* handled above */}
+      }else if(cond.scope==='month'){
+        /* two bases like venue: season split + career sitCode split
+           ("58th career July game" — Baty). */
+        if(p.deep?.month?.[key]!=null)bases.push({v:+p.deep.month[key],tag:p.deep.monthTag});
+        if(p.deep?.monthCareer?.[key]!=null)bases.push({v:+p.deep.monthCareer[key],tag:p.deep.monthCareerTag});
+      }else if(cond.scope==='dow'){
+        if(p.deep?.dow?.[key]!=null)bases.push({v:+p.deep.dow[key],tag:p.deep.dowTag});
+        if(p.deep?.dowCareer?.[key]!=null)bases.push({v:+p.deep.dowCareer[key],tag:p.deep.dowCareerTag});
+      }else if(!cond.scope||cond.scope==='season'){/* handled above */}
       bases.forEach(b=>{
         for(let k=1;k<=offMax;k++)out.push({n:b.v+k,label:`${b.tag} ${S} ${b.v}+${k}`});
       });

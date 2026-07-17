@@ -345,7 +345,11 @@ import {resolveSource} from '../src/engine/patterns.js';
       dateThread:Object.entries(dateNumerology('2026-07-16').vals).map(([n,l])=>({n:+n,label:l}))},
     batter:{p:{id:6,fullName:'Brett Baty',lastName:'Baty',jersey:7,
       season:{homeRuns:6,gamesPlayed:80},
-      deep:{month:{gamesPlayed:57},vsOpp:{gamesPlayed:34},dow:{gamesPlayed:43},
+      deep:{month:{gamesPlayed:12},monthTag:'July',
+        monthCareer:{gamesPlayed:57},monthCareerTag:'career·July',
+        dow:{gamesPlayed:11},dowTag:'Thursday',
+        dowCareer:{gamesPlayed:43},dowCareerTag:'career·Thursday',
+        vsOpp:{gamesPlayed:34},
         leagueCareer:{homeRuns:25},lastEvent:{HR:'2026-05-14'}}},
       side:'away',nameVals:batyName,ageFigures:[]}});
   const res=evalPattern(recipe,ctx);
@@ -353,7 +357,10 @@ import {resolveSource} from '../src/engine/patterns.js';
   eq('Baty: 2/2 hard',res.hardPass,2);
   eq('Baty: 3/3 soft',res.softPass,3);
   eq('Baty leg A: next HR 7 = #7 jersey',res.details[0].matches.some(m=>m.n===7),true);
-  eq('Baty leg A2: 58th July game = Brett Baty RR 58',res.details[1].matches.some(m=>m.n===58),true);
+  eq('Baty leg A2: 58th CAREER July game = Brett Baty RR 58',res.details[1].matches.some(m=>m.n===58),true);
+  eq('Baty leg A2: career base labelled',res.details[1].matches.some(m=>m.left.includes('career·July')),true);
+  eq('Baty leg A2: season July base emitted too (13 no-match)',
+    res.details[1].leftCount>=2,true);
   eq('Baty leg B: vs-NL HR 26 = prime# of Philadelphia 101',res.details[2].matches.some(m=>m.n===26),true);
   eq('Baty leg C: comp# of 35th game vs PHI = 23 = 7+16',res.details[3].matches.some(m=>m.n===23),true);
   eq('Baty leg D: 44th Thursday game = comp# of 63d since HR',res.details[4].matches.some(m=>m.n===44),true);
