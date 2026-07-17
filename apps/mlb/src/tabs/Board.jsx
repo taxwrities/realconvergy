@@ -3,6 +3,7 @@ import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
+import {isProjected} from '../data/lineups.js';
 import {cl} from '../engine/gematria.js';
 import {classifyRungs} from '../engine/rungs.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
@@ -189,7 +190,7 @@ function TeamToggle(){
       {['away','home'].map(s=>(
         <button key={s} className={`chip${side===s?' on':''}`}
           onClick={()=>{setSide(s);setBatterId(null)}}>
-          {game[s].teamName}{game.projected?' · proj':''}
+          {game[s].teamName}{isProjected(game,s)?' · proj':''}
         </button>
       ))}
       <button className="chip gold" style={{flex:'0 0 auto'}} disabled={game.deepDone||deepBusy}

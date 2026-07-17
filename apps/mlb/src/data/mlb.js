@@ -44,6 +44,7 @@ export async function fetchSlate(dstr,onProgress){
     awaySP:g.teams.away.probablePitcher?.id||null,
     homeIds:(g.lineups?.homePlayers||[]).map(x=>x.id),
     awayIds:(g.lineups?.awayPlayers||[]).map(x=>x.id),
+    proj:{home:false,away:false},
     projected:false,
   }));
   prog('Teams…');
@@ -82,6 +83,7 @@ export async function fetchSlate(dstr,onProgress){
         g[side+'Ids']=r.roster
           .filter(x=>x.position.type!=='Pitcher'||x.position.abbreviation==='TWP')
           .map(x=>x.person.id);
+        g.proj[side]=true;
         g.projected=true;
       }
     }
@@ -164,6 +166,13 @@ export function h2hFor(game,dstr){
     firstMeeting:first,lastMeeting:last,
     daysSinceLast:last?day(last):null,daysSinceFirst:first?day(first):null,
     lineageNote};
+}
+
+/* One cheap lineup recheck: the schedule call alone (no roster/people
+   hydration). Feed the result to applyLineups (data/lineups.js). */
+export async function fetchLineups(dstr){
+  const d=await jget(`${API}/schedule?sportId=1&date=${dstr}&hydrate=lineups`);
+  return d.dates?.[0]?.games||[];
 }
 
 /* ================================================================
