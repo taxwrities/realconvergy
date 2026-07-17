@@ -13,6 +13,7 @@ export const COUNTERS=[
   {id:'rung:H',label:'H rung'},{id:'rung:1B',label:'1B rung'},{id:'rung:XBH',label:'XBH rung'},
   {id:'rung:RBI',label:'RBI rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
   {id:'rung:3B',label:'3B rung'},{id:'rung:AB',label:'AB rung'},{id:'rung:PA',label:'PA rung'},
+  {id:'rung:G',label:'G (games) rung'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
   {id:'stair:R',label:'team next R'},{id:'stair:AB',label:'team next AB'},
@@ -34,11 +35,16 @@ export const SOURCES=[
   {id:'template',label:'phrase template'},{id:'oppPitcher',label:'opp pitcher name'},
   {id:'oppTeam',label:'opponent team'},{id:'team',label:'team'},{id:'stadium',label:'stadium'},
   {id:'word',label:'free word'},{id:'loaded',label:'any loaded value'},
-  {id:'numberWord',label:'spelled counter'},
+  {id:'numberWord',label:'spelled counter'},{id:'counterRef',label:'other counter'},
+  {id:'jersey',label:'jersey #'},
 ];
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
-  RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances'};
+  RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances',
+  G:'gamesPlayed'};
+/* G stays out of the rung:* wildcard — NAME LOCK et al predate it and their
+   hit counts must not shift under an engine addition. */
+const WILDCARD_STATS=Object.keys(STAT_KEY).filter(s=>s!=='G');
 export const DATE_COUNTERS=new Set(['doy','dateFig','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter)||c.counter?.startsWith('sinceLast'));
@@ -54,7 +60,7 @@ export function resolveCounter(cond,ctx){
   const offMax=cond.counterArg?.off||1;
   const out=[];
   if(kind==='rung'){
-    const stats=stat==='*'?Object.keys(STAT_KEY):[stat];
+    const stats=stat==='*'?WILDCARD_STATS:[stat];
     stats.forEach(S=>{
       const key=STAT_KEY[S];
       const bases=[];
@@ -120,17 +126,25 @@ export function resolveSource(cond,ctx){
   if(src==='team')return(ctx.teamNames?.length?ctx.teamNames:[ctx.teamName]).filter(Boolean).flatMap(nm=>enabledVals(nm,ctx.ciphers));
   if(src==='stadium')return enabledVals(ctx.stadium||'',ctx.ciphers);
   if(src==='word')return typeof cond.sourceArg==='string'&&cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
-  if(src==='numberWord'){
-    /* counter reference on the source side (PATTERN-RECIPES §2): resolve the
-       referenced counter, SPELL each candidate value, run the ciphers. The
-       Zach convention — season HR next 8 → "EIGHT" → 31 Red. */
+  if(src==='numberWord'||src==='counterRef'){
+    /* counter reference on the source side (PATTERN-RECIPES §2/§8): resolve the
+       referenced counter, then either SPELL each candidate and run the ciphers
+       (numberWord — the Zach convention, season HR next 8 → "EIGHT" → 31 Red)
+       or pass the raw values through (counterRef — counter-vs-counter links
+       like 44th Thursday game = comp# of days-since-last-HR). rmod applies
+       after, so 'comp# of other counter' works. */
     const a=cond.sourceArg&&typeof cond.sourceArg==='object'?cond.sourceArg:null;
     if(!a?.counter)return[];
     const ref=resolveCounter({counter:a.counter,scope:a.scope||'season',counterArg:{off:a.off||1}},ctx);
+    if(src==='counterRef')return ref;
     return ref.flatMap(x=>{
       const w=numberToWords(x.n);
       return w?enabledVals(w,ctx.ciphers).map(v=>({n:v.n,label:`${v.label} ${v.n} (${x.label})`})):[];
     });
+  }
+  if(src==='jersey'){
+    const j=+ctx.batter.p.jersey;
+    return j>0?[{n:j,label:`#${j} jersey`}]:[];
   }
   if(src==='template'){
     const t=(ctx.templates||[]).find(x=>x.id===cond.sourceArg);
@@ -212,6 +226,18 @@ export const SEED_PATTERNS=[
     {counter:'oppPitcherClock',scope:'season',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:false},
     {counter:'sinceLast:HR',scope:'season',lmod:'',rmod:'primeIdx',source:'template',sourceArg:'',hard:false},
   ]},
+  /* Second worked example — the Brett Baty line (2026-07-16), DISABLED. The
+     games-played web: next HR = jersey, Nth month-game = own name, vs-league
+     HR = prime# of city, vs-team game count = comp# → date, day-of-week game
+     count = comp# of days-since-last-HR. Needs the DEEP tier for the
+     month/vsTeam/dow G counts and sinceLast. */
+  {id:'seed-composite-web',name:'COMPOSITE WEB (Baty ex.)',lane:'HR',enabled:false,seed:true,conditions:[
+    {counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'jersey',sourceArg:'',hard:true},
+    {counter:'rung:G',counterArg:{off:1},scope:'month',lmod:'',rmod:'',source:'ownName',sourceArg:'',hard:true},
+    {counter:'rung:HR',counterArg:{off:1},scope:'vsLeague',lmod:'',rmod:'primeIdx',source:'oppTeam',sourceArg:'',hard:false},
+    {counter:'rung:G',counterArg:{off:1},scope:'vsTeam',lmod:'compIdx',rmod:'',source:'dateThread',sourceArg:'',hard:false},
+    {counter:'rung:G',counterArg:{off:1},scope:'dow',lmod:'',rmod:'compIdx',source:'counterRef',sourceArg:{counter:'sinceLast:HR',scope:'season',off:1},hard:false},
+  ]},
 ];
 
 export const summarizeCondition=c=>{
@@ -220,8 +246,8 @@ export const summarizeCondition=c=>{
   const lm=c.lmod?MODS.find(m=>m.id===c.lmod).label+' ':'';
   const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
   const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
-  const arg=c.source==='numberWord'&&c.sourceArg?.counter
-    ?` [spell ${COUNTERS.find(x=>x.id===c.sourceArg.counter)?.label||c.sourceArg.counter} · ${c.sourceArg.scope||'season'}]`
+  const arg=(c.source==='numberWord'||c.source==='counterRef')&&c.sourceArg?.counter
+    ?` [${c.source==='numberWord'?'spell ':''}${COUNTERS.find(x=>x.id===c.sourceArg.counter)?.label||c.sourceArg.counter} · ${c.sourceArg.scope||'season'}]`
     :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
   const rung=c.counter.startsWith('rung');
   return`${lm}${cnt}${rung?` ${off} (${c.scope})`:''} = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;

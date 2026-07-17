@@ -118,8 +118,9 @@ eq('pattern: hard pass + soft fail still matches',pr.match,true);
 eq('pattern: hardPass 1/1',pr.hardPass,1);
 
 /* seeds: shapes + date-dependence */
-eq('seeds: 5 shipped',SEED_PATTERNS.length,5);
+eq('seeds: 6 shipped',SEED_PATTERNS.length,6);
 eq('seeds: Stott example ships disabled',SEED_PATTERNS[4].enabled,false);
+eq('seeds: Baty example ships disabled',SEED_PATTERNS[5].enabled,false);
 eq('seeds: HR Convergence not date-dependent',isDateDependent(SEED_PATTERNS[0]),false);
 eq('date-dependence detected',isDateDependent({conditions:[{counter:'dn'}]}),true);
 eq('dow counter date-dependent',isDateDependent({conditions:[{counter:'dow'}]}),true);
@@ -320,6 +321,40 @@ import {resolveSource} from '../src/engine/patterns.js';
   eq('Stott leg 2b: SP bday 31 = EIGHT',res.details[3].matches.some(m=>m.n===31),true);
   eq('Stott leg 3: 23 = prime# of 83',res.details[4].matches.some(m=>m.n===23),true);
   eq('Stott: recipe is date-dependent → Forecast',isDateDependent(recipe),true);
+}
+
+/* ---- PATTERN-RECIPES §8: the Brett Baty line, end-to-end ----
+   'Brett Baty (58) #7 on the 16th (7) 58th July game, next hr 7. Next hr vs
+   NL is 26, can happen in Philadelphia(101)-26p. Can hr in 35th h2h vs PHI
+   on 7/16(23), 35-23c in 44th Thursday(35) game, 63d since his last. 63-44c'
+   Fixtures verified: Brett Baty 58 RR · Philadelphia 101 Ord = 26th prime ·
+   35 = 23rd composite (23 = 7+16) · 63 = 44th composite. */
+{
+  const recipe=structuredClone(SEED_PATTERNS.find(p=>p.id==='seed-composite-web'));
+  recipe.enabled=true;
+  const batyName=nameRun('Brett Baty',CIPHERS_ON);
+  const ctx=mkCtx({
+    date:'2026-07-16',dn:dateNumerology('2026-07-16'),
+    oppTeamName:'Phillies',oppTeamNames:['Phillies','Philadelphia Phillies','Philadelphia'],
+    sources:{core:[],theme:[],loadedAll:[],
+      dateThread:Object.entries(dateNumerology('2026-07-16').vals).map(([n,l])=>({n:+n,label:l}))},
+    batter:{p:{id:6,fullName:'Brett Baty',lastName:'Baty',jersey:7,
+      season:{homeRuns:6,gamesPlayed:80},
+      deep:{month:{gamesPlayed:57},vsOpp:{gamesPlayed:34},dow:{gamesPlayed:43},
+        leagueCareer:{homeRuns:25},lastEvent:{HR:'2026-05-14'}}},
+      side:'away',nameVals:batyName,ageFigures:[]}});
+  const res=evalPattern(recipe,ctx);
+  eq('Baty: MATCH',res.match,true);
+  eq('Baty: 2/2 hard',res.hardPass,2);
+  eq('Baty: 3/3 soft',res.softPass,3);
+  eq('Baty leg A: next HR 7 = #7 jersey',res.details[0].matches.some(m=>m.n===7),true);
+  eq('Baty leg A2: 58th July game = Brett Baty RR 58',res.details[1].matches.some(m=>m.n===58),true);
+  eq('Baty leg B: vs-NL HR 26 = prime# of Philadelphia 101',res.details[2].matches.some(m=>m.n===26),true);
+  eq('Baty leg C: comp# of 35th game vs PHI = 23 = 7+16',res.details[3].matches.some(m=>m.n===23),true);
+  eq('Baty leg D: 44th Thursday game = comp# of 63d since HR',res.details[4].matches.some(m=>m.n===44),true);
+  /* G stays out of the rung:* wildcard — NAME LOCK semantics must not shift */
+  const wild=evalCondition({counter:'rung:*',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'word',sourceArg:'ZZZ',hard:true},ctx);
+  eq('rung:* excludes G',wild.leftCount,ctx.batter.p.season.homeRuns!=null?1:0); // only HR present in season
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

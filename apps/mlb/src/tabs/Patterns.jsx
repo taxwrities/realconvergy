@@ -92,12 +92,12 @@ function Editor({pattern,onDone}){
                   {MODS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
                 </select>
                 <select style={sel} value={c.source} onChange={e=>{const s=e.target.value;
-                  upCond(i,{source:s,sourceArg:s==='numberWord'?{counter:'rung:HR',scope:'season',off:1}:''})}}>
+                  upCond(i,{source:s,sourceArg:s==='numberWord'||s==='counterRef'?{counter:'rung:HR',scope:'season',off:1}:''})}}>
                   {SOURCES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
                 {c.source==='word'&&<input type="text" style={{...sel,width:110}} placeholder="word…"
                   value={typeof c.sourceArg==='string'?c.sourceArg:''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
-                {c.source==='numberWord'&&(()=>{
+                {(c.source==='numberWord'||c.source==='counterRef')&&(()=>{
                   const a=c.sourceArg?.counter?c.sourceArg:{counter:'rung:HR',scope:'season',off:1};
                   return(<>
                     <select style={sel} value={a.counter} onChange={e=>upCond(i,{sourceArg:{...a,counter:e.target.value}})}>

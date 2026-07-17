@@ -156,6 +156,25 @@ precise set:
 
 ---
 
+## 7b. Addendum (shipped with Phase 1) — the Brett Baty line, 2026-07-16
+
+Second acceptance post from Tony exposed three more vocabulary gaps, all shipped:
+
+- **`rung:G`** (games played) — "58th July game / 35th game vs PHI / 44th Thursday
+  game" are games-played counters; `gamesPlayed` was in every split object but
+  unmapped. **Excluded from the `rung:*` wildcard** so NAME LOCK et al keep their
+  pre-existing hit counts.
+- **`counterRef` source** — raw counter-vs-counter (numberWord without the spelling):
+  `rung:G dow = comp# of counterRef(sinceLast:HR)` expresses "44th Thursday game,
+  63d since his last, 63-44c".
+- **`jersey` source** — "next hr 7 = #7".
+
+Verified fixtures: Brett Baty 58 RR · Philadelphia 101 Ord = 26th prime ·
+35 = 23rd composite (23 = 7+16) · 63 = 44th composite. Ships disabled as
+**COMPOSITE WEB (Baty ex.)**; locked end-to-end in tests (2/2 hard + 3/3 soft).
+
+---
+
 # Phase 2 — reverse the authoring flow (separate session)
 
 ## 8. Tap-to-recipe drawer
