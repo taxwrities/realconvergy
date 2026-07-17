@@ -444,6 +444,86 @@ import {LANE_STAT} from '../src/data/defaults.js';
   eq('recipe: no rung drafts → HR lane default',draftsToPattern([cg],LANE_STAT).lane,'HR');
 }
 
+/* ---- PATTERN-RECIPES Phase 3: Zach-post text parser ----
+   Extraction joins on the posts' explicit number equalities; both
+   acceptance posts must parse from RAW TEXT into conditions that
+   evaluate against the same synthetic ctxs the seeds lock. */
+import {parsePost} from '../src/engine/parse.js';
+{
+  /* -- the Bryson Stott post, verbatim (2026-07-16) -- */
+  const stottPost=`Looking for 57th career HR, with 168 days left in the year. Mets=57 & New York Mets=168.
+Looking for 31st career HR at home and Homerun Eight=31, on the season, 31 days after the Pitcher's birthday.
+Bryson Stott Homerun=83… playing 23 days after his last HR. 83=23rd prime.`;
+  const sp=parsePost(stottPost,{teams:['Mets','New York Mets','New York']});
+  eq('parse Stott: 5 conditions',sp.drafts.length,5);
+  eq('parse Stott: 2 hard',sp.drafts.filter(d=>d.cond.hard).length,2);
+  const by=(counter,scope)=>sp.drafts.find(d=>d.cond.counter===counter&&(!scope||d.cond.scope===scope))?.cond;
+  eq('parse Stott: career HR = oppTeam',by('rung:HR','career').source,'oppTeam');
+  eq('parse Stott: venue HR = numberWord',by('rung:HR','venue').source,'numberWord');
+  eq('parse Stott: numberWord refs season HR',by('rung:HR','venue').sourceArg.counter,'rung:HR');
+  eq('parse Stott: dateFig = oppTeam',by('dateFig').source,'oppTeam');
+  eq('parse Stott: SP clock = numberWord',by('oppPitcherClock').source,'numberWord');
+  eq('parse Stott: sinceLast = prime# of the phrase',by('sinceLast:HR').rmod,'primeIdx');
+  eq('parse Stott: phrase rides the word source',by('sinceLast:HR').sourceArg,'Bryson Stott Homerun');
+  /* end-to-end: parsed text ⇒ MATCH on the synthetic Stott batter */
+  const sctx=mkCtx({
+    date:'2026-07-16',dn:dateNumerology('2026-07-16'),
+    oppTeamName:'Mets',oppTeamNames:['Mets','New York Mets','New York'],
+    oppPitcherClock:[{n:31,label:'31d after SP bday'}],
+    batter:{p:{id:7,fullName:'Bryson Stott',lastName:'Stott',
+      season:{homeRuns:7},career:{homeRuns:56},split:{'career-home':{homeRuns:30}},
+      deep:{lastEvent:{HR:'2026-06-23'}}},
+      side:'home',nameVals:[],ageFigures:[]}});
+  const sres=evalPattern({conditions:sp.drafts.map(d=>d.cond)},sctx);
+  eq('parse Stott: text ⇒ MATCH',sres.match,true);
+  eq('parse Stott: 2/2 hard',sres.hardPass,2);
+  eq('parse Stott: 3/3 soft',sres.softPass,3);
+
+  /* -- the Brett Baty post, verbatim (2026-07-16) -- */
+  const batyPost=`Brett Baty (58) #7 on the 16th (7) 58th July game, next hr 7. Next hr vs NL is 26, can happen in Philadelphia(101)-26p. Can hr in 35th h2h vs PHI on 7/16(23), 35-23c in 44th Thursday(35) game, 63d since his last. 63-44c`;
+  const bp=parsePost(batyPost,{teams:['Phillies','Philadelphia Phillies','Philadelphia']});
+  eq('parse Baty: 5 conditions',bp.drafts.length,5);
+  const bby=(counter,scope)=>bp.drafts.find(d=>d.cond.counter===counter&&(!scope||d.cond.scope===scope))?.cond;
+  eq('parse Baty: season HR = jersey (hard)',bby('rung:HR','season').source,'jersey');
+  eq('parse Baty: only milestone leg hard',bp.drafts.filter(d=>d.cond.hard).length,1);
+  eq('parse Baty: month G = ownName',bby('rung:G','month').source,'ownName');
+  eq('parse Baty: vsLeague HR = prime# of oppTeam',
+    bby('rung:HR','vsLeague').source==='oppTeam'&&bby('rung:HR','vsLeague').rmod==='primeIdx',true);
+  eq('parse Baty: comp# of vsTeam G = dateThread',
+    bby('rung:G','vsTeam').lmod==='compIdx'&&bby('rung:G','vsTeam').source==='dateThread',true);
+  eq('parse Baty: dow G = comp# of counterRef(sinceLast)',
+    bby('rung:G','dow').rmod==='compIdx'&&bby('rung:G','dow').sourceArg.counter==='sinceLast:HR',true);
+  eq('parse Baty: sinceLast consumed into the link (not its own leg)',
+    bp.drafts.some(d=>d.cond.counter==='sinceLast:HR'),false);
+  eq('parse Baty: unplaced fragments surfaced',
+    bp.leftovers.some(l=>l.includes('Thursday(35)'))&&bp.leftovers.some(l=>l.includes('(7)')),true);
+  const batyName2=nameRun('Brett Baty',CIPHERS_ON);
+  const bctx=mkCtx({
+    date:'2026-07-16',dn:dateNumerology('2026-07-16'),
+    oppTeamName:'Phillies',oppTeamNames:['Phillies','Philadelphia Phillies','Philadelphia'],
+    sources:{core:[],theme:[],loadedAll:[],
+      dateThread:Object.entries(dateNumerology('2026-07-16').vals).map(([n,l])=>({n:+n,label:l}))},
+    batter:{p:{id:8,fullName:'Brett Baty',lastName:'Baty',jersey:7,
+      season:{homeRuns:6,gamesPlayed:80},
+      deep:{month:{gamesPlayed:12},monthTag:'July',
+        monthCareer:{gamesPlayed:57},monthCareerTag:'career·July',
+        dow:{gamesPlayed:11},dowTag:'Thursday',
+        dowCareer:{gamesPlayed:43},dowCareerTag:'career·Thursday',
+        vsOpp:{gamesPlayed:34},
+        leagueCareer:{homeRuns:25},lastEvent:{HR:'2026-05-14'}}},
+      side:'away',nameVals:batyName2,ageFigures:[]}});
+  const bres=evalPattern({conditions:bp.drafts.map(d=>d.cond)},bctx);
+  eq('parse Baty: text ⇒ MATCH',bres.match,true);
+  eq('parse Baty: 1/1 hard',bres.hardPass,1);
+  eq('parse Baty: 4/4 soft',bres.softPass,4);
+
+  /* -- guards -- */
+  eq('parse: empty text → no drafts',parsePost('').drafts.length,0);
+  eq('parse: bogus composite link rejected',
+    parsePost('next hr 99. 10-99c').drafts.length,0); // compIdx(10)≠99
+  eq('parse: score-line hyphen not a link',parsePost('won 6-4 comfortably').drafts.length,0);
+}
+
 /* ---- applyLineups: projected roster → confirmed lineup transition ---- */
 import {applyLineups,isProjected} from '../src/data/lineups.js';
 {
