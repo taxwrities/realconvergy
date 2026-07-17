@@ -1,7 +1,8 @@
 import {useState,useRef,useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
-import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
+import {LANES,LANE_STAT,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
+import {draftFromRung,draftFromCross,draftsToPattern} from '../engine/recipe.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {isProjected} from '../data/lineups.js';
 import {cl} from '../engine/gematria.js';
@@ -30,7 +31,7 @@ function useHScroll(){
 }
 
 /* Board tab — LAYOUT-SPEC §4, zones top to bottom. */
-export default function BoardTab(){
+export default function BoardTab({goPatterns}){
   const {loading}=useApp();
   return(
     <div>
@@ -44,6 +45,40 @@ export default function BoardTab(){
       <TeamToggle/>
       <BatterZone/>
       <MatchupPanel/>
+      <RecipeDrawer goPatterns={goPatterns}/>
+    </div>
+  );
+}
+
+/* sticky recipe drawer (PATTERN-RECIPES §8) — collects the ⊕ drafts.
+   Only a collector: "Save as pattern" hands the draft to the Patterns
+   editor pre-filled and clears the drawer. */
+function RecipeDrawer({goPatterns}){
+  const {recipeDraft,removeDraft,toggleDraftHard,clearDrafts,setPendingPattern}=useApp();
+  if(!recipeDraft.length)return null;
+  const saveAs=()=>{
+    setPendingPattern(draftsToPattern(recipeDraft,LANE_STAT));
+    clearDrafts();
+    goPatterns&&goPatterns();
+  };
+  return(
+    <div className="recipe-drawer">
+      <div className="recipe-head">
+        <b>Recipe draft</b>
+        <span className="muted">{recipeDraft.length} condition{recipeDraft.length>1?'s':''}</span>
+        <button className="chip on" onClick={saveAs}>Save as pattern →</button>
+        <button className="chip gray" onClick={clearDrafts}>clear</button>
+      </div>
+      <div className="recipe-chips">
+        {recipeDraft.map(d=>(
+          <span key={d.id} className="recipe-chip">
+            <span className="lbl">{d.label}</span>
+            <button className={`hs${d.cond.hard?' hard':''}`} title="hard gates the match; soft only upgrades it"
+              onClick={()=>toggleDraftHard(d.id)}>{d.cond.hard?'hard':'soft'}</button>
+            <button className="x" onClick={()=>removeDraft(d.id)}>×</button>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -321,7 +356,7 @@ function PatternHitsPanel(){
 }
 
 function BatterCard({row}){
-  const {colorFor,contextFilter,patternFilter}=useApp();
+  const {colorFor,contextFilter,patternFilter,addDraft}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
@@ -396,6 +431,8 @@ function BatterCard({row}){
       )}
       {ev.primary&&(
         <div className="call-line">
+          <button className="draft-add" title="add to recipe draft"
+            onClick={()=>addDraft(draftFromRung(ev.primary))}>⊕</button>
           <span className="tag">PRIMARY</span>
           {ev.primary.scope} {ev.primary.stat} → <b className="mono">{ev.primary.n}</b>
           <span className="muted"> (sits {ev.primary.cur}{ev.primary.off>1?`, needs +${ev.primary.off}`:''})</span>
@@ -406,6 +443,8 @@ function BatterCard({row}){
       )}
       {ev.alt&&(
         <div className="call-line alt">
+          <button className="draft-add" title="add to recipe draft"
+            onClick={()=>addDraft(draftFromRung(ev.alt))}>⊕</button>
           <span className="tag">ALT</span>
           {ev.alt.scope} {ev.alt.stat} → <b className="mono">{ev.alt.n}</b>
           <span className="muted"> (sits {ev.alt.cur}{ev.alt.off>1?`, needs +${ev.alt.off}`:''})</span>
@@ -425,6 +464,8 @@ function BatterCard({row}){
               {flt&&<span className="badge blue">◈ CHIP</span>}
               {pflt&&!flt&&<span className="badge gold">◈ {patHit.pattern.name}</span>}
               <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
+              <button className="draft-add" title="add to recipe draft"
+                onClick={()=>addDraft(draftFromRung(r))}>⊕</button>
             </div>
           );
         })}
@@ -654,7 +695,7 @@ function TotalsPanel({row}){
 
 /* zone 8 — matchup panel (flex slot v1 default): pitcher + CROSS + staircases */
 function MatchupPanel(){
-  const {matchup,ciphers}=useApp();
+  const {matchup,ciphers,addDraft}=useApp();
   if(!matchup)return null;
   const {sp,spRun,spBday,cross,stair,vsHand}=matchup;
   return(
@@ -686,9 +727,15 @@ function MatchupPanel(){
           {vsHand.totalBases!=null?<FactNum value={vsHand.totalBases}>{vsHand.totalBases}</FactNum>:'–'} TB
         </div>
       )}
-      {cross.map((c,i)=>(
-        <div key={i} className="cross-row"><b className="v-green mono">{c.n}</b> — {c.text}</div>
-      ))}
+      {cross.map((c,i)=>{
+        const d=draftFromCross(c);
+        return(
+          <div key={i} className="cross-row">
+            {d&&<button className="draft-add" title="add to recipe draft" onClick={()=>addDraft(d)}>⊕</button>}
+            <b className="v-green mono">{c.n}</b> — {c.text}
+          </div>
+        );
+      })}
       {stair.length>0&&(
         <>
           <h3 style={{marginTop:12}}>Team staircases</h3>

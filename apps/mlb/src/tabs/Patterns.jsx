@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState,useEffect} from 'react';
 import {useApp} from '../state/store.jsx';
 import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent,
   describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
@@ -7,7 +7,13 @@ import {LANES} from '../data/defaults.js';
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
    with live preview against the currently selected batter. */
 export default function PatternsTab({goBoard}){
+  const {pendingPattern,setPendingPattern}=useApp();
   const [editing,setEditing]=useState(null); // pattern object being edited
+  /* recipe-drawer handoff (PATTERN-RECIPES §8): a "Save as pattern" on the
+     Board lands here pre-filled — the editor stays the source of truth */
+  useEffect(()=>{
+    if(pendingPattern){setEditing(pendingPattern);setPendingPattern(null)}
+  },[pendingPattern,setPendingPattern]);
   return editing
     ?<Editor pattern={editing} onDone={()=>setEditing(null)}/>
     :<Library onEdit={setEditing} goBoard={goBoard}/>;

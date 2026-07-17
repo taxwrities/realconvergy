@@ -44,7 +44,7 @@ export default function App(){
           </div>
         )}
         {error&&<div className="err-banner">{error}</div>}
-        <div style={{display:tab==='board'?'block':'none'}}><BoardTab/></div>
+        <div style={{display:tab==='board'?'block':'none'}}><BoardTab goPatterns={()=>setTab('patterns')}/></div>
         <div style={{display:tab==='patterns'?'block':'none'}}><PatternsTab goBoard={()=>setTab('board')}/></div>
         <div style={{display:tab==='forecast'?'block':'none'}}><ForecastTab/></div>
         <div style={{display:tab==='vocab'?'block':'none'}}><VocabTab/></div>

@@ -49,6 +49,11 @@ export function AppStateProvider({children}){
     return missing.length?[...merged,...missing]:merged;
   });
   const [forecasts,setForecasts]=useState(()=>load('cvg.forecasts',[]));
+  /* tap-to-recipe drawer (PATTERN-RECIPES §8): draft conditions collected
+     off board evidence rows; survives a reload like every other pref.
+     pendingPattern is the drawer → Patterns-editor handoff (transient). */
+  const [recipeDraft,setRecipeDraft]=useState(()=>load('cvg.recipeDraft',[]));
+  const [pendingPattern,setPendingPattern]=useState(null);
   /* board date — defaults to today, settable from the DateStrip picker so
      tomorrow's slate (schedule + probables + roster projections) is viewable.
      dayState/slate are stamped with the date they belong to (_date) so the
@@ -67,6 +72,7 @@ export function AppStateProvider({children}){
   useEffect(()=>{save('cvg.settings',settings)},[settings]);
   useEffect(()=>{save('cvg.patterns',patterns)},[patterns]);
   useEffect(()=>{save('cvg.forecasts',forecasts)},[forecasts]);
+  useEffect(()=>{save('cvg.recipeDraft',recipeDraft)},[recipeDraft]);
   useEffect(()=>{if(dayState._date===date)saveDay(date,dayState)},[date,dayState]);
   useEffect(()=>{setDayState({...loadDay(date),_date:date})},[date]);
 
@@ -574,11 +580,15 @@ export function AppStateProvider({children}){
       const batNums=new Set([...bat.ev.nameNums,...bat.ev.rungs.filter(r=>r.off===1).map(r=>r.n)]);
       spRun.forEach(x=>{
         if(batNums.has(x.n)){
-          const why=bat.ev.rungs.filter(r=>r.off===1&&r.n===x.n).map(r=>`${r.scope} ${r.stat}→${r.n}`);
-          cross.push({n:x.n,text:`${sp.lastName} ${x.cipher} ${x.n} = ${why.length?why.join(' + '):'batter name value'}`});
+          /* carry the anchoring rung so the recipe drawer can express the
+             row as a condition (name-vs-name rows stay text-only) */
+          const rungHits=bat.ev.rungs.filter(r=>r.off===1&&r.n===x.n);
+          const why=rungHits.map(r=>`${r.scope} ${r.stat}→${r.n}`);
+          cross.push({n:x.n,rung:rungHits[0]||null,
+            text:`${sp.lastName} ${x.cipher} ${x.n} = ${why.length?why.join(' + '):'batter name value'}`});
         }
         if(x.n===game.gameNumber.home||x.n===game.gameNumber.away)
-          cross.push({n:x.n,text:`${sp.lastName} ${x.cipher} ${x.n} = team game #${x.n}`});
+          cross.push({n:x.n,gameNo:true,text:`${sp.lastName} ${x.cipher} ${x.n} = team game #${x.n}`});
       });
     }
     // team staircases: next R/AB/PA/TB that land on loaded or batter milestone values
@@ -616,6 +626,18 @@ export function AppStateProvider({children}){
     }
     return null;
   },[colorRules]);
+
+  /* ---------- recipe-drawer actions (PATTERN-RECIPES §8) ---------- */
+  const addDraft=useCallback(d=>{
+    if(d)setRecipeDraft(ds=>[...ds,{id:`d${Date.now()}-${ds.length}`,...d}]);
+  },[]);
+  const removeDraft=useCallback(id=>{
+    setRecipeDraft(ds=>ds.filter(x=>x.id!==id));
+  },[]);
+  const toggleDraftHard=useCallback(id=>{
+    setRecipeDraft(ds=>ds.map(x=>x.id===id?{...x,cond:{...x.cond,hard:!x.cond.hard}}:x));
+  },[]);
+  const clearDrafts=useCallback(()=>setRecipeDraft([]),[]);
 
   /* ---------- quick-add actions (§8, all persist for the day) ---------- */
   const addTheme=useCallback(name=>{
@@ -680,6 +702,7 @@ export function AppStateProvider({children}){
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
+    recipeDraft,addDraft,removeDraft,toggleDraftHard,clearDrafts,pendingPattern,setPendingPattern,
     deepFetch,deepBusy,checkLineups,lineupBusy,
     forecasts,generateForecasts,forecastBusy,grade,
     graduateTheme,exportDayLog,
