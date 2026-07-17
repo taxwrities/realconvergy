@@ -387,5 +387,61 @@ import {describePattern,describeCondition,patternNeedsDeep,patternMissingTemplat
   eq('seeds: examples carry the source line',stott.example.includes('Mets=57'),true);
 }
 
+/* ---- applyLineups: projected roster → confirmed lineup transition ---- */
+import {applyLineups,isProjected} from '../src/data/lineups.js';
+{
+  const mkGame=over=>({pk:1,homeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13],
+    awayIds:[21,22,23,24,25,26,27,28,29,30,31],proj:{home:true,away:true},projected:true,...over});
+  const lineup9=ids=>ids.map(id=>({id}));
+  const people=Object.fromEntries([...Array(40).keys()].map(i=>[i+1,{id:i+1}]));
+
+  /* (a) posted subset replaces ids in batting order + clears that side */
+  let g=mkGame();
+  let r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([9,3,1,7,5,2,8,4,6])}}],people);
+  eq('lineups: changed',r.changed,true);
+  eq('lineups: no full refresh needed',r.needsFull,false);
+  eq('lineups: batting order restored',g.homeIds.join(','),'9,3,1,7,5,2,8,4,6');
+  eq('lineups: home flag cleared',isProjected(g,'home'),false);
+  eq('lineups: away still projected (per-side)',isProjected(g,'away'),true);
+  eq('lineups: legacy boolean derives',g.projected,true);
+
+  /* (b) nothing posted → untouched */
+  g=mkGame();
+  r=applyLineups([g],[{gamePk:1}],people);
+  eq('lineups: no post → unchanged',r.changed,false);
+  eq('lineups: no post → ids kept',g.homeIds.length,13);
+
+  /* (c) unknown id (call-up) → needsFull, ids untouched */
+  g=mkGame();
+  r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([9,3,1,7,5,2,8,4,999])}}],people);
+  eq('lineups: call-up → needsFull',r.needsFull,true);
+  eq('lineups: call-up → ids untouched',g.homeIds.length,13);
+  eq('lineups: call-up → still projected',isProjected(g,'home'),true);
+
+  /* (d) both sides post → legacy boolean clears */
+  g=mkGame();
+  r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([1,2,3,4,5,6,7,8,9]),
+    awayPlayers:lineup9([21,22,23,24,25,26,27,28,29])}}],people);
+  eq('lineups: both confirm → projected false',g.projected,false);
+
+  /* (e) legacy cache (boolean only, no proj field) normalizes + self-heals */
+  g=mkGame({proj:undefined});
+  delete g.proj;
+  eq('lineups: legacy read — projected',isProjected(g,'home'),true);
+  r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([1,2,3,4,5,6,7,8,9])}}],people);
+  eq('lineups: legacy migrates + confirms home',isProjected(g,'home'),false);
+  eq('lineups: legacy away stays projected',isProjected(g,'away'),true);
+
+  /* (f) <9 players posted → ignored */
+  g=mkGame();
+  r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([1,2,3])}}],people);
+  eq('lineups: partial post ignored',r.changed,false);
+
+  /* (g) confirmed game (proj false both sides) never touched */
+  g=mkGame({proj:{home:false,away:false},projected:false,homeIds:[1,2,3,4,5,6,7,8,9]});
+  r=applyLineups([g],[{gamePk:1,lineups:{homePlayers:lineup9([9,8,7,6,5,4,3,2,1])}}],people);
+  eq('lineups: confirmed side never re-touched',g.homeIds.join(','),'1,2,3,4,5,6,7,8,9');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
