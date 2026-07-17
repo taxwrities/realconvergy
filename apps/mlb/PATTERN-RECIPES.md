@@ -206,10 +206,40 @@ treatment — `6837b0e`.)*
 
 ---
 
+---
+
+# Phase 3 — Zach-post text parser (SHIPPED 2026-07-17)
+
+`src/engine/parse.js` + "⌁ from post text" sheet on the Patterns tab. **No prose
+NLP** — the posts always state their number equalities explicitly, so `parsePost`
+extracts three flat lists and joins them on number equality:
+
+- **counters** — number-anchored counter mentions ("57th career HR at home",
+  "44th Thursday(35) game", "63d since his last", "168 days left"), span-consumed
+  so specific patterns beat generic ones;
+- **claims** — value assertions ("Mets=57" → oppTeam when the word is a slate
+  team else `word`; "Homerun Eight=31" → numberWord via the spelled-number token;
+  leading "Brett Baty (58)" → ownName; "#7" → jersey; "7/16(23)" → dateThread);
+- **links** — prime/composite bridges ("83=23rd prime", "101)-26p", "35-23c"),
+  **sieve-validated** (idx(a)===b or the link is dropped — score-line hyphens
+  can't false-positive). Direction decides lmod vs rmod; counter-to-counter
+  links become counterRef sources (63-44c → dow G = comp# of sinceLast:HR).
+
+Hard/soft heuristic: non-DEEP outcome rungs gate (hard), DEEP/timing legs
+upgrade (soft). Unplaced fragments return as `leftovers` and render in the
+sheet — nothing disappears silently. "Open in editor" → `draftsToPattern` →
+the editor stays the source of truth. Locks: both acceptance posts parse
+verbatim and MATCH their synthetic batters end-to-end.
+
+Known limits (fine for v1): joins are global by number, not sentence-scoped;
+ownName only detected as a leading "Name (n)" claim; numberWord always assumes
+the spelled season-HR-next convention.
+
+---
+
 ## N/A / non-goals
 
 - **No engine redesign** — `evalPattern`/hard-soft/lane routing untouched.
-- **No Zach-post text parser** (Phase 3 candidate; revisit after 1+2 show the shapes).
 - **No ordinal spelling** ("FIFTY SEVENTH") until a real line needs it — cardinal only.
 - **WNBA**: nothing here ports until Tony asks; WNBA has no pattern engine divergence
   today, but §1-§6 are engine-file-local and would port mechanically.

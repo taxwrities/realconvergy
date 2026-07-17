@@ -59,9 +59,9 @@ export function draftFromCross(c){
 
 /* drafts → a pattern object ready for the editor. Lane guessed from the
    first rung draft's stat when it maps to a refine lane. */
-export function draftsToPattern(drafts,laneStat){
+export function draftsToPattern(drafts,laneStat,name='Board recipe'){
   const statLane=Object.fromEntries(Object.entries(laneStat).map(([L,s])=>[s,L]));
   const first=drafts.map(d=>d.cond.counter).find(c=>c.startsWith('rung:'));
-  return{id:'pat-'+Date.now(),name:'Board recipe',lane:(first&&statLane[first.slice(5)])||'HR',
+  return{id:'pat-'+Date.now(),name,lane:(first&&statLane[first.slice(5)])||'HR',
     enabled:true,conditions:drafts.map(d=>d.cond)};
 }

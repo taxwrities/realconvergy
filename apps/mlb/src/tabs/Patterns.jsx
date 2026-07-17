@@ -1,8 +1,11 @@
-import {useState,useEffect} from 'react';
+import {useState,useEffect,useMemo} from 'react';
 import {useApp} from '../state/store.jsx';
 import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent,
   describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
-import {LANES} from '../data/defaults.js';
+import {parsePost} from '../engine/parse.js';
+import {draftsToPattern} from '../engine/recipe.js';
+import {LANES,LANE_STAT} from '../data/defaults.js';
+import Sheet from '../components/Sheet.jsx';
 
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
    with live preview against the currently selected batter. */
@@ -22,6 +25,7 @@ export default function PatternsTab({goBoard}){
 function Library({onEdit,goBoard}){
   const {patterns,setPatterns,patternCounts,patternHitsAll,setGamePk,setSide,setBatterId}=useApp();
   const [hitsOpen,setHitsOpen]=useState(null); // pattern id with the full hit list expanded
+  const [postOpen,setPostOpen]=useState(false); // paste-a-post parser sheet (Phase 3)
   /* tap a name → land on that batter's card on the Board */
   const jump=h=>{setGamePk(h.pk);setSide(h.side);setBatterId(h.id);goBoard&&goBoard()};
   const blank=()=>({id:'pat-'+Date.now(),name:'New pattern',lane:'HR',enabled:true,
@@ -90,8 +94,54 @@ function Library({onEdit,goBoard}){
           </details>
         </div>
       ))}
-      <button className="chip on" onClick={()=>onEdit(blank())}>+ new pattern</button>
+      <div className="rail" style={{overflowX:'visible',flexWrap:'wrap'}}>
+        <button className="chip on" onClick={()=>onEdit(blank())}>+ new pattern</button>
+        <button className="chip gold" onClick={()=>setPostOpen(true)}>⌁ from post text</button>
+      </div>
+      {postOpen&&<PostSheet onEdit={onEdit} onClose={()=>setPostOpen(false)}/>}
     </div>
+  );
+}
+
+/* paste-a-post parser sheet (PATTERN-RECIPES Phase 3). The parser joins
+   the post's explicit number equalities; whatever it can't place is
+   shown as leftovers so nothing disappears silently. "Open in editor"
+   hands over a pre-filled pattern — the editor stays the source of truth. */
+function PostSheet({onEdit,onClose}){
+  const {slate}=useApp();
+  const [text,setText]=useState('');
+  const teams=useMemo(()=>{
+    const t=new Set();
+    slate?.games.forEach(g=>[g.home,g.away].forEach(x=>
+      [x.name,x.teamName,x.locationName].filter(Boolean).forEach(n=>t.add(n))));
+    return[...t];
+  },[slate]);
+  const parsed=useMemo(()=>parsePost(text,{teams}),[text,teams]);
+  return(
+    <Sheet title="Recipe from post text" onClose={onClose}>
+      <textarea className="post-ta" rows={5} autoFocus
+        placeholder="paste the blog line… (the parser reads its explicit equalities: Mets=57, Philadelphia(101)-26p, 83=23rd prime, 63-44c)"
+        value={text} onChange={e=>setText(e.target.value)}/>
+      {parsed.drafts.map((d,i)=>(
+        <div key={i} className="parse-row">
+          <span className={`badge ${d.cond.hard?'gold':'green'}`}>{d.cond.hard?'hard':'soft'}</span>
+          <span className="lbl">{d.label}</span>
+        </div>
+      ))}
+      {parsed.leftovers.length>0&&(
+        <div className="hint">couldn't place: {parsed.leftovers.join('  ·  ')}</div>
+      )}
+      {text.trim()&&!parsed.drafts.length&&(
+        <div className="hint">no recognizable legs yet — paste lines that carry their number equalities</div>
+      )}
+      <div className="sheet-row" style={{marginTop:10}}>
+        <button className="btn acc" disabled={!parsed.drafts.length}
+          onClick={()=>{onEdit(draftsToPattern(parsed.drafts,LANE_STAT,'Post recipe'));onClose()}}>
+          Open in editor{parsed.drafts.length?` (${parsed.drafts.length})`:''}
+        </button>
+        <button className="btn" onClick={onClose}>Cancel</button>
+      </div>
+    </Sheet>
   );
 }
 
