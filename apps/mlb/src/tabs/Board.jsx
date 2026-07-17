@@ -183,8 +183,9 @@ function ContextRail(){
 
 /* zone 5 — team toggle */
 function TeamToggle(){
-  const {game,side,setSide,setBatterId,deepFetch,deepBusy}=useApp();
+  const {game,side,setSide,setBatterId,deepFetch,deepBusy,checkLineups,lineupBusy}=useApp();
   if(!game)return null;
+  const anyProj=isProjected(game,'away')||isProjected(game,'home');
   return(
     <div className="team-toggle">
       {['away','home'].map(s=>(
@@ -197,6 +198,12 @@ function TeamToggle(){
         onClick={deepFetch} title="vs-team / vs-league / month / day-of-week splits for this game">
         ⚡{game.deepDone?' ✓':deepBusy?' …':' DEEP'}
       </button>
+      {anyProj&&(
+        <button className="chip blue" style={{flex:'0 0 auto'}} disabled={lineupBusy}
+          onClick={checkLineups} title="check for confirmed lineups (one cheap call) — starters replace the projected roster">
+          lineups{lineupBusy?' …':' ↺'}
+        </button>
+      )}
     </div>
   );
 }

@@ -12,7 +12,8 @@ import {clockFrom,dateNumerology,dateFigures,daysBetween,todayISO} from '../engi
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor} from '../data/mlb.js';
+import {fetchSlate,fetchSeasonInfo,fetchLineups,deepFetchGame,h2hFor} from '../data/mlb.js';
+import {applyLineups} from '../data/lineups.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
@@ -387,6 +388,26 @@ export function AppStateProvider({children}){
 
   /* deep splits for the active game (vsTeam / league / month / day-of-week) */
   const [deepBusy,setDeepBusy]=useState(false);
+  /* cheap lineup recheck: ONE schedule call; confirmed starters replace a
+     projected side's roster in place (drop the non-starters — Tony
+     2026-07-16). A same-day call-up not in the hydrated people falls back
+     to the full refresh. */
+  const [lineupBusy,setLineupBusy]=useState(false);
+  const checkLineups=useCallback(async()=>{
+    if(!slate||lineupBusy)return;
+    setLineupBusy(true);
+    try{
+      const raw=await fetchLineups(date);
+      const{changed,needsFull}=applyLineups(slate.games,raw,slate.people);
+      if(needsFull)await refresh();
+      else if(changed){
+        setSlate({...slate,_date:date}); // games mutated in place; new ref re-derives + persists
+        setBatterId(b=>b!=null&&!slate.games.some(g=>g.homeIds.includes(b)||g.awayIds.includes(b))?null:b);
+      }
+    }catch(e){setError('Lineup check failed: '+e.message)}
+    setLineupBusy(false);
+  },[slate,date,lineupBusy,refresh]);
+
   const deepFetch=useCallback(async()=>{
     if(!slate||!game||game.deepDone||deepBusy)return;
     setDeepBusy(true);
@@ -645,7 +666,7 @@ export function AppStateProvider({children}){
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,
-    deepFetch,deepBusy,
+    deepFetch,deepBusy,checkLineups,lineupBusy,
     forecasts,generateForecasts,forecastBusy,grade,
     graduateTheme,exportDayLog,
   };
