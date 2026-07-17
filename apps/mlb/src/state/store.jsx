@@ -361,14 +361,19 @@ export function AppStateProvider({children}){
     return out;
   },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
 
-  /* per-batter pattern preview for the editor (live, §5) */
-  const previewPattern=useCallback(pattern=>{
-    if(!slate||!game)return null;
-    const id=batterId||board[side]?.[0]?.id;
-    const p=id?slate.people[id]:null;
-    if(!p)return null;
-    const s=game.homeIds.includes(id)?'home':'away';
-    const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g:game,dnUse:dn});
+  /* per-batter pattern preview for the editor (live, §5). overrideId
+     (PATTERN-RECIPES §9) previews any slate batter — building from a blog
+     line means the target usually isn't the board selection. */
+  const previewPattern=useCallback((pattern,overrideId)=>{
+    if(!slate)return null;
+    const id=overrideId??(batterId||board[side]?.[0]?.id);
+    const g=overrideId!=null
+      ?slate.games.find(x=>x.homeIds.includes(overrideId)||x.awayIds.includes(overrideId))
+      :game;
+    const p=id!=null?slate.people[id]:null;
+    if(!p||!g)return null;
+    const s=g.homeIds.includes(id)?'home':'away';
+    const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
     return{who:p.fullName,res:evalPattern(pattern,ctx)};
   },[slate,game,batterId,board,side,buildPatternCtx,dn]);
 

@@ -96,9 +96,15 @@ function Library({onEdit,goBoard}){
 }
 
 function Editor({pattern,onDone}){
-  const {patterns,setPatterns,previewPattern,templates}=useApp();
+  const {patterns,setPatterns,previewPattern,templates,slate}=useApp();
   const [pt,setPt]=useState(pattern);
-  const preview=previewPattern(pt);
+  /* preview batter pick (PATTERN-RECIPES §9) — '' = the board selection */
+  const [previewId,setPreviewId]=useState('');
+  const preview=previewPattern(pt,previewId===''?undefined:+previewId);
+  const seen=new Set();
+  const previewOpts=(slate?.games||[]).flatMap(g=>['away','home'].flatMap(s=>
+    g[s+'Ids'].map(id=>({id,name:slate.people[id]?.fullName,abbr:g[s].abbrev||g[s].teamName}))
+  )).filter(o=>o.name&&!seen.has(o.id)&&seen.add(o.id)); // doubleheaders repeat ids
   const upCond=(i,patch)=>setPt({...pt,conditions:pt.conditions.map((c,j)=>j===i?{...c,...patch}:c)});
   const sel={background:'#101319',border:'1px solid #2a303c',borderRadius:7,color:'#e8eaf0',
     padding:'6px 7px',fontSize:12,maxWidth:150};
@@ -200,14 +206,24 @@ function Editor({pattern,onDone}){
               onClick={()=>{setPatterns(patterns.filter(x=>x.id!==pt.id));onDone()}}>delete</button>
           )}
         </div>
-        {preview&&(
-          <div className="muted" style={{fontSize:11.5,marginTop:6}}>
-            live preview vs <b style={{color:'#e8eaf0'}}>{preview.who}</b> —
-            <span className={preview.res.match?'v-green':'muted'}>
-              {' '}{preview.res.hardPass}/{preview.res.hardTotal} hard ✓
-              {preview.res.softTotal?` +${preview.res.softPass} soft`:''}
-              {preview.res.match?' — MATCH':''}
-            </span>
+        {(preview||previewOpts.length>0)&&(
+          <div className="muted" style={{fontSize:11.5,marginTop:6,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+            live preview vs
+            <select style={{...sel,maxWidth:190,padding:'4px 6px'}} value={previewId}
+              onChange={e=>setPreviewId(e.target.value)}>
+              <option value="">board selection</option>
+              {previewOpts.map(o=><option key={o.id} value={o.id}>{o.name} ({o.abbr})</option>)}
+            </select>
+            {preview?(
+              <>
+                <b style={{color:'#e8eaf0'}}>{preview.who}</b> —
+                <span className={preview.res.match?'v-green':'muted'}>
+                  {' '}{preview.res.hardPass}/{preview.res.hardTotal} hard ✓
+                  {preview.res.softTotal?` +${preview.res.softPass} soft`:''}
+                  {preview.res.match?' — MATCH':''}
+                </span>
+              </>
+            ):<span>— no batter to preview</span>}
           </div>
         )}
         {isDateDependent(pt)&&(
