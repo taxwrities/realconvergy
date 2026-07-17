@@ -13,30 +13,42 @@ export const COUNTERS=[
   {id:'rung:H',label:'H rung'},{id:'rung:1B',label:'1B rung'},{id:'rung:XBH',label:'XBH rung'},
   {id:'rung:RBI',label:'RBI rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
   {id:'rung:3B',label:'3B rung'},{id:'rung:AB',label:'AB rung'},{id:'rung:PA',label:'PA rung'},
-  {id:'rung:G',label:'G (games) rung'},
+  {id:'rung:G',label:'G (games) rung',hint:'games played — season/career, or month/vs-team/day-of-week with DEEP'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
-  {id:'stair:R',label:'team next R'},{id:'stair:AB',label:'team next AB'},
+  {id:'stair:R',label:'team next R',hint:'team total, next +1..+10'},{id:'stair:AB',label:'team next AB'},
   {id:'stair:PA',label:'team next PA'},{id:'stair:TB',label:'team next TB'},
-  {id:'doy',label:'DOY'},{id:'dateFig',label:'date figures (5 formulas + DOY + left)'},
-  {id:'dn',label:'date numerology (wide)'},{id:'dow',label:'day-of-week value'},
-  {id:'age',label:'batter age figures'},
-  {id:'oppPitcherClock',label:'opp SP birthday clock'},
-  {id:'sinceLast:HR',label:'days since last HR'},{id:'sinceLast:H',label:'days since last hit'},
-  {id:'sinceLast:2B',label:'days since last 2B'},{id:'sinceLast:3B',label:'days since last 3B'},
-  {id:'sinceLast:XBH',label:'days since last XBH'},{id:'sinceLast:RBI',label:'days since last RBI'},
-  {id:'sinceLast:SO',label:'days since last K'},
+  {id:'doy',label:'DOY'},
+  {id:'dateFig',label:'date figures (5 formulas + DOY + left)',hint:'the precise 7-figure set from the date row'},
+  {id:'dn',label:'date numerology (wide)',hint:'the full ~20-value date map — matches a LOT; prefer date figures'},
+  {id:'dow',label:'day-of-week value',hint:"today's day name run through the ciphers"},
+  {id:'age',label:'batter age figures',hint:'age, turns, days since/to bday, day-of-life, week'},
+  {id:'oppPitcherClock',label:'opp SP birthday clock',hint:"opposing probable pitcher's birthday clock: days after/to, age, turns"},
+  {id:'sinceLast:HR',label:'days since last HR',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:H',label:'days since last hit',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:2B',label:'days since last 2B',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:3B',label:'days since last 3B',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:XBH',label:'days since last XBH',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:RBI',label:'days since last RBI',hint:'needs DEEP (game log)'},
+  {id:'sinceLast:SO',label:'days since last K',hint:'needs DEEP (game log)'},
 ];
 export const SCOPES=['season','career','vsTeam','vsDivision','vsLeague','venue','month','dow'];
 export const MODS=[{id:'',label:'—'},{id:'primeIdx',label:'prime # of'},{id:'compIdx',label:'composite # of'},{id:'chain',label:'chain-to'}];
 export const SOURCES=[
-  {id:'core',label:'core table'},{id:'dateThread',label:'date/thread numbers'},
-  {id:'theme',label:'theme figure'},{id:'ownName',label:'own name'},
-  {id:'template',label:'phrase template'},{id:'oppPitcher',label:'opp pitcher name'},
-  {id:'oppTeam',label:'opponent team'},{id:'team',label:'team'},{id:'stadium',label:'stadium'},
-  {id:'word',label:'free word'},{id:'loaded',label:'any loaded value'},
-  {id:'numberWord',label:'spelled counter'},{id:'counterRef',label:'other counter'},
-  {id:'jersey',label:'jersey #'},
+  {id:'core',label:'core table',hint:'enabled Core-vocab words (Vocab tab)'},
+  {id:'dateThread',label:'date/thread numbers',hint:'wide date map + quick-add thread numbers'},
+  {id:'theme',label:'theme figure',hint:'registry + today’s quick-add themes'},
+  {id:'ownName',label:'own name',hint:'batter full/first/last name gematria'},
+  {id:'template',label:'phrase template',hint:'a {token}+word phrase from Vocab — must be picked'},
+  {id:'oppPitcher',label:'opp pitcher name'},
+  {id:'oppTeam',label:'opponent team',hint:'all name variants: nickname, full, city'},
+  {id:'team',label:'team',hint:'all name variants: nickname, full, city'},
+  {id:'stadium',label:'stadium'},
+  {id:'word',label:'free word',hint:'type any word — ciphered live'},
+  {id:'loaded',label:'any loaded value',hint:'everything on the board — the widest net'},
+  {id:'numberWord',label:'spelled counter',hint:'spell another counter’s value (8→EIGHT), then run ciphers'},
+  {id:'counterRef',label:'other counter',hint:'compare directly to another counter’s value — no spelling'},
+  {id:'jersey',label:'jersey #',hint:'the batter’s jersey number'},
 ];
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
@@ -219,7 +231,9 @@ export const SEED_PATTERNS=[
      editor to see numberWord / dateFig / oppPitcherClock / sinceLast in use.
      The sinceLast leg needs a '{batter full} + HOMERUN' phrase template
      (Vocab tab) picked as its source before it can fire. */
-  {id:'seed-milestone-spell',name:'MILESTONE SPELL (Stott ex.)',lane:'HR',enabled:false,seed:true,conditions:[
+  {id:'seed-milestone-spell',name:'MILESTONE SPELL (Stott ex.)',lane:'HR',enabled:false,seed:true,
+   example:'“Looking for 57th career HR, with 168 days left in the year. Mets=57 & New York Mets=168 … 31st career HR at home and Homerun Eight=31 … 31 days after the Pitcher\'s birthday … 83=23rd prime.” — Stott, 2026-07-16',
+   conditions:[
     {counter:'rung:HR',counterArg:{off:1},scope:'career',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:true},
     {counter:'rung:HR',counterArg:{off:1},scope:'venue',lmod:'',rmod:'',source:'numberWord',sourceArg:{counter:'rung:HR',scope:'season',off:1},hard:true},
     {counter:'dateFig',scope:'season',lmod:'',rmod:'',source:'oppTeam',sourceArg:'',hard:false},
@@ -231,7 +245,9 @@ export const SEED_PATTERNS=[
      HR = prime# of city, vs-team game count = comp# → date, day-of-week game
      count = comp# of days-since-last-HR. Needs the DEEP tier for the
      month/vsTeam/dow G counts and sinceLast. */
-  {id:'seed-composite-web',name:'COMPOSITE WEB (Baty ex.)',lane:'HR',enabled:false,seed:true,conditions:[
+  {id:'seed-composite-web',name:'COMPOSITE WEB (Baty ex.)',lane:'HR',enabled:false,seed:true,
+   example:'“Brett Baty (58) #7 on the 16th (7) 58th July game, next hr 7. Next hr vs NL is 26, can happen in Philadelphia(101)-26p. Can hr in 35th h2h vs PHI on 7/16(23), 35-23c in 44th Thursday(35) game, 63d since his last. 63-44c” — 2026-07-16',
+   conditions:[
     {counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'jersey',sourceArg:'',hard:true},
     {counter:'rung:G',counterArg:{off:1},scope:'month',lmod:'',rmod:'',source:'ownName',sourceArg:'',hard:true},
     {counter:'rung:HR',counterArg:{off:1},scope:'vsLeague',lmod:'',rmod:'primeIdx',source:'oppTeam',sourceArg:'',hard:false},
@@ -239,6 +255,74 @@ export const SEED_PATTERNS=[
     {counter:'rung:G',counterArg:{off:1},scope:'dow',lmod:'',rmod:'compIdx',source:'counterRef',sourceArg:{counter:'sinceLast:HR',scope:'season',off:1},hard:false},
   ]},
 ];
+
+/* ---- plain-English pattern summaries (Patterns-tab readability) ----
+   Generated from the condition structure — never hand-written metadata,
+   so they can't rot when a condition is edited and they cover
+   user-created patterns too. */
+const counterPhrase=(counter,scope,off)=>{
+  const [kind,stat]=counter.split(':');
+  const win=off>1?` (within +${off})`:'';
+  if(kind==='rung')return stat==='*'?`any next stat milestone${win}`
+    :`the next ${scope||'season'} ${stat==='G'?'games-played count':stat==='SO'?'K':stat}${win}`;
+  if(kind==='teamGame'||kind==='seasonGame')return"the team's game number";
+  if(kind==='stair')return`the team's next ${stat} landings`;
+  if(kind==='doy')return'the day of year';
+  if(kind==='dateFig')return'a date figure (5 formulas + DOY + days left)';
+  if(kind==='dn')return'any wide date-numerology value';
+  if(kind==='dow')return"the day-of-week's gematria";
+  if(kind==='age')return'a batter birthday/age figure';
+  if(kind==='oppPitcherClock')return"the opposing pitcher's birthday clock";
+  if(kind==='sinceLast')return`days since the batter's last ${stat==='SO'?'K':stat}`;
+  return counter;
+};
+const modWrap=(phrase,mod)=>mod==='primeIdx'?`the prime-index of ${phrase}`
+  :mod==='compIdx'?`the composite-index of ${phrase}`:phrase;
+const sourcePhrase=c=>{
+  const a=c.sourceArg;
+  switch(c.source){
+    case'core':return'a loaded core-table value';
+    case'dateThread':return'a date/thread number';
+    case'theme':return'a theme figure';
+    case'ownName':return"the batter's own name gematria";
+    case'template':return a?'a phrase-template value':'a phrase-template value (template not picked yet)';
+    case'oppPitcher':return"the opposing pitcher's name gematria";
+    case'oppTeam':return"the opponent's name gematria";
+    case'team':return'the own-team name gematria';
+    case'stadium':return'the stadium gematria';
+    case'word':return typeof a==='string'&&a?`"${a}" gematria`:'a free word (not set)';
+    case'loaded':return'any loaded value';
+    case'numberWord':return a?.counter
+      ?`the spelled-out word for ${counterPhrase(a.counter,a.scope,a.off||1)}, run through the ciphers`
+      :'a spelled counter (not set)';
+    case'counterRef':return a?.counter
+      ?counterPhrase(a.counter,a.scope,a.off||1)
+      :'another counter (not set)';
+    case'jersey':return"the batter's jersey number";
+    default:return c.source;
+  }
+};
+export const describeCondition=c=>{
+  const chain=c.lmod==='chain'||c.rmod==='chain';
+  const left=modWrap(counterPhrase(c.counter,c.scope,c.counterArg?.off||1),c.lmod);
+  const right=modWrap(sourcePhrase(c),c.rmod);
+  return`${left} ${chain?'chains (9s) with':'lands on'} ${right}`;
+};
+export const describePattern=p=>{
+  const hard=p.conditions.filter(c=>c.hard),soft=p.conditions.filter(c=>!c.hard);
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const head=hard.length?`Flags batters where ${hard.map(describeCondition).join(', AND ')}`
+    :'No hard conditions — never matches on its own';
+  const tail=soft.length?` Bonus signals: ${soft.map(describeCondition).join('; ')}.`:'';
+  return cap(head)+'.'+tail;
+};
+/* card-level warnings, derived (not stored) */
+const DEEP_SCOPES=new Set(['vsTeam','vsLeague','month','dow']);
+export const patternNeedsDeep=p=>p.conditions.some(c=>
+  c.counter?.startsWith('sinceLast')||DEEP_SCOPES.has(c.scope)
+  ||((c.source==='numberWord'||c.source==='counterRef')&&
+     (c.sourceArg?.counter?.startsWith('sinceLast')||DEEP_SCOPES.has(c.sourceArg?.scope))));
+export const patternMissingTemplate=p=>p.conditions.some(c=>c.source==='template'&&!c.sourceArg);
 
 export const summarizeCondition=c=>{
   const cnt=COUNTERS.find(x=>x.id===c.counter)?.label||c.counter;

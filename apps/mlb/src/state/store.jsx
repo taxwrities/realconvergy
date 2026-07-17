@@ -35,10 +35,17 @@ export function AppStateProvider({children}){
   const [patterns,setPatterns]=useState(()=>{
     const saved=load('cvg.patterns',null);
     if(!saved)return SEED_PATTERNS;
-    /* one-time merge: seeds added in later releases reach existing storage */
+    /* merge: seeds added in later releases reach existing storage, and
+       code-owned seed METADATA (example quote) refreshes in place — never
+       enabled/conditions, which the user may have edited */
+    const byId=new Map(SEED_PATTERNS.map(s=>[s.id,s]));
+    const merged=saved.map(p=>{
+      const seed=p.seed&&byId.get(p.id);
+      return seed&&seed.example!==p.example?{...p,example:seed.example}:p;
+    });
     const have=new Set(saved.map(p=>p.id));
     const missing=SEED_PATTERNS.filter(s=>!have.has(s.id));
-    return missing.length?[...saved,...missing]:saved;
+    return missing.length?[...merged,...missing]:merged;
   });
   const [forecasts,setForecasts]=useState(()=>load('cvg.forecasts',[]));
   const date=todayISO();

@@ -362,5 +362,30 @@ import {resolveSource} from '../src/engine/patterns.js';
   eq('rung:* excludes G',wild.leftCount,ctx.batter.p.season.homeRuns!=null?1:0); // only HR present in season
 }
 
+/* ---- plain-English summaries + card warnings (Patterns-tab readability) ---- */
+import {describePattern,describeCondition,patternNeedsDeep,patternMissingTemplate} from '../src/engine/patterns.js';
+{
+  const hrConv=SEED_PATTERNS.find(p=>p.id==='seed-hr-convergence');
+  const stott=SEED_PATTERNS.find(p=>p.id==='seed-milestone-spell');
+  const baty=SEED_PATTERNS.find(p=>p.id==='seed-composite-web');
+  const dHr=describePattern(hrConv);
+  eq('describe: HR Convergence mentions core',dHr.includes('core-table'),true);
+  eq('describe: starts with Flags batters',dHr.startsWith('Flags batters where'),true);
+  eq('describe: numberWord reads as spelled',
+    describeCondition(stott.conditions[1]).includes('spelled-out word'),true);
+  eq('describe: counterRef reads as plain counter',
+    describeCondition(baty.conditions[4]).includes("days since the batter's last HR"),true);
+  eq('describe: compIdx rmod reads as composite-index',
+    describeCondition(baty.conditions[4]).includes('the composite-index of'),true);
+  eq('describe: unset template flagged in prose',
+    describeCondition(stott.conditions[4]).includes('not picked'),true);
+  eq('warn: Baty ex. needs DEEP',patternNeedsDeep(baty),true);
+  eq('warn: Stott ex. needs DEEP (sinceLast leg)',patternNeedsDeep(stott),true);
+  eq('warn: HR Convergence does not need DEEP',patternNeedsDeep(hrConv),false);
+  eq('warn: Stott ex. missing template',patternMissingTemplate(stott),true);
+  eq('warn: Baty ex. template ok',patternMissingTemplate(baty),false);
+  eq('seeds: examples carry the source line',stott.example.includes('Mets=57'),true);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
