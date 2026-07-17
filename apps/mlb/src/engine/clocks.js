@@ -67,6 +67,10 @@ export function dateNumerology(dstr,enabled){
   put(doy,'day of year');put(left,'days left');put(M+DD,'M+DD');
   put(dig(M)+dig(DD)+YY+cent,'Mdig+Ddig+YY+cent');put(dig(M)+dig(DD)+(YYYY-2000),'Mdig+Ddig+Y-2000');
   put(DD,'day #');put(nthPrime(DD),'day prime');
+  /* date-digit figures (Tony 2026-07-16, Baty "#7 on the 16th (7)"): month #,
+     digit reductions, and the two-digit year join the WIDE set — deliberately
+     dn, not dateFigures, which stays the locked 7. */
+  put(M,'month #');put(dig(M),'month digit');put(dig(DD),'day digit');put(YY,'year '+YY);
   put(+(''+M+DD),`date ${M}/${DD}`);put(+(''+DD+M),`date ${DD}\\${M}`);
   const dg=calcAll(dayName);
   for(const c of ALL_CIPHERS)if(!enabled||enabled[c])put(dg[c],dayName+' '+c);

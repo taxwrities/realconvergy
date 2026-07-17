@@ -61,6 +61,11 @@ const dn=dateNumerology('2026-07-08');
 eq('7/8 concat 78',!!dn.vals[78],true);
 eq('7/8 concat 87',!!dn.vals[87],true);
 eq('7/8 ruler',dn.ruler,'Mercury');
+/* date-digit figures in the WIDE set (Baty "#7 on the 16th (7)") */
+const dn716=dateNumerology('2026-07-16');
+eq('7/16: day digit 7 present',dn716.vals[7].includes('day digit'),true);
+eq('7/16: month # 7 merged in',dn716.vals[7].includes('month #'),true);
+eq('7/16: year 26 present',dn716.vals[26].includes('year 26'),true);
 
 /* name run respects enabled ciphers */
 const run=nameRun('Aaron Judge',{Ord:true,Red:false,Rev:false,RR:false,Sat:false,Chal:false,Sept:false,Latin:false});
