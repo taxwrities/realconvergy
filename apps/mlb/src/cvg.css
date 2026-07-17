@@ -145,6 +145,17 @@ body { background: #101319; overscroll-behavior-y: none; }
 .badge.purple { color: var(--cvg-purple); } .badge.blue { color: var(--cvg-blue); }
 .badge.cyan { color: var(--cvg-cyan); }
 
+/* date picker in the DateStrip — inherits the h3 look; native picker on tap */
+.date-pick {
+  background: transparent; border: 1px solid #2a303c; border-radius: 6px;
+  color: inherit; font: inherit; font-family: var(--cvg-mono);
+  padding: 0 4px; color-scheme: dark; cursor: pointer;
+}
+.date-today {
+  background: transparent; border: 1px solid var(--cvg-purple); border-radius: 6px;
+  color: var(--cvg-purple); font-size: 10px; padding: 1px 6px; margin-left: 6px; cursor: pointer;
+}
+
 /* Patterns tab — plain-English cards; technical grammar demoted */
 .pat-summary { font-size: 12.5px; line-height: 1.45; margin-top: 6px; }
 .pat-warn { font-size: 11px; color: var(--cvg-gold); margin-top: 5px; }

@@ -96,7 +96,7 @@ export async function fetchSlate(dstr,onProgress){
     const chunk=allIds.slice(i,i+50);
     const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a],season=${season})`);
     d.people.forEach(pp=>{
-      const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,
+      const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,debutDate:pp.mlbDebutDate||null,
         lastName:pp.lastName||pp.fullName.split(' ').slice(-1)[0],
         jersey:pp.primaryNumber?+pp.primaryNumber:null,
         legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null,

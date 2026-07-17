@@ -62,7 +62,7 @@ function FreshnessBanner(){
 
 /* zone 1 — date strip */
 function DateStrip(){
-  const {date,dn,seasonInfo,game,h2h}=useApp();
+  const {date,setDate,today,dn,seasonInfo,game,h2h}=useApp();
   const seasonDay=seasonInfo?daysBetween(seasonInfo.start,date)+1:null;
   return(
     <div className="date-strip">
@@ -77,7 +77,14 @@ function DateStrip(){
             –<FactNum value={h2h.homeWins}>{h2h.homeWins}</FactNum> {game.home.abbrev})</>}</div>}
       </div>
       <div className="panel">
-        <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
+        <h3>
+          <input type="date" className="date-pick" value={date}
+            onChange={e=>{if(e.target.value)setDate(e.target.value)}}/>
+          {date!==today&&(
+            <button className="date-today" onClick={()=>setDate(today)} title="back to today">today ↺</button>
+          )}
+          {' '}· {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left
+        </h3>
         <div className="dn-vals">
           {dateFigures(date).map((f,i)=>(
             <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>
@@ -337,6 +344,17 @@ function BatterCard({row}){
           {' · '}age <FactNum value={ev.bday.years}>{ev.bday.years}</FactNum>
           {' · '}day <FactNum value={ev.bday.totalDays}>{ev.bday.totalDays}</FactNum> of life
           {' · '}week <FactNum value={ev.bday.weeks}>{ev.bday.weeks}</FactNum>
+        </div>
+      )}
+      {ev.debut&&(
+        <div className="bday-line">
+          debut {p.debutDate}
+          {' · '}career day <FactNum value={ev.debut.totalDays}>{ev.debut.totalDays}</FactNum>
+          {' · '}week <FactNum value={ev.debut.weeks}>{ev.debut.weeks}</FactNum>
+          {' · '}month <FactNum value={ev.debut.months}>{ev.debut.months}</FactNum>
+          {' · '}<FactNum value={ev.debut.years}>{ev.debut.years}</FactNum>y
+          {' · '}<FactNum value={ev.debut.since}>{ev.debut.since}</FactNum>d since anniv
+          {' · '}<FactNum value={ev.debut.until}>{ev.debut.until}</FactNum>d until
         </div>
       )}
       {row.patternHits.length>0&&(

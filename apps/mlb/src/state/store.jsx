@@ -48,8 +48,13 @@ export function AppStateProvider({children}){
     return missing.length?[...merged,...missing]:merged;
   });
   const [forecasts,setForecasts]=useState(()=>load('cvg.forecasts',[]));
-  const date=todayISO();
-  const [dayState,setDayState]=useState(()=>loadDay(date));
+  /* board date — defaults to today, settable from the DateStrip picker so
+     tomorrow's slate (schedule + probables + roster projections) is viewable.
+     dayState/slate are stamped with the date they belong to (_date) so the
+     save effects can't write day A's data under day B's key mid-switch. */
+  const today=todayISO();
+  const [date,setDate]=useState(today);
+  const [dayState,setDayState]=useState(()=>({...loadDay(date),_date:date}));
 
   useEffect(()=>{save('cvg.profile',profile)},[profile]);
   useEffect(()=>{save(`cvg.ciphers.${profile}`,ciphers)},[ciphers,profile]);
@@ -61,14 +66,15 @@ export function AppStateProvider({children}){
   useEffect(()=>{save('cvg.settings',settings)},[settings]);
   useEffect(()=>{save('cvg.patterns',patterns)},[patterns]);
   useEffect(()=>{save('cvg.forecasts',forecasts)},[forecasts]);
-  useEffect(()=>{saveDay(date,dayState)},[date,dayState]);
+  useEffect(()=>{if(dayState._date===date)saveDay(date,dayState)},[date,dayState]);
+  useEffect(()=>{setDayState({...loadDay(date),_date:date})},[date]);
 
   /* boot checksum (§2) */
   const boot=useMemo(()=>checksum(),[]);
 
   /* ---------- slate (hydrate from cache for instant reopen) ---------- */
   const cachedSlate=useMemo(()=>loadSlateCache(date),[date]);
-  const [slate,setSlate]=useState(()=>cachedSlate?.slate||null); // {games, people, teamStats}
+  const [slate,setSlate]=useState(()=>cachedSlate?{...cachedSlate.slate,_date:date}:null); // {games, people, teamStats}
   const [seasonInfo,setSeasonInfo]=useState(()=>cachedSlate?.seasonInfo||null);
   const [slateSavedAt,setSlateSavedAt]=useState(()=>cachedSlate?.savedAt||null);
   const [loading,setLoading]=useState('');
@@ -86,16 +92,29 @@ export function AppStateProvider({children}){
         fetchSlate(date,setLoading),
         fetchSeasonInfo(date.slice(0,4)).catch(()=>null),
       ]);
-      setSlate(s);setSeasonInfo(si);setSlateSavedAt(Date.now());
-      if(s.games.length&&gamePk==null)setGamePk(s.games[0].pk);
+      setSlate({...s,_date:date});setSeasonInfo(si);setSlateSavedAt(Date.now());
+      /* functional update — validate the pk against the NEW slate's games so a
+         date switch can't leave a stale pk from the old day selected */
+      setGamePk(pk=>s.games.some(g=>g.pk===pk)?pk:(s.games[0]?.pk??null));
       setLoading('');
     }catch(e){setError('Slate load failed: '+e.message);setLoading('')}
-  },[date,gamePk]);
+  },[date]);
   /* manual-refresh policy: fetch on boot only when there's no cache for today;
      a valid cache is trusted until the user taps refresh (banner / ↻). */
-  useEffect(()=>{if(!cachedSlate)refresh()},[]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* date switch: hydrate that date's cache or clear for auto-load */
+  useEffect(()=>{
+    const c=loadSlateCache(date);
+    setSlate(c?{...c.slate,_date:date}:null);
+    setSeasonInfo(c?.seasonInfo||null);
+    setSlateSavedAt(c?.savedAt||null);
+    setGamePk(c?.slate?.games?.[0]?.pk??null);
+    setBatterId(null);setContextFilter(null);setPatternFilter(null);setError('');
+  },[date]);
+  /* auto-load whenever the current date has no slate (mount + date switch);
+     error gates retries, loading gates re-entry */
+  useEffect(()=>{if(!slate&&!loading&&!error)refresh()},[slate,loading,error,refresh]);
   /* write-through: persist every slate change (fetch + ⚡ deep mutation) */
-  useEffect(()=>{if(slate)saveSlateCache(date,slate,seasonInfo)},[slate,seasonInfo,date]);
+  useEffect(()=>{if(slate&&slate._date===date)saveSlateCache(date,slate,seasonInfo)},[slate,seasonInfo,date]);
 
   /* ---------- derived: enabled cipher values helper ---------- */
   const vals=useCallback(s=>{
@@ -227,10 +246,22 @@ export function AppStateProvider({children}){
       {n:bday.weeks,label:`week ${bday.weeks}`},
     ].filter(x=>x.n>0):[];
     const bdaySet=new Set(bdayNums.map(x=>x.n));
+    /* career debut clock — same treatment as the birthday (Tony 2026-07-16) */
+    const debut=p.debutDate?clockFrom(p.debutDate,date):null;
+    const debutNums=debut?[
+      {n:debut.since,label:`${debut.since}d after debut anniv`},
+      {n:debut.until,label:`${debut.until}d to debut anniv`},
+      {n:debut.years,label:`${debut.years}y since debut`},
+      {n:debut.totalDays,label:`career day ${debut.totalDays}`},
+      {n:debut.weeks,label:`career week ${debut.weeks}`},
+      {n:debut.months,label:`career month ${debut.months}`},
+    ].filter(x=>x.n>0):[];
+    const debutSet=new Set(debutNums.map(x=>x.n));
     const hitsFor=n=>{
       const out=[...(loaded.get(n)||[])];
       if(nameNums.has(n))run.filter(x=>x.n===n).forEach(x=>out.push({src:`${x.label} ${x.cipher}`,cat:'name'}));
       if(bdaySet.has(n))bdayNums.filter(x=>x.n===n).forEach(x=>out.push({src:x.label,cat:'bday'}));
+      if(debutSet.has(n))debutNums.filter(x=>x.n===n).forEach(x=>out.push({src:x.label,cat:'debut'}));
       if(p.jersey===n)out.push({src:`#${p.jersey} jersey`,cat:'jersey'});
       if(isPrime(n)){
         const pi=primeIndex(n);
@@ -277,7 +308,7 @@ export function AppStateProvider({children}){
     const candidates=rungs
       .filter(r=>laneStats.has(r.stat)&&r.hits.length>0)
       .sort((a,b)=>b.hits.length-a.hits.length||a.off-b.off);
-    return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,dateNameHits,
+    return{p,run,bday,bdayNums,debut,debutNums,rungs,jerseyHits,threadHit,lanes,dateNameHits,
       primary:candidates[0]||null,alt:candidates[1]||null,nameNums};
   },[ciphers,date,loaded,dn,settings.lanesOn]);
 
@@ -587,7 +618,7 @@ export function AppStateProvider({children}){
   const value={
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
-    settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
+    settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
