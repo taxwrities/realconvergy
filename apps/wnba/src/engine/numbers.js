@@ -19,6 +19,28 @@ export function compositeIndex(n){return(n>=4&&n<=SIEVE_N&&_comp[n])?_cc[n]:-1}
 export function nthPrime(n){return _plist[n]||0}
 export function nthComposite(n){return _clist[n]||0}
 
+/* Spelled cardinals for the numberWord pattern source — uppercase, no
+   hyphens, no AND (Zach convention: 8→EIGHT=31 Red, 57→FIFTY SEVEN).
+   Range 0..9999; outside → '' so a condition just resolves empty. */
+const ONES=['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN',
+  'ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN','SEVENTEEN','EIGHTEEN','NINETEEN'];
+const TENS=['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+export function numberToWords(n){
+  n=Math.floor(+n);
+  if(!Number.isFinite(n)||n<0||n>9999)return'';
+  if(n===0)return'ZERO';
+  const small=k=>{
+    let s='';
+    if(k>=100){s+=ONES[Math.floor(k/100)]+' HUNDRED';k%=100;if(k)s+=' '}
+    if(k>=20){s+=TENS[Math.floor(k/10)];if(k%10)s+=' '+ONES[k%10]}
+    else if(k)s+=ONES[k];
+    return s;
+  };
+  let s='';
+  if(n>=1000){s+=ONES[Math.floor(n/1000)]+' THOUSAND';n%=1000;if(n)s+=' '}
+  return s+small(n);
+}
+
 /* 9s chains: every number belongs to the chain of its value mod 9
    (base 1..9, using 9 for multiples of 9). chainBase(6)=6, members
    6,15,24,33… The scanner's badge chain is chainBase 6. */

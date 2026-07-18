@@ -164,18 +164,32 @@ export function AppStateProvider({children}){
   },[vocab,ciphers,registry,dayState,dn,loaded]);
 
   const buildPatternCtx=useCallback(({p,side,g,dnUse,gameNumber,dateThread,loadedAll})=>{
-    const teamName=g?(side==='home'?g.home.teamName:g.away.teamName):'';
-    const oppTeamName=g?(side==='home'?g.away.teamName:g.home.teamName):'';
+    const ownT=g?(side==='home'?g.home:g.away):null;
+    const oppT=g?(side==='home'?g.away:g.home):null;
+    const teamName=ownT?.teamName||'';
+    const oppTeamName=oppT?.teamName||'';
+    /* every name variant (nickname/full/city) so a recipe can say either
+       "Liberty=57" or "New York Liberty=168" (mirrors the loaded map). */
+    const nameVariants=t=>t?[...new Set([t.name,t.teamName,t.locationName].filter(Boolean))]:[];
     /* "SP" slot = opposing team's likely first-possession finisher (starting C) */
     const cId=g?(side==='home'?g.awaySP:g.homeSP):null;
     const c=cId?slate?.people[cId]:null;
-    const bday=p.birthDate?clockFrom(p.birthDate,dnUse===dn?date:dnUse._date):null;
+    const ctxDate=dnUse===dn?date:dnUse._date;
+    const bday=p.birthDate?clockFrom(p.birthDate,ctxDate):null;
+    /* opposing starting center's birthday clock — the WNBA analog of the
+       opposing pitcher's clock in the recipe grammar (oppCenterClock counter) */
+    const cBday=c?.birthDate?clockFrom(c.birthDate,ctxDate):null;
+    const oppCenterClock=cBday?[
+      {n:cBday.since,label:`${cBday.since}d after C bday`},{n:cBday.until,label:`${cBday.until}d to C bday`},
+      {n:cBday.years,label:`C age ${cBday.years}`},{n:cBday.years+1,label:`C turns ${cBday.years+1}`},
+    ].filter(x=>x.n>0):[];
     return{
-      ciphers,templates,dn:dnUse,
+      ciphers,templates,dn:dnUse,date:ctxDate,
       gameNumber:gameNumber??(g?g.gameNumber[side]:null),
       h2hGameNo:g&&h2h?h2h.gameNo:null,
       teamStats:g?slate?.teamStats[side==='home'?g.home.id:g.away.id]:null,
-      teamName,oppTeamName,stadium:g?.venue||'',
+      teamName,oppTeamName,teamNames:nameVariants(ownT),oppTeamNames:nameVariants(oppT),
+      stadium:g?.venue||'',oppCenterClock,
       oppPitcherName:c?.fullName||'',oppPitcherVals:c?nameRun(c.fullName,ciphers):[],
       themeNames:[...registry,...dayState.adhocThemes].map(t=>t.name),
       sources:{core:patternSources.core,theme:patternSources.theme,
@@ -296,13 +310,17 @@ export function AppStateProvider({children}){
     return out;
   },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
 
-  const previewPattern=useCallback(pattern=>{
+  const previewPattern=useCallback((pattern,forceId)=>{
     if(!slate||!game)return null;
-    const id=batterId||board[side]?.[0]?.id;
+    const id=forceId??(batterId||board[side]?.[0]?.id);
     const p=id?slate.people[id]:null;
     if(!p)return null;
-    const s=game.homeIds.includes(id)?'home':'away';
-    const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g:game,dnUse:dn});
+    /* the picked preview batter (PATTERN-RECIPES §9) may live in another
+       game on the slate — resolve their game/side, not just the open one */
+    let g=game,s=game.homeIds.includes(id)?'home':game.awayIds.includes(id)?'away':null;
+    if(!s){g=slate.games.find(x=>x.homeIds.includes(id)||x.awayIds.includes(id))||game;
+      s=g.homeIds.includes(id)?'home':'away';}
+    const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
     return{who:p.fullName,res:evalPattern(pattern,ctx)};
   },[slate,game,batterId,board,side,buildPatternCtx,dn]);
 
