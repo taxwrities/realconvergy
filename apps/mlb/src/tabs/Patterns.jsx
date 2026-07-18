@@ -3,6 +3,7 @@ import {useApp} from '../state/store.jsx';
 import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent,
   describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
 import {parsePost} from '../engine/parse.js';
+import {dateFigures} from '../engine/clocks.js';
 import {draftsToPattern} from '../engine/recipe.js';
 import {LANES,LANE_STAT} from '../data/defaults.js';
 import Sheet from '../components/Sheet.jsx';
@@ -108,7 +109,7 @@ function Library({onEdit,goBoard}){
    shown as leftovers so nothing disappears silently. "Open in editor"
    hands over a pre-filled pattern — the editor stays the source of truth. */
 function PostSheet({onEdit,onClose}){
-  const {slate}=useApp();
+  const {slate,date}=useApp();
   const [text,setText]=useState('');
   const teams=useMemo(()=>{
     const t=new Set();
@@ -116,11 +117,12 @@ function PostSheet({onEdit,onClose}){
       [x.name,x.teamName,x.locationName].filter(Boolean).forEach(n=>t.add(n))));
     return[...t];
   },[slate]);
-  const parsed=useMemo(()=>parsePost(text,{teams}),[text,teams]);
+  const dateNums=useMemo(()=>dateFigures(date).map(f=>f.n),[date]);
+  const parsed=useMemo(()=>parsePost(text,{teams,dateNums}),[text,teams,dateNums]);
   return(
     <Sheet title="Recipe from post text" onClose={onClose}>
       <textarea className="post-ta" rows={5} autoFocus
-        placeholder="paste the blog line… (the parser reads its explicit equalities: Mets=57, Philadelphia(101)-26p, 83=23rd prime, 63-44c)"
+        placeholder="paste the decode… (reads: Mets=57 · New York 33 · 33rd HR of season · 26th career HR vs Mets · TOP DN 26 · 2 RBI from 61 · 18th prime 61 · 63-44c · 17>8DN)"
         value={text} onChange={e=>setText(e.target.value)}/>
       {parsed.drafts.map((d,i)=>(
         <div key={i} className="parse-row">
