@@ -59,10 +59,38 @@ export default function SettingsSheet({onClose}){
 }
 
 /* Move patterns between devices (Tony 2026-07-17): localStorage doesn't sync
-   phone↔desktop, so Copy dumps your patterns as a text blob you paste into a
-   note / text-to-self, and Paste merges a blob in. Merge is BY ID — patterns
-   unique to this device are kept; same-id patterns are updated in place. */
+   phone↔desktop, so Copy emits a transfer CODE you paste into a note /
+   text-to-self, and Paste merges it in. Merge is BY ID — patterns unique to
+   this device are kept; same-id patterns are updated in place.
+
+   The code is base64 (btoa over UTF-8), NOT raw JSON, on purpose: phone
+   keyboards with "smart punctuation" rewrite JSON's straight quotes to curly
+   ones in transit, and curly quotes aren't valid JSON — the #1 paste failure.
+   base64 is quote-free, so autocorrect can't touch it. Paste still accepts
+   plain JSON and even auto-straightens curly-quoted JSON as a rescue path. */
 const BLOB_SCHEMA='cvg-patterns/v1';
+
+/* UTF-8-safe base64 (examples carry curly quotes → non-Latin1) */
+const b64encode=s=>btoa(unescape(encodeURIComponent(s)));
+const b64decode=s=>decodeURIComponent(escape(atob(s)));
+
+/* text → patterns[] | null. Tries, in order: base64 transfer code, plain
+   JSON, then smart-quote-straightened JSON (last-resort rescue). */
+function readBlob(raw){
+  const t=(raw||'').trim();
+  if(!t)return null;
+  const tryJson=s=>{try{const o=JSON.parse(s);return Array.isArray(o)?o:o?.patterns}catch{return undefined}};
+  // 1) base64 transfer code (quote-free — the format Copy emits)
+  if(/^[A-Za-z0-9+/=\s]+$/.test(t)&&!t.includes('{')){
+    try{const got=tryJson(b64decode(t.replace(/\s+/g,'')));if(Array.isArray(got))return got;}catch{/* not our code */}
+  }
+  // 2) plain JSON (delimiters survived intact)
+  let got=tryJson(t);
+  if(Array.isArray(got))return got;
+  // 3) curly-quote-mangled JSON — straighten quotes/apostrophes and retry
+  got=tryJson(t.replace(/[“”]/g,'"').replace(/[‘’]/g,"'"));
+  return Array.isArray(got)?got:null;
+}
 
 function MovePatterns(){
   const {patterns,setPatterns}=useApp();
@@ -72,11 +100,11 @@ function MovePatterns(){
   const taRef=useRef(null);
 
   const openCopy=()=>{
-    setText(JSON.stringify({schema:BLOB_SCHEMA,patterns}));
-    setMsg(`${patterns.length} pattern${patterns.length===1?'':'s'} — copy this whole box`);
+    setText(b64encode(JSON.stringify({schema:BLOB_SCHEMA,patterns})));
+    setMsg(`${patterns.length} pattern${patterns.length===1?'':'s'} — copy this whole code`);
     setMode('copy');
   };
-  const openPaste=()=>{setText('');setMsg('paste a copied blob, then Merge');setMode('paste');};
+  const openPaste=()=>{setText('');setMsg('paste a copied code, then Merge');setMode('paste');};
   const close=()=>{setMode(null);setText('');setMsg('');};
 
   const copyClip=async()=>{
@@ -85,14 +113,10 @@ function MovePatterns(){
   };
 
   const merge=()=>{
-    let incoming;
-    try{
-      const parsed=JSON.parse(text.trim());
-      incoming=Array.isArray(parsed)?parsed:parsed?.patterns;
-    }catch{setMsg('✕ not valid pattern text');return;}
-    if(!Array.isArray(incoming)||!incoming.length){setMsg('✕ no patterns found in that text');return;}
+    const incoming=readBlob(text);
+    if(!incoming||!incoming.length){setMsg('✕ couldn’t read that — re-copy on the source device (use “Copy to clipboard”) and paste the whole code');return;}
     const bad=incoming.find(p=>!p||typeof p.id!=='string'||!Array.isArray(p.conditions));
-    if(bad){setMsg('✕ that text has a malformed pattern — nothing changed');return;}
+    if(bad){setMsg('✕ that code has a malformed pattern — nothing changed');return;}
     const byId=new Map(patterns.map(p=>[p.id,p]));
     let added=0,updated=0;
     incoming.forEach(p=>{byId.has(p.id)?updated++:added++;byId.set(p.id,p);});
@@ -108,7 +132,7 @@ function MovePatterns(){
         <button className="btn" onClick={mode==='paste'?close:openPaste}>Paste patterns…</button>
       </div>
       <span className="muted" style={{fontSize:10.5}}>
-        phone and desktop store patterns separately — copy the text on one, paste it on the other
+        phone and desktop store patterns separately — copy the code on one, paste it on the other
       </span>
       {mode&&(
         <div style={{marginTop:8}}>
@@ -116,7 +140,7 @@ function MovePatterns(){
             readOnly={mode==='copy'} value={text}
             onChange={e=>setText(e.target.value)}
             onFocus={e=>mode==='copy'&&e.target.select()}
-            placeholder={mode==='paste'?'paste the copied pattern text here…':''}/>
+            placeholder={mode==='paste'?'paste the copied transfer code here…':''}/>
           <div className="sheet-row" style={{marginTop:6}}>
             {mode==='copy'
               ?<button className="btn acc" onClick={copyClip}>Copy to clipboard</button>
