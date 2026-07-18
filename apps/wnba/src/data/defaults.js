@@ -47,8 +47,8 @@ export const STAT_DEPTH={FG:3,PTS:5,REB:2,AST:2,'3PM':1,'2PM':2,FT:2,PRA:5,GP:1}
 
 /* Refine-box lanes (§2): First Basket is the flagship, default ON.
    2PM sits alongside 3PM = interior (2-point) makes. */
-export const LANES=['FB','PTS','REB','AST','3PM','2PM','PRA'];
-export const LANE_STAT={FB:'FG',PTS:'PTS',REB:'REB',AST:'AST','3PM':'3PM','2PM':'2PM',PRA:'PRA'};
+export const LANES=['FB','PTS','REB','AST','3PM','2PM','FT','PRA'];
+export const LANE_STAT={FB:'FG',PTS:'PTS',REB:'REB',AST:'AST','3PM':'3PM','2PM':'2PM',FT:'FT',PRA:'PRA'};
 export const DEFAULT_LANES_ON=['FB'];
 
 export const T_FAMILY=[40,43,57,58,59,62,191,69,84,177,201,1336];
