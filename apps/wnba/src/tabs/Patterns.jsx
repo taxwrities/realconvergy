@@ -14,8 +14,8 @@ export default function PatternsTab(){
 
 function Library({onEdit}){
   const {patterns,setPatterns,patternCounts}=useApp();
-  const blank=()=>({id:'pat-'+Date.now(),name:'New pattern',lane:'HR',enabled:true,
-    conditions:[{counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]});
+  const blank=()=>({id:'pat-'+Date.now(),name:'New pattern',lane:'FB',enabled:true,
+    conditions:[{counter:'rung:FG',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]});
   return(
     <div>
       {patterns.map(pt=>(
@@ -120,7 +120,7 @@ function Editor({pattern,onDone}){
         })}
         <div className="sheet-row">
           <button className="chip" onClick={()=>setPt({...pt,conditions:[...pt.conditions,
-            {counter:'rung:HR',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]})}>
+            {counter:'rung:FG',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]})}>
             + condition</button>
           <button className="chip on" onClick={save}>Save pattern</button>
           <button className="chip gray" onClick={onDone}>Cancel</button>

@@ -10,7 +10,7 @@ import {primeIndex,compositeIndex,chainBase} from './numbers.js';
 export const COUNTERS=[
   {id:'rung:FG',label:'FG rung'},{id:'rung:PTS',label:'PTS rung'},
   {id:'rung:REB',label:'REB rung'},{id:'rung:AST',label:'AST rung'},
-  {id:'rung:3PM',label:'3PM rung'},{id:'rung:FT',label:'FT rung'},
+  {id:'rung:3PM',label:'3PM rung'},{id:'rung:2PM',label:'2PM rung'},{id:'rung:FT',label:'FT rung'},
   {id:'rung:PRA',label:'PRA rung'},{id:'rung:GP',label:'GP rung'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'franchise H2H game #'},{id:'seasonGame',label:'season game #'},
@@ -31,7 +31,7 @@ export const SOURCES=[
   {id:'word',label:'free word'},{id:'loaded',label:'any loaded value'},
 ];
 
-const STAT_KEY={FG:'FG',PTS:'PTS',REB:'REB',AST:'AST','3PM':'3PM',FT:'FT',PRA:'PRA',GP:'GP'};
+const STAT_KEY={FG:'FG',PTS:'PTS',REB:'REB',AST:'AST','3PM':'3PM','2PM':'2PM',FT:'FT',PRA:'PRA',GP:'GP'};
 export const DATE_COUNTERS=new Set(['doy','dn','dow','teamGame','seasonGame','age']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter));
