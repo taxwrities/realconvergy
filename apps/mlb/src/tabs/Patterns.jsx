@@ -206,6 +206,8 @@ function Editor({pattern,onDone}){
                 </select>
                 {c.source==='word'&&<input type="text" style={{...sel,width:110}} placeholder="word…"
                   value={typeof c.sourceArg==='string'?c.sourceArg:''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
+                {c.source==='customNumber'&&<input type="number" inputMode="numeric" style={{...sel,width:80}} placeholder="#"
+                  value={c.sourceArg??''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
                 {(c.source==='numberWord'||c.source==='counterRef')&&(()=>{
                   const a=c.sourceArg?.counter?c.sourceArg:{counter:'rung:HR',scope:'season',off:1};
                   return(<>

@@ -45,6 +45,7 @@ export const SOURCES=[
   {id:'team',label:'team',hint:'all name variants: nickname, full, city'},
   {id:'stadium',label:'stadium'},
   {id:'word',label:'free word',hint:'type any word — ciphered live'},
+  {id:'customNumber',label:'custom number',hint:'type any number — fires if the counter lands on it'},
   {id:'loaded',label:'any loaded value',hint:'everything on the board — the widest net'},
   {id:'numberWord',label:'spelled counter',hint:'spell another counter’s value (8→EIGHT), then run ciphers'},
   {id:'counterRef',label:'other counter',hint:'compare directly to another counter’s value — no spelling'},
@@ -144,6 +145,12 @@ export function resolveSource(cond,ctx){
   if(src==='team')return(ctx.teamNames?.length?ctx.teamNames:[ctx.teamName]).filter(Boolean).flatMap(nm=>enabledVals(nm,ctx.ciphers));
   if(src==='stadium')return enabledVals(ctx.stadium||'',ctx.ciphers);
   if(src==='word')return typeof cond.sourceArg==='string'&&cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
+  if(src==='customNumber'){
+    /* an arbitrary number Tony types — the leg fires when any counter value
+       (stat rung, cipher, day-of-life/career figure, clock…) equals it. */
+    const n=+cond.sourceArg;
+    return Number.isFinite(n)&&n>0?[{n,label:`#${n} (typed)`}]:[];
+  }
   if(src==='numberWord'||src==='counterRef'){
     /* counter reference on the source side (PATTERN-RECIPES §2/§8): resolve the
        referenced counter, then either SPELL each candidate and run the ciphers
@@ -297,6 +304,7 @@ const sourcePhrase=c=>{
     case'team':return'the own-team name gematria';
     case'stadium':return'the stadium gematria';
     case'word':return typeof a==='string'&&a?`"${a}" gematria`:'a free word (not set)';
+    case'customNumber':return a!==''&&a!=null?`the number ${a}`:'a custom number (not set)';
     case'loaded':return'any loaded value';
     case'numberWord':return a?.counter
       ?`the spelled-out word for ${counterPhrase(a.counter,a.scope,a.off||1)}, run through the ciphers`
@@ -338,6 +346,7 @@ export const summarizeCondition=c=>{
   const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
   const arg=(c.source==='numberWord'||c.source==='counterRef')&&c.sourceArg?.counter
     ?` [${c.source==='numberWord'?'spell ':''}${COUNTERS.find(x=>x.id===c.sourceArg.counter)?.label||c.sourceArg.counter} · ${c.sourceArg.scope||'season'}]`
+    :c.source==='customNumber'&&c.sourceArg!==''&&c.sourceArg!=null?` ${c.sourceArg}`
     :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
   const rung=c.counter.startsWith('rung');
   return`${lm}${cnt}${rung?` ${off} (${c.scope})`:''} = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
