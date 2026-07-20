@@ -23,6 +23,7 @@ export const COUNTERS=[
   {id:'dn',label:'date numerology (wide)',hint:'the full ~20-value date map — matches a LOT; prefer date figures'},
   {id:'dow',label:'day-of-week value',hint:"today's day name run through the ciphers"},
   {id:'age',label:'batter age figures',hint:'age, turns, days since/to bday, day-of-life, week'},
+  {id:'jesuit',label:'Jesuit educated',hint:'boolean — passes when the batter attended an AJCU Jesuit school (no source needed)'},
   {id:'oppPitcherClock',label:'opp SP birthday clock',hint:"opposing probable pitcher's birthday clock: days after/to, age, turns"},
   {id:'sinceLast:HR',label:'days since last HR',hint:'needs DEEP (game log)'},
   {id:'sinceLast:H',label:'days since last hit',hint:'needs DEEP (game log)'},
@@ -194,6 +195,13 @@ const applyMod=(x,mod)=>{
 };
 
 export function evalCondition(cond,ctx){
+  /* boolean criterion — passes on a player attribute, no source side.
+     Jesuit-educated (AJCU school); the "match" carries the school for evidence. */
+  if(cond.counter==='jesuit'){
+    const p=ctx.batter.p,pass=!!p.jesuit;
+    return{pass,noData:false,leftCount:pass?1:0,rightCount:0,
+      matches:pass?[{n:1,left:'Jesuit-educated',right:p.school||'AJCU school'}]:[]};
+  }
   const left=resolveCounter(cond,ctx).map(x=>applyMod(x,cond.lmod)).filter(Boolean);
   const right=resolveSource(cond,ctx).map(x=>applyMod(x,cond.rmod)).filter(Boolean);
   const chain=cond.lmod==='chain'||cond.rmod==='chain';
@@ -318,6 +326,7 @@ const sourcePhrase=c=>{
   }
 };
 export const describeCondition=c=>{
+  if(c.counter==='jesuit')return'the batter is Jesuit-educated (AJCU school)';
   const chain=c.lmod==='chain'||c.rmod==='chain';
   const left=modWrap(counterPhrase(c.counter,c.scope,c.counterArg?.off||1),c.lmod);
   const right=modWrap(sourcePhrase(c),c.rmod);
@@ -341,6 +350,7 @@ export const patternNeedsDeep=p=>p.conditions.some(c=>
 export const patternMissingTemplate=p=>p.conditions.some(c=>c.source==='template'&&!c.sourceArg);
 
 export const summarizeCondition=c=>{
+  if(c.counter==='jesuit')return`Jesuit educated (${c.hard?'hard':'soft'})`;
   const cnt=COUNTERS.find(x=>x.id===c.counter)?.label||c.counter;
   const off=c.counterArg?.off>1?`+1..${c.counterArg.off}`:'+1';
   const lm=c.lmod?MODS.find(m=>m.id===c.lmod).label+' ':'';

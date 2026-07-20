@@ -286,6 +286,7 @@ export function AppStateProvider({children}){
       .filter(r=>laneStats.has(r.stat)&&r.hits.length>0)
       .sort((a,b)=>rank(b)-rank(a)||a.off-b.off);
     return{p,run,bday,bdayNums,rungs,jerseyHits,threadHit,lanes,kat,katHits,fbCheck,
+      jesuit:!!p.jesuit,school:p.school||null,
       primary:candidates[0]||null,alt:candidates[1]||null,nameNums};
   },[ciphers,date,loaded,dn,settings.lanesOn,vocab]);
 
@@ -559,6 +560,21 @@ export function AppStateProvider({children}){
     q=q.trim();
     if(!q)return null;
     const roster=slate&&game?[...board.away,...board.home]:[];
+    /* "jesuit" → every Jesuit-educated player on today's whole slate (§8 info
+       branch), not just the active game. WNBA is college-heavy. Tony 2026-07-20. */
+    if(/^jesuit$/i.test(q)){
+      const seen=new Set(),players=[];
+      slate?.games.forEach(g=>['away','home'].forEach(s=>g[s+'Ids'].forEach(id=>{
+        const p=slate.people[id];
+        if(!p||!p.jesuit||seen.has(id))return;
+        seen.add(id);
+        players.push({id,pk:g.pk,side:s,who:p.fullName,school:p.school,
+          team:g[s].abbrev||g[s].teamName,
+          gameLabel:`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`});
+      })));
+      players.sort((a,b)=>(a.school||'').localeCompare(b.school||'')||a.who.localeCompare(b.who));
+      return{kind:'jesuit',players};
+    }
     if(/^\d+$/.test(q)){
       const n=+q;
       return{kind:'number',n,

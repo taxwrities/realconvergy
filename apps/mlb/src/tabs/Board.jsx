@@ -396,6 +396,12 @@ function BatterCard({row}){
         {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#<FactNum value={p.jersey}>{p.jersey}</FactNum></span>}
         <span className="muted" style={{fontSize:11}}>{p.position}</span>
       </div>
+      {p.school&&(
+        <div style={{fontSize:11,margin:'1px 0 3px',display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+          <span className="muted">{p.school}</span>
+          {p.jesuit&&<span className="badge gold">JESUIT</span>}
+        </div>
+      )}
       {ev.bday&&(
         <div className="bday-line">
           <FactNum value={ev.bday.since}>{ev.bday.since}</FactNum>d since bday

@@ -197,15 +197,18 @@ function Editor({pattern,onDone}){
         {pt.conditions.map((c,i)=>{
           const d=preview?.res.details[i];
           const rung=c.counter.startsWith('rung');
+          const bool=c.counter==='jesuit'; // standalone boolean — no source side
           return(
             <div key={i} className="panel" style={{background:'#101319',marginBottom:8}}>
               <div style={{display:'flex',flexWrap:'wrap',gap:6,alignItems:'center'}}>
+                {!bool&&(
                 <select style={sel} value={c.lmod} onChange={e=>upCond(i,{lmod:e.target.value})}>
                   {MODS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
-                </select>
+                </select>)}
                 <select style={sel} value={c.counter} onChange={e=>upCond(i,{counter:e.target.value})}>
                   {COUNTERS.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}
                 </select>
+                {bool&&<span className="muted" style={{fontSize:11.5}}>— true when the batter attended an AJCU Jesuit school</span>}
                 {rung&&<>
                   <select style={sel} value={c.counterArg?.off||1}
                     onChange={e=>upCond(i,{counterArg:{off:+e.target.value}})}>
@@ -215,6 +218,7 @@ function Editor({pattern,onDone}){
                     {SCOPES.map(s=><option key={s}>{s}</option>)}
                   </select>
                 </>}
+                {!bool&&<>
                 <span className="muted">=</span>
                 <select style={sel} value={c.rmod} onChange={e=>upCond(i,{rmod:e.target.value})}>
                   {MODS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
@@ -247,6 +251,7 @@ function Editor({pattern,onDone}){
                     {templates.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
                   </select>
                 )}
+                </>}
                 <button className="chip" style={{padding:'4px 10px'}}
                   onClick={()=>upCond(i,{hard:!c.hard})}>{c.hard?'hard':'soft'}</button>
                 <button className="chip gray" style={{padding:'4px 8px'}}

@@ -6,6 +6,7 @@
 ================================================================ */
 import {deriveStats} from '../engine/rungs.js';
 import {lineageFor} from './teams.js';
+import {isJesuit} from '../engine/jesuit.js';
 import H2H from '../../../../data/mlb-h2h.json';
 
 const API='https://statsapi.mlb.com/api/v1';
@@ -96,12 +97,14 @@ export async function fetchSlate(dstr,onProgress){
   for(let i=0;i<allIds.length;i+=50){
     prog(`Players ${Math.min(i+50,allIds.length)}/${allIds.length}…`);
     const chunk=allIds.slice(i,i+50);
-    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a],season=${season})`);
+    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=education,stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a],season=${season})`);
     d.people.forEach(pp=>{
+      const school=pp.education?.colleges?.[0]?.name||null; // first college; Jesuit flag off it
       const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,debutDate:pp.mlbDebutDate||null,
         lastName:pp.lastName||pp.fullName.split(' ').slice(-1)[0],
         jersey:pp.primaryNumber?+pp.primaryNumber:null,
         legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null,
+        school,jesuit:isJesuit(school),
         position:pp.primaryPosition?.abbreviation||'',split:{}};
       (pp.stats||[]).forEach(st=>{
         const tn=st.type.displayName;

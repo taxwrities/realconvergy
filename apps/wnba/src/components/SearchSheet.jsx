@@ -32,6 +32,22 @@ export default function SearchSheet({onClose}){
           {!res.tableHits.length&&!res.rosterHits.length&&<div className="occ muted">no live occurrences today</div>}
         </div>
       )}
+      {res?.kind==='jesuit'&&(
+        <div className="id-card">
+          <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
+            {res.players.length} Jesuit-educated player{res.players.length===1?'':'s'} across the slate
+          </div>
+          {res.players.map((h,i)=>(
+            <div key={i} className="occ v-green" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+              <b>{h.who}</b><span className="muted">{h.team}</span>
+              <span className="badge gold">JESUIT</span>
+              <span className="muted">{h.school}</span>
+              <span className="muted" style={{fontSize:11}}>· {h.gameLabel}</span>
+            </div>
+          ))}
+          {!res.players.length&&<div className="occ muted">no Jesuit-educated players on today's slate</div>}
+        </div>
+      )}
       {res?.kind==='word'&&(
         <div className="id-card">
           <div style={{fontWeight:800,marginBottom:6}}>{res.word}</div>

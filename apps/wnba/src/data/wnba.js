@@ -13,6 +13,7 @@
 ================================================================ */
 import BIRTHDAYS from '../../../../data/birthdays.json';
 import {twoPM} from '../engine/rungs.js';
+import {isJesuit} from '../engine/jesuit.js';
 import {CUP_FINAL_DATES,excludedIdsFrom,keepStatRow} from './gamefilter.js';
 
 const PROXY='/.netlify/functions/bdl';
@@ -182,9 +183,16 @@ export async function fetchSlate(dstr,onProgress){
     players.forEach(p=>{
       if(people[p.id])return;
       const nm=`${p.first_name} ${p.last_name}`;
+      /* BDL WNBA data quirk (verified 2026-07-20): the `college` field is
+         always null, but the school name lands in `weight` (e.g. Bonner →
+         "Auburn", Vandersloot → "Gonzaga"). Read weight, fall back to college
+         if it's ever populated; "--" means unknown. */
+      const rawSchool=(p.college||p.weight||'').trim();
+      const school=rawSchool&&rawSchool!=='--'?rawSchool:null;
       people[p.id]={id:p.id,fullName:nm,lastName:p.last_name,
         birthDate:DOB.get(norm(nm))||null,
         jersey:p.jersey_number?(parseInt(p.jersey_number,10)||null):null,
+        school,jesuit:isJesuit(school),
         position:p.position||'',split:{},starter:false,teamId:p.team.id};
     });
     // per-team season games: game # + home/away map + last completed + H2H live top-up
