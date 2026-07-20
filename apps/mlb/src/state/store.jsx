@@ -285,6 +285,19 @@ export function AppStateProvider({children}){
       {n:debut.months,label:`career month ${debut.months}`},
     ].filter(x=>x.n>0):[];
     const debutSet=new Set(debutNums.map(x=>x.n));
+    /* day-of-life / career-day landing ON a locked date figure — the natural
+       cross-reference Tony asked for (2026-07-20). Precise dateFigures only,
+       same as the name=date hits above; the wide dn map would light half the
+       roster (totalDays is thousands, so a hit here is rare and meaningful). */
+    const dayMatches=[];
+    if(bday&&figMap.has(bday.totalDays)){
+      const f=figMap.get(bday.totalDays);
+      dayMatches.push({kind:'life',n:bday.totalDays,label:'day-of-life',calc:f.calc,top:!!f.top});
+    }
+    if(debut&&figMap.has(debut.totalDays)){
+      const f=figMap.get(debut.totalDays);
+      dayMatches.push({kind:'career',n:debut.totalDays,label:'career-day',calc:f.calc,top:!!f.top});
+    }
     const hitsFor=n=>{
       const out=[...(loaded.get(n)||[])];
       if(nameNums.has(n))run.filter(x=>x.n===n).forEach(x=>out.push({src:`${x.label} ${x.cipher}`,cat:'name'}));
@@ -336,7 +349,7 @@ export function AppStateProvider({children}){
     const candidates=rungs
       .filter(r=>laneStats.has(r.stat)&&r.hits.length>0)
       .sort((a,b)=>b.hits.length-a.hits.length||a.off-b.off);
-    return{p,run,bday,bdayNums,debut,debutNums,rungs,jerseyHits,threadHit,lanes,dateNameHits,
+    return{p,run,bday,bdayNums,debut,debutNums,dayMatches,rungs,jerseyHits,threadHit,lanes,dateNameHits,
       primary:candidates[0]||null,alt:candidates[1]||null,nameNums};
   },[ciphers,date,loaded,dn,settings.lanesOn]);
 
@@ -677,17 +690,35 @@ export function AppStateProvider({children}){
   },[]);
 
   /* ---------- universal search (§8: bottom-up method as UI) ---------- */
-  const search=useCallback(q=>{
+  const search=useCallback((q,off=0)=>{
     q=q.trim();
     if(!q)return null;
     const roster=slate&&game?[...board.away,...board.home]:[];
     if(/^\d+$/.test(q)){
       const n=+q;
-      return{kind:'number',n,
+      off=Math.max(0,Math.floor(+off||0));
+      /* stat-total rungs landing on n (the original behavior) */
+      const rungHits=roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n)
+        .map(g=>({kind:'rung',who:r.ev.p.fullName,rung:g})));
+      /* day-of-life / career-day hits (within ±off) — the birth/debut clocks
+         already feed rung scoring; this makes them directly searchable. Tony
+         2026-07-20. */
+      const dayHits=roster.flatMap(r=>{
+        const ev=r.ev,out=[];
+        const chk=(clock,kind,mk)=>{
+          if(!clock)return;
+          const d=clock.totalDays-n;
+          if(Math.abs(d)<=off)out.push({kind,who:ev.p.fullName,n:clock.totalDays,delta:d,label:mk(clock.totalDays)});
+        };
+        chk(ev.bday,'bday',v=>`day ${v.toLocaleString()} of life`);
+        chk(ev.debut,'debut',v=>`career day ${v.toLocaleString()}`);
+        return out;
+      }).sort((a,b)=>Math.abs(a.delta)-Math.abs(b.delta));
+      return{kind:'number',n,off,
         prime:isPrime(n),primeIdx:primeIndex(n),compIdx:compositeIndex(n),nthP:n<=250?nthPrime(n):0,
         tFam:T_FAMILY.includes(n),chain:chainBase(n),
         tableHits:(loaded.get(n)||[]),
-        rosterHits:roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n).map(g=>({who:r.ev.p.fullName,rung:g}))),
+        rosterHits:[...rungHits,...dayHits],
       };
     }
     const v=calcAll(q);

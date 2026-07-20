@@ -283,6 +283,12 @@ function BatterZone(){
                     ◈ {[...new Set(r.ev.dateNameHits.map(h=>h.n))].join('/')}
                   </span>
                 )}
+                {r.ev.dayMatches?.length>0&&(
+                  <span className="badge cyan"
+                    title={r.ev.dayMatches.map(m=>`${m.label} ${m.n.toLocaleString()} = ${m.calc}`).join(' · ')}>
+                    ◷ {r.ev.dayMatches.map(m=>m.kind==='life'?'life':'career').join('/')}
+                  </span>
+                )}
                 {r.ev.threadHit&&<span className="badge blue">THR</span>}
                 {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
               </span>
@@ -443,6 +449,16 @@ function BatterCard({row}){
           {ev.dateNameHits.map((h,i)=>(
             <span key={i} className="mono">
               {i>0&&' · '}{h.label} {h.cipher} <FactNum value={h.n}><b className={h.top?'v-gold':'v-cyan'}>{h.n}</b></FactNum>
+            </span>
+          ))}
+        </div>
+      )}
+      {ev.dayMatches?.length>0&&(
+        <div className="call-line" style={{borderLeftColor:'var(--cvg-cyan)',marginBottom:6}}>
+          <span className="tag" style={{color:'var(--cvg-cyan)'}}>DAY = DATE</span>
+          {ev.dayMatches.map((m,i)=>(
+            <span key={i} className="mono">
+              {i>0&&' · '}{m.label} = <FactNum value={m.n}><b className={m.top?'v-gold':'v-cyan'}>{m.n.toLocaleString()}</b></FactNum> {m.top?'(top DN)':'(DN)'}
             </span>
           ))}
         </div>

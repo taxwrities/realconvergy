@@ -8,13 +8,23 @@ import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 export default function SearchSheet({onClose}){
   const {search,ciphers,colorFor}=useApp();
   const [q,setQ]=useState('');
-  const res=search(q);
+  const [off,setOff]=useState(0);
+  const isNum=/^\d+$/.test(q.trim());
+  const res=search(q,off);
   return(
     <Sheet title="Search" onClose={onClose}>
       <div className="sheet-row">
         <input type="text" autoFocus placeholder="number or word…" value={q}
           onChange={e=>setQ(e.target.value)}/>
       </div>
+      {isNum&&(
+        <div className="sheet-row" style={{gap:6,alignItems:'center'}}>
+          <span className="muted" style={{fontSize:12}}>day-of-life / career-day within</span>
+          <input type="number" min="0" style={{width:60}} value={off}
+            onChange={e=>setOff(Math.max(0,Math.floor(+e.target.value||0)))}/>
+          <span className="muted" style={{fontSize:12}}>± days</span>
+        </div>
+      )}
       {res?.kind==='number'&&(
         <div className="id-card">
           <div className="num" style={{color:colorFor(res.n,res.tableHits.map(h=>h.cat))||undefined}}>{res.n}</div>
@@ -26,7 +36,9 @@ export default function SearchSheet({onClose}){
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
             <div key={'r'+i} className="occ v-green">
-              {h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}
+              {h.kind==='bday'||h.kind==='debut'
+                ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
+                :<>{h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}</>}
             </div>
           ))}
           {!res.tableHits.length&&!res.rosterHits.length&&<div className="occ muted">no live occurrences today</div>}
