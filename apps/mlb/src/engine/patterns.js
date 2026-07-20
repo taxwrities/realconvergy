@@ -34,7 +34,7 @@ export const COUNTERS=[
   {id:'sinceLast:RBI',label:'days since last RBI',hint:'needs DEEP (game log)'},
   {id:'sinceLast:SO',label:'days since last K',hint:'needs DEEP (game log)'},
 ];
-export const SCOPES=['season','career','vsTeam','vsDivision','vsLeague','venue','month','dow'];
+export const SCOPES=['season','career','both','vsTeam','vsDivision','vsLeague','venue','month','dow'];
 export const MODS=[{id:'',label:'—'},{id:'primeIdx',label:'prime # of'},{id:'compIdx',label:'composite # of'},{id:'chain',label:'chain-to'}];
 export const SOURCES=[
   {id:'core',label:'core table',hint:'enabled Core-vocab words (Vocab tab)'},
@@ -73,6 +73,22 @@ const enabledVals=(s,ciphers)=>{
   return ALL_CIPHERS.filter(c=>ciphers[c]).map(c=>({n:v[c],label:`${s} ${c}`})).filter(x=>x.n>0);
 };
 
+/* customNumber source → the set of numbers the leg matches ANY of. `numbers`
+   (number[]) is the canonical store; the legacy singular `sourceArg` (a number
+   or numeric string like 139 / "139") parses to [n], so patterns saved before
+   the multi-value change keep working. Tokens are trimmed, non-numeric ones
+   dropped, values kept >0 and deduped; an empty field yields [] (a no-op leg). */
+export const customNumbers=cond=>{
+  const raw=Array.isArray(cond.numbers)?cond.numbers
+    :cond.sourceArg==null?[]:String(cond.sourceArg).split(',');
+  const out=[];
+  for(const t of raw){
+    const n=typeof t==='number'?t:Number(String(t).trim());
+    if(Number.isFinite(n)&&n>0&&!out.includes(n))out.push(n);
+  }
+  return out;
+};
+
 /* counter side → candidate values [{n,label}] */
 export function resolveCounter(cond,ctx){
   const [kind,stat]=cond.counter.split(':');
@@ -84,7 +100,13 @@ export function resolveCounter(cond,ctx){
       const key=STAT_KEY[S];
       const bases=[];
       const p=ctx.batter.p;
-      if(cond.scope==='season'&&p.season?.[key]!=null)bases.push({v:+p.season[key],tag:'season'});
+      if(cond.scope==='both'){
+        /* career + season BOTH — leg fires if either rung (at the offset) lands.
+           Tony's "TB rung · both · +3" recipe. */
+        if(p.season?.[key]!=null)bases.push({v:+p.season[key],tag:'season'});
+        if(p.career?.[key]!=null)bases.push({v:+p.career[key],tag:'career'});
+      }
+      else if(cond.scope==='season'&&p.season?.[key]!=null)bases.push({v:+p.season[key],tag:'season'});
       else if(cond.scope==='career'&&p.career?.[key]!=null)bases.push({v:+p.career[key],tag:'career'});
       else if(cond.scope==='venue'){
         const s=p.split?.[`season-${ctx.batter.side}`],c=p.split?.[`career-${ctx.batter.side}`];
@@ -103,8 +125,13 @@ export function resolveCounter(cond,ctx){
         if(p.deep?.dow?.[key]!=null)bases.push({v:+p.deep.dow[key],tag:p.deep.dowTag});
         if(p.deep?.dowCareer?.[key]!=null)bases.push({v:+p.deep.dowCareer[key],tag:p.deep.dowCareerTag});
       }else if(!cond.scope||cond.scope==='season'){/* handled above */}
+      /* offset: a fixed rung shift (e.g. TB+3 → base+3, exact). 0 (default)
+         falls back to the +1..offMax "next N milestones" window — so every
+         pattern saved before this addition is byte-for-byte unchanged. */
+      const offset=cond.counterArg?.offset||0;
       bases.forEach(b=>{
-        for(let k=1;k<=offMax;k++)out.push({n:b.v+k,label:`${b.tag} ${S} ${b.v}+${k}`});
+        if(offset)out.push({n:b.v+offset,label:`${b.tag} ${S} ${b.v}${offset>0?'+':''}${offset}`});
+        else for(let k=1;k<=offMax;k++)out.push({n:b.v+k,label:`${b.tag} ${S} ${b.v}+${k}`});
       });
     });
   }else if(kind==='teamGame'||kind==='seasonGame'){
@@ -172,10 +199,9 @@ export function resolveSource(cond,ctx){
   if(src==='stadium')return enabledVals(ctx.stadium||'',ctx.ciphers);
   if(src==='word')return typeof cond.sourceArg==='string'&&cond.sourceArg?enabledVals(cond.sourceArg,ctx.ciphers):[];
   if(src==='customNumber'){
-    /* an arbitrary number Tony types — the leg fires when any counter value
-       (stat rung, cipher, day-of-life/career figure, clock…) equals it. */
-    const n=+cond.sourceArg;
-    return Number.isFinite(n)&&n>0?[{n,label:`#${n} (typed)`}]:[];
+    /* a comma-separated LIST Tony types — the leg fires when any counter value
+       (stat rung, cipher, day-of-life/career figure, clock…) equals ANY of them. */
+    return customNumbers(cond).map(n=>({n,label:`#${n} (typed)`}));
   }
   if(src==='numberWord'||src==='counterRef'){
     /* counter reference on the source side (PATTERN-RECIPES §2/§8): resolve the
@@ -315,8 +341,14 @@ const nameCipherList=arg=>Array.isArray(arg?.ciphers)?arg.ciphers
 const counterPhrase=(counter,scope,off,arg)=>{
   const [kind,stat]=counter.split(':');
   const win=off>1?` (within +${off})`:'';
-  if(kind==='rung')return stat==='*'?`any next stat milestone${win}`
-    :`the next ${scope||'season'} ${stat==='G'?'games-played count':stat==='SO'?'K':stat}${win}`;
+  if(kind==='rung'){
+    const offset=arg?.offset||0;
+    const at=offset?` at ${offset>0?'+':''}${offset}`:win;
+    const scopeTxt=scope==='both'?'career-or-season':(scope||'season');
+    if(stat==='*')return offset?`any ${scopeTxt} stat milestone${at}`:`any next stat milestone${win}`;
+    const statName=stat==='G'?'games-played count':stat==='SO'?'K':stat;
+    return offset?`the ${scopeTxt} ${statName}${at}`:`the next ${scopeTxt} ${statName}${win}`;
+  }
   if(kind==='nameCipher'){
     const list=nameCipherList(arg);
     const cips=!list?'any cipher':list.length===0?'no cipher'
@@ -350,7 +382,9 @@ const sourcePhrase=c=>{
     case'team':return'the own-team name gematria';
     case'stadium':return'the stadium gematria';
     case'word':return typeof a==='string'&&a?`"${a}" gematria`:'a free word (not set)';
-    case'customNumber':return a!==''&&a!=null?`the number ${a}`:'a custom number (not set)';
+    case'customNumber':{const ns=customNumbers(c);
+      return ns.length===0?'a custom number (not set)'
+        :ns.length===1?`the number ${ns[0]}`:`any of {${ns.join(', ')}}`;}
     case'loaded':return'any loaded value';
     case'numberWord':return a?.counter
       ?`the spelled-out word for ${counterPhrase(a.counter,a.scope,a.off||1,a)}, run through the ciphers`
@@ -391,20 +425,23 @@ export const summarizeCondition=c=>{
   if(c.counter==='nameCipher'){
     const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
     const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
-    const arg=c.source==='customNumber'&&c.sourceArg!==''&&c.sourceArg!=null?` ${c.sourceArg}`
+    const cn=customNumbers(c);
+    const arg=c.source==='customNumber'?(cn.length?` · ${cn.join(', ')}`:'')
       :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
     const list=nameCipherList(c.counterArg);
     const cips=!list||list.length>=ALL_CIPHERS.length?'any':list.length===0?'none':list.join('/');
     return`nameCipher(${c.counterArg?.part||'full'}, ${cips}) = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
   }
   const cnt=COUNTERS.find(x=>x.id===c.counter)?.label||c.counter;
-  const off=c.counterArg?.off>1?`+1..${c.counterArg.off}`:'+1';
+  const offset=c.counterArg?.offset||0;
+  const off=offset?`${offset>0?'+':''}${offset}`:(c.counterArg?.off>1?`+1..${c.counterArg.off}`:'+1');
   const lm=c.lmod?MODS.find(m=>m.id===c.lmod).label+' ':'';
   const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
   const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
+  const cn=customNumbers(c);
   const arg=(c.source==='numberWord'||c.source==='counterRef')&&c.sourceArg?.counter
     ?` [${c.source==='numberWord'?'spell ':''}${COUNTERS.find(x=>x.id===c.sourceArg.counter)?.label||c.sourceArg.counter} · ${c.sourceArg.scope||'season'}]`
-    :c.source==='customNumber'&&c.sourceArg!==''&&c.sourceArg!=null?` ${c.sourceArg}`
+    :c.source==='customNumber'?(cn.length?` · ${cn.join(', ')}`:'')
     :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
   const rung=c.counter.startsWith('rung');
   return`${lm}${cnt}${rung?` ${off} (${c.scope})`:''} = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;

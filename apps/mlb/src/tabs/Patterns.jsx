@@ -1,7 +1,7 @@
 import {useState,useEffect,useMemo} from 'react';
 import {useApp} from '../state/store.jsx';
 import {COUNTERS,SCOPES,MODS,SOURCES,NAME_PARTS,NAME_CIPHERS,summarizeCondition,isDateDependent,
-  describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
+  describePattern,patternNeedsDeep,patternMissingTemplate,customNumbers} from '../engine/patterns.js';
 import {parsePost} from '../engine/parse.js';
 import {dateFigures} from '../engine/clocks.js';
 import {draftsToPattern} from '../engine/recipe.js';
@@ -240,9 +240,14 @@ function Editor({pattern,onDone}){
                 })()}
                 {rung&&<>
                   <select style={sel} value={c.counterArg?.off||1}
-                    onChange={e=>upCond(i,{counterArg:{off:+e.target.value}})}>
+                    title="window: match the next 1..N milestones (ignored when a fixed offset is set)"
+                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,off:+e.target.value}})}>
                     {[1,2,3,4,5].map(k=><option key={k} value={k}>+1..{k}</option>)}
                   </select>
+                  <input type="number" min={-20} max={20} style={{...sel,width:64}} placeholder="off"
+                    title="fixed offset (e.g. 3 → base+3, exact). 0 = use the +1..N window instead"
+                    value={c.counterArg?.offset||0}
+                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,offset:+e.target.value}})}/>
                   <select style={sel} value={c.scope} onChange={e=>upCond(i,{scope:e.target.value})}>
                     {SCOPES.map(s=><option key={s}>{s}</option>)}
                   </select>
@@ -253,13 +258,26 @@ function Editor({pattern,onDone}){
                   {MODS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
                 </select>
                 <select style={sel} value={c.source} onChange={e=>{const s=e.target.value;
-                  upCond(i,{source:s,sourceArg:s==='numberWord'||s==='counterRef'?{counter:'rung:HR',scope:'season',off:1}:''})}}>
+                  upCond(i,{source:s,numbers:undefined,sourceArg:s==='numberWord'||s==='counterRef'?{counter:'rung:HR',scope:'season',off:1}:''})}}>
                   {SOURCES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
                 {c.source==='word'&&<input type="text" style={{...sel,width:110}} placeholder="word…"
                   value={typeof c.sourceArg==='string'?c.sourceArg:''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
-                {c.source==='customNumber'&&<input type="number" inputMode="numeric" style={{...sel,width:80}} placeholder="#"
-                  value={c.sourceArg??''} onChange={e=>upCond(i,{sourceArg:e.target.value})}/>}
+                {c.source==='customNumber'&&(()=>{
+                  const ns=customNumbers(c);
+                  return(
+                    <span style={{display:'inline-flex',flexDirection:'column',gap:3}}>
+                      <input type="text" inputMode="numeric" style={{...sel,width:150}} placeholder="51, 67, 47…"
+                        value={String(c.sourceArg??'')}
+                        onChange={e=>upCond(i,{sourceArg:e.target.value,numbers:customNumbers({sourceArg:e.target.value})})}/>
+                      {ns.length>0&&(
+                        <span style={{display:'inline-flex',gap:3,flexWrap:'wrap'}}>
+                          {ns.map(n=><span key={n} className="chip" style={{padding:'2px 7px',fontSize:11}}>{n}</span>)}
+                        </span>
+                      )}
+                    </span>
+                  );
+                })()}
                 {(c.source==='numberWord'||c.source==='counterRef')&&(()=>{
                   const a=c.sourceArg?.counter?c.sourceArg:{counter:'rung:HR',scope:'season',off:1};
                   return(<>
