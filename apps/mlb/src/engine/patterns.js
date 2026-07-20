@@ -217,8 +217,9 @@ export function evalPattern(pattern,ctx){
   const soft=details.filter(d=>!d.cond.hard);
   const hardPass=hard.filter(d=>d.pass).length;
   const softPass=soft.filter(d=>d.pass).length;
-  /* soft conditions don't block (§5) */
-  const match=hard.length>0&&hardPass===hard.length;
+  /* soft conditions don't block (§5). operator toggles how the hard legs
+     combine: AND (default) needs every hard leg; OR needs any one. */
+  const match=hard.length>0&&(pattern.operator==='OR'?hardPass>=1:hardPass===hard.length);
   return{match,hardPass,hardTotal:hard.length,softPass,softTotal:soft.length,details};
 }
 
@@ -325,7 +326,8 @@ export const describeCondition=c=>{
 export const describePattern=p=>{
   const hard=p.conditions.filter(c=>c.hard),soft=p.conditions.filter(c=>!c.hard);
   const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-  const head=hard.length?`Flags batters where ${hard.map(describeCondition).join(', AND ')}`
+  const join=p.operator==='OR'?', OR ':', AND ';
+  const head=hard.length?`Flags batters where ${hard.map(describeCondition).join(join)}`
     :'No hard conditions — never matches on its own';
   const tail=soft.length?` Bonus signals: ${soft.map(describeCondition).join('; ')}.`:'';
   return cap(head)+'.'+tail;

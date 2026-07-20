@@ -57,7 +57,7 @@ function Library({onEdit}){
           {pt.example&&<div className="pat-example">{pt.example}</div>}
           <details className="pat-tech" onClick={e=>e.stopPropagation()}>
             <summary>technical rule</summary>
-            <div>{pt.conditions.map(summarizeCondition).join('  AND  ')}</div>
+            <div>{pt.conditions.map(summarizeCondition).join(pt.operator==='OR'?'  OR  ':'  AND  ')}</div>
           </details>
         </div>
       ))}
@@ -140,6 +140,25 @@ function Editor({pattern,onDone}){
             {LANES.map(L=><option key={L}>{L}</option>)}
           </select>
         </div>
+        {pt.conditions.filter(c=>c.hard).length>1&&(
+          <div className="sheet-row" style={{alignItems:'center',gap:8,marginTop:2}}>
+            <span className="muted" style={{fontSize:11.5}}>hard legs combine with</span>
+            <div style={{display:'inline-flex',border:'1px solid #2a303c',borderRadius:7,overflow:'hidden'}}>
+              {['AND','OR'].map(op=>{
+                const on=(pt.operator||'AND')===op;
+                return(
+                  <button key={op} className="chip" style={{border:'none',borderRadius:0,padding:'4px 12px',
+                    background:on?(op==='OR'?'var(--cvg-gold,#c9a227)':'#2a3550'):'transparent',
+                    color:on?'#0b0e14':'#8b93a7',fontWeight:on?700:500}}
+                    onClick={()=>setPt({...pt,operator:op})}>{op}</button>
+                );
+              })}
+            </div>
+            <span className="muted" style={{fontSize:11}}>
+              {(pt.operator||'AND')==='OR'?'fires if ANY hard leg matches':'fires only if EVERY hard leg matches'}
+            </span>
+          </div>
+        )}
         {pt.conditions.map((c,i)=>{
           const d=preview?.res.details[i];
           const rung=c.counter.startsWith('rung');
