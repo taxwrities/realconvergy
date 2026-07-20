@@ -25,6 +25,18 @@ export const useApp=()=>useContext(Ctx);
    day-of-life / career-day figures worth a quick-fill in the finder. */
 export const INSTITUTIONAL=[42,48,51,54,56,59,63,65,72,75,78,79,83,96,139,147];
 
+/* the six searchable clock readings per player (Tony 2026-07-20) — birth &
+   debut, each as total days + days since last anniv + days to next anniv.
+   src picks which clockFrom() the field reads; label names the row/toggle. */
+export const DAY_CLOCKS=[
+  {key:'lifeTotal',   src:'birth', field:'totalDays', label:'day of life'},
+  {key:'bdaySince',   src:'birth', field:'since',     label:'days since bday'},
+  {key:'bdayUntil',   src:'birth', field:'until',     label:'days until bday'},
+  {key:'careerTotal', src:'debut', field:'totalDays', label:'career day'},
+  {key:'debutSince',  src:'debut', field:'since',     label:'days since debut anniv'},
+  {key:'debutUntil',  src:'debut', field:'until',     label:'days until debut anniv'},
+];
+
 const seedVocab=()=>CORE_WORDS_MLB.map(word=>({word,enabled:true,source:'core',values:calcAll(word)}));
 
 export function AppStateProvider({children}){
@@ -709,13 +721,19 @@ export function AppStateProvider({children}){
          2026-07-20. */
       const dayHits=roster.flatMap(r=>{
         const ev=r.ev,out=[];
-        const chk=(clock,kind,mk)=>{
+        const chk=(clock,field,mk)=>{
           if(!clock)return;
-          const d=clock.totalDays-n;
-          if(Math.abs(d)<=off)out.push({kind,who:ev.p.fullName,n:clock.totalDays,delta:d,label:mk(clock.totalDays)});
+          const val=clock[field];
+          if(!(val>0))return;
+          const d=val-n;
+          if(Math.abs(d)<=off)out.push({kind:'day',who:ev.p.fullName,n:val,delta:d,label:mk(val)});
         };
-        chk(ev.bday,'bday',v=>`day ${v.toLocaleString()} of life`);
-        chk(ev.debut,'debut',v=>`career day ${v.toLocaleString()}`);
+        chk(ev.bday,'totalDays',v=>`day ${v.toLocaleString()} of life`);
+        chk(ev.bday,'since',v=>`${v} days since bday`);
+        chk(ev.bday,'until',v=>`${v} days until bday`);
+        chk(ev.debut,'totalDays',v=>`career day ${v.toLocaleString()}`);
+        chk(ev.debut,'since',v=>`${v} days since debut anniv`);
+        chk(ev.debut,'until',v=>`${v} days until debut anniv`);
         return out;
       }).sort((a,b)=>Math.abs(a.delta)-Math.abs(b.delta));
       return{kind:'number',n,off,
@@ -735,13 +753,15 @@ export function AppStateProvider({children}){
 
   /* ---------- Day-of-Life / Career-Day finder (Tony 2026-07-20) ----------
      the ±N slate-wide query: sweep every player in every loaded game, match
-     each birth/debut clock's totalDays against target number(s) within tol.
-     Rows carry DN-spine / institutional badges + are sorted by |offset|. */
-  const findDays=useCallback(({targets,tol=3,life=true,career=true})=>{
+     each enabled clock reading (six: birth/debut × total/since/until) against
+     target number(s) within tol. Rows carry DN-spine / institutional badges +
+     are sorted by |offset|. `on` is a {clockKey→bool} map (default all on). */
+  const findDays=useCallback(({targets,tol=3,on})=>{
     if(!slate?.games?.length||!targets?.length)return[];
     const t=Math.max(0,Math.min(10,Math.floor(+tol||0)));
     const spine=new Set(dateFigures(date).map(f=>f.n));
     const inst=new Set(INSTITUTIONAL);
+    const active=DAY_CLOCKS.filter(c=>!on||on[c.key]);
     const out=[];
     slate.games.forEach(g=>{
       const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
@@ -749,17 +769,20 @@ export function AppStateProvider({children}){
         g[s+'Ids'].forEach(id=>{
           const p=slate.people[id];
           if(!p)return;
-          const clocks=[];
-          if(life&&p.birthDate){const c=clockFrom(p.birthDate,date);if(c)clocks.push({kind:'life',clockLabel:'day of life',value:c.totalDays});}
-          if(career&&p.debutDate){const c=clockFrom(p.debutDate,date);if(c)clocks.push({kind:'career',clockLabel:'career day',value:c.totalDays});}
-          clocks.forEach(c=>{
+          const bday=p.birthDate?clockFrom(p.birthDate,date):null;
+          const debut=p.debutDate?clockFrom(p.debutDate,date):null;
+          active.forEach(c=>{
+            const clk=c.src==='birth'?bday:debut;
+            if(!clk)return;
+            const value=clk[c.field];
+            if(!(value>0))return;
             targets.forEach(target=>{
-              const off=c.value-target;
+              const off=value-target;
               if(Math.abs(off)<=t)
                 out.push({id,pk:g.pk,side:s,name:p.fullName,
                   team:g[s].abbrev||g[s].teamName,gameLabel,
-                  kind:c.kind,clockLabel:c.clockLabel,value:c.value,target,off,
-                  onSpine:spine.has(c.value),onInst:inst.has(c.value)});
+                  kind:c.src,clockLabel:c.label,value,target,off,
+                  onSpine:spine.has(value),onInst:inst.has(value)});
             });
           });
         });

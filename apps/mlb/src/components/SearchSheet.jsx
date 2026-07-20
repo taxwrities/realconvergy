@@ -1,6 +1,6 @@
 import {useState,useMemo} from 'react';
 import Sheet from './Sheet.jsx';
-import {useApp,INSTITUTIONAL} from '../state/store.jsx';
+import {useApp,INSTITUTIONAL,DAY_CLOCKS} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
 
@@ -24,19 +24,20 @@ function DayFinder(){
   const {findDays,date}=useApp();
   const [raw,setRaw]=useState('');
   const [tol,setTol]=useState(3);
-  const [life,setLife]=useState(true);
-  const [career,setCareer]=useState(true);
+  const [on,setOn]=useState(()=>Object.fromEntries(DAY_CLOCKS.map(c=>[c.key,true])));
   const targets=useMemo(()=>[...new Set(
     raw.split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>n>0)
   )],[raw]);
-  /* at least one clock must stay on — flipping the last off re-arms the other */
-  const toggleLife=()=>{if(life&&!career)setCareer(true);setLife(v=>!v)};
-  const toggleCareer=()=>{if(career&&!life)setLife(true);setCareer(v=>!v)};
+  /* at least one clock must stay on — flipping the last off re-arms it */
+  const toggle=key=>setOn(o=>{
+    const next={...o,[key]:!o[key]};
+    return DAY_CLOCKS.some(c=>next[c.key])?next:o;
+  });
   const quickFill=nums=>setRaw(nums.join(', '));
   const spine=useMemo(()=>dateFigures(date).map(f=>f.n),[date]);
   const results=useMemo(
-    ()=>targets.length?findDays({targets,tol,life,career}):[],
-    [targets,tol,life,career,findDays]);
+    ()=>targets.length?findDays({targets,tol,on}):[],
+    [targets,tol,on,findDays]);
   return(
     <div className="finder">
       <div className="sheet-row" style={{flexWrap:'wrap',gap:6,marginBottom:8}}>
@@ -47,13 +48,18 @@ function DayFinder(){
         <input type="text" autoFocus placeholder="target number(s) — e.g. 67 or 67, 47, 22"
           value={raw} onChange={e=>setRaw(e.target.value)}/>
       </div>
-      <div className="sheet-row" style={{gap:6,alignItems:'center',flexWrap:'wrap'}}>
+      <div className="sheet-row" style={{gap:6,alignItems:'center'}}>
         <span className="muted" style={{fontSize:12}}>±</span>
         <input type="number" min="0" max="10" style={{width:56}} value={tol}
           onChange={e=>setTol(Math.max(0,Math.min(10,Math.floor(+e.target.value||0))))}/>
-        <span className="muted" style={{fontSize:12,marginRight:6}}>tolerance</span>
-        <button className={`chip${life?' on':''}`} onClick={toggleLife}>Day of Life</button>
-        <button className={`chip${career?' on':''}`} onClick={toggleCareer}>Day of Career</button>
+        <span className="muted" style={{fontSize:12}}>tolerance</span>
+      </div>
+      <div className="sheet-row" style={{gap:6,flexWrap:'wrap',marginBottom:8}}>
+        {DAY_CLOCKS.map(c=>(
+          <button key={c.key} className={`chip${on[c.key]?' on':''}`} onClick={()=>toggle(c.key)}>
+            {c.label}
+          </button>
+        ))}
       </div>
       {targets.length>0&&(
         <div className="id-card" style={{marginTop:6}}>
@@ -65,7 +71,7 @@ function DayFinder(){
               <div className="fr-top">
                 <b>{r.name}</b>
                 <span className="muted"> {r.team}</span>
-                <span className={`badge ${r.kind==='life'?'cyan':'purple'}`} style={{marginLeft:6}}>
+                <span className={`badge ${r.kind==='birth'?'cyan':'purple'}`} style={{marginLeft:6}}>
                   {r.clockLabel}
                 </span>
                 {r.onSpine&&<span className="badge gold">DN</span>}
@@ -117,7 +123,7 @@ function UniversalSearch(){
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
             <div key={'r'+i} className="occ v-green">
-              {h.kind==='bday'||h.kind==='debut'
+              {h.kind==='day'
                 ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
                 :<>{h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}</>}
             </div>
