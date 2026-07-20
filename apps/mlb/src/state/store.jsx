@@ -21,6 +21,10 @@ import {dateNumerology as dnFor} from '../engine/clocks.js';
 const Ctx=createContext(null);
 export const useApp=()=>useContext(Ctx);
 
+/* institutional day-count table (Tony 2026-07-20) — the recurring
+   day-of-life / career-day figures worth a quick-fill in the finder. */
+export const INSTITUTIONAL=[42,48,51,54,56,59,63,65,72,75,78,79,83,96,139,147];
+
 const seedVocab=()=>CORE_WORDS_MLB.map(word=>({word,enabled:true,source:'core',values:calcAll(word)}));
 
 export function AppStateProvider({children}){
@@ -729,6 +733,41 @@ export function AppStateProvider({children}){
       })};
   },[slate,game,board,loaded,ciphers]);
 
+  /* ---------- Day-of-Life / Career-Day finder (Tony 2026-07-20) ----------
+     the ±N slate-wide query: sweep every player in every loaded game, match
+     each birth/debut clock's totalDays against target number(s) within tol.
+     Rows carry DN-spine / institutional badges + are sorted by |offset|. */
+  const findDays=useCallback(({targets,tol=3,life=true,career=true})=>{
+    if(!slate?.games?.length||!targets?.length)return[];
+    const t=Math.max(0,Math.min(10,Math.floor(+tol||0)));
+    const spine=new Set(dateFigures(date).map(f=>f.n));
+    const inst=new Set(INSTITUTIONAL);
+    const out=[];
+    slate.games.forEach(g=>{
+      const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      ['away','home'].forEach(s=>{
+        g[s+'Ids'].forEach(id=>{
+          const p=slate.people[id];
+          if(!p)return;
+          const clocks=[];
+          if(life&&p.birthDate){const c=clockFrom(p.birthDate,date);if(c)clocks.push({kind:'life',clockLabel:'day of life',value:c.totalDays});}
+          if(career&&p.debutDate){const c=clockFrom(p.debutDate,date);if(c)clocks.push({kind:'career',clockLabel:'career day',value:c.totalDays});}
+          clocks.forEach(c=>{
+            targets.forEach(target=>{
+              const off=c.value-target;
+              if(Math.abs(off)<=t)
+                out.push({id,pk:g.pk,side:s,name:p.fullName,
+                  team:g[s].abbrev||g[s].teamName,gameLabel,
+                  kind:c.kind,clockLabel:c.clockLabel,value:c.value,target,off,
+                  onSpine:spine.has(c.value),onInst:inst.has(c.value)});
+            });
+          });
+        });
+      });
+    });
+    return out.sort((a,b)=>Math.abs(a.off)-Math.abs(b.off)||a.value-b.value);
+  },[slate,date]);
+
   const value={
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
@@ -736,7 +775,7 @@ export function AppStateProvider({children}){
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
-    addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,exportConfig,importConfig,
+    addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     recipeDraft,addDraft,removeDraft,toggleDraftHard,clearDrafts,pendingPattern,setPendingPattern,
     deepFetch,deepBusy,checkLineups,lineupBusy,

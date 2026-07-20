@@ -1,20 +1,101 @@
-import {useState} from 'react';
+import {useState,useMemo} from 'react';
 import Sheet from './Sheet.jsx';
-import {useApp} from '../state/store.jsx';
+import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
+import {dateFigures} from '../engine/clocks.js';
 
-/* Universal search (§8): number → identity card + live occurrences;
-   word → cipher values + occurrences. */
+/* Search sheet (§8): the Day-of-Life / Career-Day finder (the primary ±N
+   slate-wide query) sits on top; the universal number/word search below it. */
 export default function SearchSheet({onClose}){
+  return(
+    <Sheet title="Search & Finder" onClose={onClose}>
+      <DayFinder/>
+      <div className="finder-sep">universal search</div>
+      <UniversalSearch/>
+    </Sheet>
+  );
+}
+
+/* ---- Day-of-Life / Career-Day finder ----
+   targets (single or comma-list) × ± tolerance × clock toggles, swept across
+   every player in every loaded game. Quick-fill from today's DN spine or the
+   institutional table runs immediately at the current tolerance. */
+function DayFinder(){
+  const {findDays,date}=useApp();
+  const [raw,setRaw]=useState('');
+  const [tol,setTol]=useState(3);
+  const [life,setLife]=useState(true);
+  const [career,setCareer]=useState(true);
+  const targets=useMemo(()=>[...new Set(
+    raw.split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>n>0)
+  )],[raw]);
+  /* at least one clock must stay on — flipping the last off re-arms the other */
+  const toggleLife=()=>{if(life&&!career)setCareer(true);setLife(v=>!v)};
+  const toggleCareer=()=>{if(career&&!life)setLife(true);setCareer(v=>!v)};
+  const quickFill=nums=>setRaw(nums.join(', '));
+  const spine=useMemo(()=>dateFigures(date).map(f=>f.n),[date]);
+  const results=useMemo(
+    ()=>targets.length?findDays({targets,tol,life,career}):[],
+    [targets,tol,life,career,findDays]);
+  return(
+    <div className="finder">
+      <div className="sheet-row" style={{flexWrap:'wrap',gap:6,marginBottom:8}}>
+        <button className="btn acc" onClick={()=>quickFill(spine)}>Today's DN spine</button>
+        <button className="btn acc" onClick={()=>quickFill(INSTITUTIONAL)}>Institutional table</button>
+      </div>
+      <div className="sheet-row">
+        <input type="text" autoFocus placeholder="target number(s) — e.g. 67 or 67, 47, 22"
+          value={raw} onChange={e=>setRaw(e.target.value)}/>
+      </div>
+      <div className="sheet-row" style={{gap:6,alignItems:'center',flexWrap:'wrap'}}>
+        <span className="muted" style={{fontSize:12}}>±</span>
+        <input type="number" min="0" max="10" style={{width:56}} value={tol}
+          onChange={e=>setTol(Math.max(0,Math.min(10,Math.floor(+e.target.value||0))))}/>
+        <span className="muted" style={{fontSize:12,marginRight:6}}>tolerance</span>
+        <button className={`chip${life?' on':''}`} onClick={toggleLife}>Day of Life</button>
+        <button className={`chip${career?' on':''}`} onClick={toggleCareer}>Day of Career</button>
+      </div>
+      {targets.length>0&&(
+        <div className="id-card" style={{marginTop:6}}>
+          <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
+            targets {targets.join(', ')} · ±{tol} · {results.length} match{results.length===1?'':'es'} across the slate
+          </div>
+          {results.map((r,i)=>(
+            <div key={i} className="finder-row">
+              <div className="fr-top">
+                <b>{r.name}</b>
+                <span className="muted"> {r.team}</span>
+                <span className={`badge ${r.kind==='life'?'cyan':'purple'}`} style={{marginLeft:6}}>
+                  {r.clockLabel}
+                </span>
+                {r.onSpine&&<span className="badge gold">DN</span>}
+                {r.onInst&&<span className="badge green">INST</span>}
+              </div>
+              <div className="fr-bot mono">
+                <b className="v-green">{r.value.toLocaleString()}</b>
+                <span className="muted"> — target {r.target}, {r.off>0?'+':''}{r.off}</span>
+                <span className="muted"> · {r.gameLabel}</span>
+              </div>
+            </div>
+          ))}
+          {!results.length&&<div className="occ muted">no player within ±{tol} of {targets.length>1?'those targets':'that target'} today</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---- universal search (§8): number → identity card; word → cipher values ---- */
+function UniversalSearch(){
   const {search,ciphers,colorFor}=useApp();
   const [q,setQ]=useState('');
   const [off,setOff]=useState(0);
   const isNum=/^\d+$/.test(q.trim());
   const res=search(q,off);
   return(
-    <Sheet title="Search" onClose={onClose}>
+    <>
       <div className="sheet-row">
-        <input type="text" autoFocus placeholder="number or word…" value={q}
+        <input type="text" placeholder="number or word…" value={q}
           onChange={e=>setQ(e.target.value)}/>
       </div>
       {isNum&&(
@@ -59,6 +140,6 @@ export default function SearchSheet({onClose}){
           ))}
         </div>
       )}
-    </Sheet>
+    </>
   );
 }
