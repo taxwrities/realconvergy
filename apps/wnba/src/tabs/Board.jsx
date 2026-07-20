@@ -295,7 +295,7 @@ function PatternHitsPanel(){
 }
 
 function PlayerCard({row}){
-  const {colorFor,contextFilter,gameTotals}=useApp();
+  const {colorFor,contextFilter,gameTotals,refreshGameTotals}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const today=gameTotals[row.id]; // today-only box line (top-of-card game total)
@@ -331,7 +331,11 @@ function PlayerCard({row}){
       )}
       {today&&(
         <div className="ent-stats today-line">
-          <span className="ent"><span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span></span>
+          <span className="ent">
+            <span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span>
+            <button type="button" className="today-refresh" title="refresh today's line"
+              onClick={refreshGameTotals}>↻</button>
+          </span>
           {[['PTS','PTS'],['REB','REB'],['AST','AST'],['3PM','3PM'],
             ['STL','STL'],['BLK','BLK'],['TOV','TOV'],['FG','FG']].map(([lbl,key])=>{
             const v=today[key];

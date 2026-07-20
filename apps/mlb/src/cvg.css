@@ -185,6 +185,9 @@ body { background: #101319; overscroll-behavior-y: none; }
 .ent-stats.today-line { margin-top: -5px; margin-bottom: 9px; background: #14130c;
   border: 1px solid #3a3416; }
 .ent-stats.today-line .ent .el { color: var(--cvg-gold); }
+.today-refresh { background: none; border: none; color: var(--cvg-gold); cursor: pointer;
+  font-size: 12px; padding: 0 1px; margin-left: 1px; opacity: .75; line-height: 1; }
+.today-refresh:hover { opacity: 1; }
 .rung-rows { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; }
 .rung {
   display: flex; align-items: baseline; gap: 7px; font-family: var(--cvg-mono); font-size: 12.5px;

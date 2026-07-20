@@ -102,19 +102,20 @@ export function AppStateProvider({children}){
   const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
 
   /* running game total (top-of-card, Tony 2026-07): today's box line for the
-     selected game. BDL has no live-status flag, so poll every 45s until the
-     game reads Final; an empty result (game not started) hides the row. */
-  const gameStatus=game?.status||'';
-  useEffect(()=>{
+     selected game. MANUAL refresh only — NO polling interval. Loaded once when
+     a game opens and re-pulled on every manual slate refresh (slateSavedAt
+     bumps only on refresh()); an empty result (game not started) hides the
+     row. The card's ↻ icon calls refreshGameTotals for a today-only refresh. */
+  const refreshGameTotals=useCallback(async()=>{
     if(!gamePk){setGameTotals({});return}
-    let alive=true,timer=null;
-    const load=async()=>{
-      try{const t=await fetchGameTotals(gamePk);if(alive)setGameTotals(t)}catch{/* keep prior line */}
-      if(alive&&gameStatus!=='Final')timer=setTimeout(load,45000);
-    };
-    load();
-    return()=>{alive=false;if(timer)clearTimeout(timer)};
-  },[gamePk,gameStatus]);
+    try{const t=await fetchGameTotals(gamePk);setGameTotals(t)}catch{/* keep prior line */}
+  },[gamePk]);
+  useEffect(()=>{
+    let alive=true;
+    if(!gamePk){setGameTotals({});return}
+    fetchGameTotals(gamePk).then(t=>{if(alive)setGameTotals(t)}).catch(()=>{});
+    return()=>{alive=false};
+  },[gamePk,slateSavedAt]);
 
   /* ---------- loaded-value map ----------
      entries {src, cat, team?, arena?} — team/arena feed the FB lane's
@@ -612,7 +613,7 @@ export function AppStateProvider({children}){
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
-    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,
+    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,

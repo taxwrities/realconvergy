@@ -372,7 +372,7 @@ const ENTER_STATS=[
 ];
 
 function BatterCard({row}){
-  const {colorFor,contextFilter,patternFilter,addDraft,gameTotals}=useApp();
+  const {colorFor,contextFilter,patternFilter,addDraft,gameTotals,refreshGameTotals}=useApp();
   const ev=row.ev;
   const p=ev.p;
   const today=gameTotals[row.id]; // today-only box line (top-of-card game total)
@@ -443,7 +443,12 @@ function BatterCard({row}){
       )}
       {today&&(
         <div className="ent-stats today-line">
-          <span className="ent"><span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span>
+          <span className="ent">
+            <span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span>
+            <button type="button" className="today-refresh" title="refresh today's line"
+              onClick={refreshGameTotals}>↻</button>
+          </span>
+          <span className="ent">
             <RungNum stat="H" value={today.hits}>{today.hits}</RungNum>
             <span className="sl">-</span>
             <RungNum stat="AB" value={today.atBats}>{today.atBats}</RungNum></span>

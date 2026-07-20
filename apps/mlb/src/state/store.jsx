@@ -173,19 +173,21 @@ export function AppStateProvider({children}){
   const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
 
   /* running game total (top-of-card, Tony 2026-07): boxscore for the selected
-     game. Preview → cleared (row hidden). Live → poll every 45s. Final → one
-     pull. Keyed on pk+status so a game/date switch reloads cleanly. */
+     game. MANUAL refresh only — NO polling interval. Loaded once when a
+     non-Preview game opens, and re-pulled on every manual slate refresh
+     (slateSavedAt bumps only on refresh()). The card's ↻ icon calls
+     refreshGameTotals for a today-line-only refresh. */
   const gameStatus=game?.status||'';
+  const refreshGameTotals=useCallback(async()=>{
+    if(!gamePk){setGameTotals({});return}
+    try{const t=await fetchGameTotals(gamePk);setGameTotals(t)}catch{/* keep prior line */}
+  },[gamePk]);
   useEffect(()=>{
+    let alive=true;
     if(!gamePk||gameStatus==='Preview'||gameStatus===''){setGameTotals({});return}
-    let alive=true,timer=null;
-    const load=async()=>{
-      try{const t=await fetchGameTotals(gamePk);if(alive)setGameTotals(t)}catch{/* keep prior line */}
-      if(alive&&gameStatus==='Live')timer=setTimeout(load,45000);
-    };
-    load();
-    return()=>{alive=false;if(timer)clearTimeout(timer)};
-  },[gamePk,gameStatus]);
+    fetchGameTotals(gamePk).then(t=>{if(alive)setGameTotals(t)}).catch(()=>{});
+    return()=>{alive=false};
+  },[gamePk,gameStatus,slateSavedAt]);
 
   /* ---------- loaded-value map for the active game ----------
      number → [{src, cat}]; cat drives color rules + chip typing. */
@@ -827,7 +829,7 @@ export function AppStateProvider({children}){
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
-    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,
+    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,
