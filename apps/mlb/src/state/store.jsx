@@ -12,7 +12,7 @@ import {clockFrom,dateNumerology,dateFigures,daysBetween,todayISO} from '../engi
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,fetchLineups,deepFetchGame,h2hFor} from '../data/mlb.js';
+import {fetchSlate,fetchSeasonInfo,fetchLineups,deepFetchGame,h2hFor,fetchGameTotals} from '../data/mlb.js';
 import {applyLineups} from '../data/lineups.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
@@ -107,6 +107,7 @@ export function AppStateProvider({children}){
   const [batterId,setBatterId]=useState(null);
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
   const [patternFilter,setPatternFilter]=useState(null); // pattern id filtering batter list
+  const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
 
   const refresh=useCallback(async()=>{
     setError('');setLoading('Loading slate…');
@@ -170,6 +171,21 @@ export function AppStateProvider({children}){
 
   const game=useMemo(()=>slate?.games.find(g=>g.pk===gamePk)||null,[slate,gamePk]);
   const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
+
+  /* running game total (top-of-card, Tony 2026-07): boxscore for the selected
+     game. Preview → cleared (row hidden). Live → poll every 45s. Final → one
+     pull. Keyed on pk+status so a game/date switch reloads cleanly. */
+  const gameStatus=game?.status||'';
+  useEffect(()=>{
+    if(!gamePk||gameStatus==='Preview'||gameStatus===''){setGameTotals({});return}
+    let alive=true,timer=null;
+    const load=async()=>{
+      try{const t=await fetchGameTotals(gamePk);if(alive)setGameTotals(t)}catch{/* keep prior line */}
+      if(alive&&gameStatus==='Live')timer=setTimeout(load,45000);
+    };
+    load();
+    return()=>{alive=false;if(timer)clearTimeout(timer)};
+  },[gamePk,gameStatus]);
 
   /* ---------- loaded-value map for the active game ----------
      number → [{src, cat}]; cat drives color rules + chip typing. */
@@ -811,7 +827,7 @@ export function AppStateProvider({children}){
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
-    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
+    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,

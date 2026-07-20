@@ -181,6 +181,10 @@ body { background: #101319; overscroll-behavior-y: none; }
 .ent-stats .ent.green .el { color: var(--cvg-green); }
 .ent-stats .ent .sl { color: #4a5060; }
 .ent-stats .ent-key { font-size: 9.5px; margin-left: auto; align-self: center; }
+/* running game total (top-of-card): gold-keyed today line under Entering */
+.ent-stats.today-line { margin-top: -5px; margin-bottom: 9px; background: #14130c;
+  border: 1px solid #3a3416; }
+.ent-stats.today-line .ent .el { color: var(--cvg-gold); }
 .rung-rows { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; }
 .rung {
   display: flex; align-items: baseline; gap: 7px; font-family: var(--cvg-mono); font-size: 12.5px;
@@ -254,6 +258,10 @@ body { background: #101319; overscroll-behavior-y: none; }
 .totals .pl { text-align: left; position: sticky; left: 0; background: #171b23; z-index: 1; font-family: inherit; font-weight: 600; padding-right: 12px; }
 .totals th.pl { background: #12151d; }
 .totals tr:last-child td { border-bottom: none; }
+/* SPLITS rows — dimmer label, faint zebra so they read as sub-rows of totals */
+.totals tr.split .pl { color: #9aa2b4; font-weight: 500; font-size: 10.5px; }
+.totals tr.split td { background: #14171e; }
+.totals tr.split .pl { background: #14171e; }
 
 /* rung popover */
 .rung-pop-scrim { position: fixed; inset: 0; z-index: 70; }

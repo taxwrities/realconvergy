@@ -372,9 +372,10 @@ const ENTER_STATS=[
 ];
 
 function BatterCard({row}){
-  const {colorFor,contextFilter,patternFilter,addDraft}=useApp();
+  const {colorFor,contextFilter,patternFilter,addDraft,gameTotals}=useApp();
   const ev=row.ev;
   const p=ev.p;
+  const today=gameTotals[row.id]; // today-only box line (top-of-card game total)
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
   /* TB rungs headline; BB never buried; full ladders surfaced (§4.7) */
   const order={TB:0,HR:1,'1B':2,XBH:3,RBI:4,BB:5,H:6,'2B':7,'3B':8,SO:9,AB:10,PA:11};
@@ -438,6 +439,22 @@ function BatterCard({row}){
             );
           })}
           <span className="ent-key muted">career/season</span>
+        </div>
+      )}
+      {today&&(
+        <div className="ent-stats today-line">
+          <span className="ent"><span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span>
+            <RungNum stat="H" value={today.hits}>{today.hits}</RungNum>
+            <span className="sl">-</span>
+            <RungNum stat="AB" value={today.atBats}>{today.atBats}</RungNum></span>
+          {[['HR','homeRuns'],['RBI','rbi'],['R','runs'],['TB','totalBases'],
+            ['BB','baseOnBalls'],['SO','strikeOuts']].map(([lbl,key])=>today[key]>0&&(
+            <span key={lbl} className="ent">
+              <span className="el">{lbl}</span>
+              <RungNum stat={lbl} value={today[key]}>{today[key]}</RungNum>
+            </span>
+          ))}
+          {today.summary&&<span className="ent-key muted">{today.summary}</span>}
         </div>
       )}
       {row.patternHits.length>0&&(
@@ -710,6 +727,19 @@ function TotalsTable({player}){
   const rows=[];
   if(player?.career)rows.push({scope:'Career',line:player.career});
   if(player?.season)rows.push({scope:'Season',line:player.season});
+  /* SPLITS rows (Tony 2026-07): same columns as career/season. Handedness +
+     venue ride along on the slate fetch (season scope = current form); Last N
+     and the situational splits arrive with ⚡ DEEP. Only rows with data show. */
+  const S=player?.split||{},D=player?.deep||{};
+  const split=(scope,line)=>{if(line)rows.push({scope,line,split:true})};
+  split('vs LHP',S['season-vsL']);
+  split('vs RHP',S['season-vsR']);
+  split('Home',S['season-home']);
+  split('Away',S['season-away']);
+  if(D.lastN)[7,15,30].forEach(n=>split('Last '+n,D.lastN[n]));
+  if(D.month)split(D.monthTag||'Month',D.month);
+  if(D.dow)split(D.dowTag||'Day',D.dow);
+  if(D.vsOpp)split('vs '+(D.oppTag||'Opp'),D.vsOpp);
   if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
   return(
     <div className="totals-wrap" ref={hWrap}>
@@ -719,7 +749,7 @@ function TotalsTable({player}){
         </thead>
         <tbody>
           {rows.map((r,i)=>(
-            <tr key={i}>
+            <tr key={i} className={r.split?'split':''}>
               <td className="pl">{r.scope}</td>
               {TOTALS_COLS.map(c=><TotalsCell key={c.h} col={c} line={r.line}/>)}
             </tr>

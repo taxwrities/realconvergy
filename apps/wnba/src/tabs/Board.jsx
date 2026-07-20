@@ -295,9 +295,10 @@ function PatternHitsPanel(){
 }
 
 function PlayerCard({row}){
-  const {colorFor,contextFilter}=useApp();
+  const {colorFor,contextFilter,gameTotals}=useApp();
   const ev=row.ev;
   const p=ev.p;
+  const today=gameTotals[row.id]; // today-only box line (top-of-card game total)
   const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
   /* FG rungs headline for the FB lane; PTS next; full ladders surfaced */
   const order={FG:0,PTS:1,'3PM':2,REB:3,AST:4,FT:5,PRA:6,GP:7};
@@ -326,6 +327,23 @@ function PlayerCard({row}){
           {' · '}age <FactNum value={ev.bday.years}>{ev.bday.years}</FactNum>
           {' · '}day <FactNum value={ev.bday.totalDays}>{ev.bday.totalDays}</FactNum> of life
           {' · '}week <FactNum value={ev.bday.weeks}>{ev.bday.weeks}</FactNum>
+        </div>
+      )}
+      {today&&(
+        <div className="ent-stats today-line">
+          <span className="ent"><span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span></span>
+          {[['PTS','PTS'],['REB','REB'],['AST','AST'],['3PM','3PM'],
+            ['STL','STL'],['BLK','BLK'],['TOV','TOV'],['FG','FG']].map(([lbl,key])=>{
+            const v=today[key];
+            if(v==null||(v===0&&!['PTS','REB','AST'].includes(lbl)))return null;
+            return(
+              <span key={lbl} className="ent">
+                <RungNum stat={key} value={v}>{v}</RungNum>
+                <span className="el">{lbl}</span>
+              </span>
+            );
+          })}
+          {today.MIN&&<span className="ent-key muted">{today.MIN} min</span>}
         </div>
       )}
       {/* cFG+1 / arena check renders FIRST on the card (§2 house rule) */}
@@ -595,6 +613,15 @@ function TotalsTable({players}){
   players.filter(Boolean).forEach(p=>{
     if(p.career)rows.push({who:p.fullName,scope:'Career',line:p.career});
     if(p.season)rows.push({who:p.fullName,scope:'Season',line:p.season});
+    /* SPLITS rows (Tony 2026-07): same columns. Home/Away + Last 5/10 ride
+       along on the slate fetch; vs-opponent arrives with ⚡ DEEP. */
+    const S=p.split||{},D=p.deep||{};
+    const split=(scope,line)=>{if(line)rows.push({who:p.fullName,scope,line,split:true})};
+    split('Home',S['season-home']);
+    split('Away',S['season-away']);
+    split('Last 5',S.last5);
+    split('Last 10',S.last10);
+    if(D.vsOpp)split('vs '+(D.oppTag||'Opp'),D.vsOpp);
   });
   if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
   return(
@@ -605,7 +632,7 @@ function TotalsTable({players}){
         </thead>
         <tbody>
           {rows.map((r,i)=>(
-            <tr key={i}>
+            <tr key={i} className={r.split?'split':''}>
               <td className="pl">{r.who} <span className="muted">{r.scope}</span></td>
               {TOTALS_COLS.map(c=><TotalsCell key={c.h} col={c} line={r.line}/>)}
             </tr>

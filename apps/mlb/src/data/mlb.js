@@ -97,7 +97,7 @@ export async function fetchSlate(dstr,onProgress){
   for(let i=0;i<allIds.length;i+=50){
     prog(`Players ${Math.min(i+50,allIds.length)}/${allIds.length}…`);
     const chunk=allIds.slice(i,i+50);
-    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=education,stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a],season=${season})`);
+    const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=education,stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a,vl,vr],season=${season})`);
     d.people.forEach(pp=>{
       const school=pp.education?.colleges?.[0]?.name||null; // first college; Jesuit flag off it
       const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,debutDate:pp.mlbDebutDate||null,
@@ -111,9 +111,14 @@ export async function fetchSlate(dstr,onProgress){
         if(tn==='career'){const s=st.splits?.[0]?.stat;if(s)rec.career=deriveStats(s)}
         else if(tn==='season'){const s=st.splits?.[0]?.stat;if(s)rec.season=deriveStats(s)}
         else if(tn==='careerStatSplits'||tn==='statSplits'){
+          /* venue (h/a) + handedness (vl/vr) splits — same shape as career,
+             keyed scope-loc so the totals table can add SPLITS rows and the
+             batter eval can read venue-side rungs (Tony 2026-07). */
+          const scope=tn==='careerStatSplits'?'career':'season';
+          const CODE={h:'home',a:'away',vl:'vsL',vr:'vsR'};
           (st.splits||[]).forEach(sp=>{
-            const side=sp.split?.code;if(side!=='h'&&side!=='a')return;
-            rec.split[(tn==='careerStatSplits'?'career':'season')+'-'+(side==='h'?'home':'away')]=deriveStats(sp.stat);
+            const loc=CODE[sp.split?.code];if(!loc)return;
+            rec.split[scope+'-'+loc]=deriveStats(sp.stat);
           });
         }
       });
@@ -176,6 +181,50 @@ export function h2hFor(game,dstr){
 export async function fetchLineups(dstr){
   const d=await jget(`${API}/schedule?sportId=1&date=${dstr}&hydrate=lineups`);
   return d.dates?.[0]?.games||[];
+}
+
+/* ---------------- running game total (top-of-card, Tony 2026-07) ----------------
+   today's per-batter box line for the selected game. One boxscore call; the
+   ENTERING totals still exclude today (house rule) — this is the separate
+   today-only line that reads alongside them. Poll ~45s while Live in the store.
+   Only batters who've come to the plate are returned (row hidden pre-game). */
+export async function fetchGameTotals(gamePk){
+  const d=await jget(`${API}/game/${gamePk}/boxscore`);
+  const out={};
+  ['away','home'].forEach(sd=>{
+    const t=d.teams?.[sd];if(!t)return;
+    Object.values(t.players||{}).forEach(pl=>{
+      const b=pl.stats?.batting,id=pl.person?.id;
+      if(!b||id==null)return;
+      if((+b.plateAppearances||0)===0&&(+b.atBats||0)===0&&(+b.baseOnBalls||0)===0)return;
+      out[id]={plateAppearances:+b.plateAppearances||0,atBats:+b.atBats||0,runs:+b.runs||0,
+        hits:+b.hits||0,doubles:+b.doubles||0,triples:+b.triples||0,homeRuns:+b.homeRuns||0,
+        rbi:+b.rbi||0,totalBases:+b.totalBases||0,baseOnBalls:+b.baseOnBalls||0,
+        strikeOuts:+b.strikeOuts||0,stolenBases:+b.stolenBases||0,summary:b.summary||''};
+    });
+  });
+  return out;
+}
+
+/* Last-N form from a season game-log payload (already fetched in deepFetchGame).
+   Sum the most recent N games' counting fields, then derive 1B/XBH — same shape
+   as career/season so the totals table adds them as SPLITS rows. */
+const LASTN_FIELDS=['plateAppearances','atBats','runs','hits','doubles','triples',
+  'homeRuns','rbi','totalBases','baseOnBalls','strikeOuts','stolenBases',
+  'caughtStealing','groundIntoDoublePlay','hitByPitch','sacBunts','sacFlies','intentionalWalks'];
+function lastNFromLog(gl){
+  const splits=((gl.stats?.[0]?.splits)||[]).filter(x=>x.date)
+    .slice().sort((a,b)=>a.date<b.date?1:-1); // most-recent first
+  const out={};
+  [7,15,30].forEach(N=>{
+    const games=splits.slice(0,N);
+    if(!games.length)return;
+    const sum={gamesPlayed:games.length};
+    LASTN_FIELDS.forEach(f=>sum[f]=0);
+    games.forEach(g=>{const s=g.stat||{};LASTN_FIELDS.forEach(f=>sum[f]+=+s[f]||0)});
+    out[N]=deriveStats(sum);
+  });
+  return out;
 }
 
 /* ================================================================
@@ -267,7 +316,8 @@ export async function deepFetchGame(game,people,dstr,onProgress){
         });
       });
       const ev={};
-      scanLog(await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`),ev);
+      const seasonLog=await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`);
+      scanLog(seasonLog,ev);
       /* cross-season fallback: no HR yet THIS season → the sinceLast:HR
          counter would be blind, so scan last season's log once (fills any
          other missing lanes for free). Gated on HR only — rarer lanes (3B)
@@ -275,7 +325,10 @@ export async function deepFetchGame(game,people,dstr,onProgress){
       if(!ev.HR&&p.debutDate&&+p.debutDate.slice(0,4)<+season){
         scanLog(await jget(`${API}/people/${id}/stats?stats=gameLog&group=hitting&season=${+season-1}`),ev);
       }
-      (p.deep=p.deep||{}).lastEvent=ev;
+      const deep=(p.deep=p.deep||{});
+      deep.lastEvent=ev;
+      // Last 7/15/30 from the same season log (no extra call) → totals SPLITS rows
+      deep.lastN=lastNFromLog(seasonLog);
     }catch{/* degrade per player */}
   }
   game.deepDone=true;

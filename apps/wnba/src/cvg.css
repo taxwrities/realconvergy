@@ -174,6 +174,15 @@ body { background: #101319; overscroll-behavior-y: none; }
 .bcard .who .jer { font-family: var(--cvg-mono); color: #8a90a0; font-size: 12px; }
 .bcard .who .jer.hit { color: var(--cvg-gold); }
 .bday-line { font-size: 11.5px; color: #8a90a0; font-family: var(--cvg-mono); margin-bottom: 8px; }
+/* running game total (top-of-card): gold-keyed today line */
+.ent-stats { display: flex; flex-wrap: wrap; gap: 4px 11px; align-items: baseline;
+  margin: 4px 0 9px; padding: 6px 8px; background: #101319; border-radius: 7px;
+  font-family: var(--cvg-mono); font-size: 12px; }
+.ent-stats .ent { display: inline-flex; align-items: baseline; gap: 3px; }
+.ent-stats .ent .el { color: #8a90a0; font-size: 9.5px; font-weight: 800; letter-spacing: .3px; }
+.ent-stats .ent-key { font-size: 9.5px; margin-left: auto; align-self: center; }
+.ent-stats.today-line { background: #14130c; border: 1px solid #3a3416; }
+.ent-stats.today-line .ent .el { color: var(--cvg-gold); }
 .rung-rows { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; }
 .rung {
   display: flex; align-items: baseline; gap: 7px; font-family: var(--cvg-mono); font-size: 12.5px;
@@ -246,6 +255,9 @@ body { background: #101319; overscroll-behavior-y: none; }
 .totals .pl { text-align: left; position: sticky; left: 0; background: #171b23; z-index: 1; font-family: inherit; font-weight: 600; padding-right: 12px; }
 .totals th.pl { background: #12151d; }
 .totals tr:last-child td { border-bottom: none; }
+/* SPLITS rows — dimmer label, faint zebra so they read as sub-rows of totals */
+.totals tr.split .pl { color: #9aa2b4; font-weight: 500; font-size: 10.5px; background: #14171e; }
+.totals tr.split td { background: #14171e; }
 
 /* rung popover */
 .rung-pop-scrim { position: fixed; inset: 0; z-index: 70; }

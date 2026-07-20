@@ -16,7 +16,7 @@ import {clockFrom,dateNumerology,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_WNBA,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor} from '../data/wnba.js';
+import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor,fetchGameTotals} from '../data/wnba.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
@@ -72,6 +72,7 @@ export function AppStateProvider({children}){
   const [batterId,setBatterId]=useState(null);
   const [contextFilter,setContextFilter]=useState(null);
   const [patternFilter,setPatternFilter]=useState(null); // pattern id → dim non-hitters
+  const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
 
   const refresh=useCallback(async()=>{
     setError('');setLoading('Loading slate…');
@@ -99,6 +100,21 @@ export function AppStateProvider({children}){
   const dn=useMemo(()=>dateNumerology(date,ciphers),[date,ciphers]);
   const game=useMemo(()=>slate?.games.find(g=>g.pk===gamePk)||null,[slate,gamePk]);
   const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
+
+  /* running game total (top-of-card, Tony 2026-07): today's box line for the
+     selected game. BDL has no live-status flag, so poll every 45s until the
+     game reads Final; an empty result (game not started) hides the row. */
+  const gameStatus=game?.status||'';
+  useEffect(()=>{
+    if(!gamePk){setGameTotals({});return}
+    let alive=true,timer=null;
+    const load=async()=>{
+      try{const t=await fetchGameTotals(gamePk);if(alive)setGameTotals(t)}catch{/* keep prior line */}
+      if(alive&&gameStatus!=='Final')timer=setTimeout(load,45000);
+    };
+    load();
+    return()=>{alive=false;if(timer)clearTimeout(timer)};
+  },[gamePk,gameStatus]);
 
   /* ---------- loaded-value map ----------
      entries {src, cat, team?, arena?} — team/arena feed the FB lane's
@@ -596,7 +612,7 @@ export function AppStateProvider({children}){
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
-    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,
+    slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,

@@ -239,6 +239,25 @@ export async function fetchSlate(dstr,onProgress){
     const[pid,loc]=k.split('|');
     if(a.gp)people[pid].split['season-'+loc]=statLine(a);
   });
+  // Last 5 / Last 10 form — summed from this season's game logs (already in
+  // memory, no extra fetch). bbref-regular rows only, deduped, most-recent N.
+  const lnByPlayer={},lnSeen=new Set();
+  seaRows.forEach(s=>{
+    if(!keepStatRow(s,REAL_TEAM_IDS,seaExcl))return;
+    const pid=s.player&&s.player.id,g=s.game;
+    if(pid==null||!people[pid]||!g||g.id==null)return;
+    const key=pid+'|'+g.id;if(lnSeen.has(key))return;lnSeen.add(key);
+    (lnByPlayer[pid]=lnByPlayer[pid]||[]).push(s);
+  });
+  Object.entries(lnByPlayer).forEach(([pid,list])=>{
+    list.sort((a,b)=>new Date(b.game.date)-new Date(a.game.date)); // most-recent first
+    [5,10].forEach(N=>{
+      const games=list.slice(0,N);
+      if(!games.length)return;
+      const a=zero();games.forEach(s=>addRow(a,s));
+      if(a.gp)people[pid].split['last'+N]=statLine(a);
+    });
+  });
   // starters: top-5 minutes in the team's last completed game (inferred; manual overrides win in-store)
   games.forEach(g=>{
     ['home','away'].forEach(side=>{
@@ -314,6 +333,25 @@ export async function deepFetchGame(game,people,dstr,onProgress){
   }
   game.deepDone=true;prog('');
   return meet.length;
+}
+
+/* ---------------- running game total (top-of-card, Tony 2026-07) ----------------
+   today's per-player box line for the selected game (one player_stats call,
+   the same shape DEEP uses). BDL only distinguishes Preview/Final, so the
+   store polls this every 45s until Final; only players who've logged minutes
+   or a counting stat are returned (row hidden pre-game). */
+export async function fetchGameTotals(gamePk){
+  const rows=await pull('player_stats',{'game_ids[]':[gamePk],per_page:100});
+  const out={};
+  rows.forEach(s=>{
+    const pid=s.player&&s.player.id;if(pid==null)return;
+    const played=parseMin(s.min)>0||((s.pts||s.fgm||s.reb||s.ast||s.fta||s.stl||s.blk)>0);
+    if(!played)return;
+    out[pid]={PTS:s.pts||0,REB:s.reb||0,AST:s.ast||0,FG:s.fgm||0,FGA:s.fga||0,
+      '3PM':s.fg3m||0,FT:s.ftm||0,STL:s.stl||0,BLK:s.blk||0,TOV:s.turnover||0,
+      MIN:s.min||'',PRA:(s.pts||0)+(s.reb||0)+(s.ast||0)};
+  });
+  return out;
 }
 
 /* ---------------- H2H (WNBA-REDESIGN-SPEC §3/§4) ---------------- */
