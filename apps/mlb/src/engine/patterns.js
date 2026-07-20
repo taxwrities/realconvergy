@@ -126,18 +126,25 @@ export function resolveCounter(cond,ctx){
   }else if(kind==='oppPitcherClock'){
     (ctx.oppPitcherClock||[]).forEach(x=>out.push({n:x.n,label:x.label}));
   }else if(kind==='nameCipher'){
-    /* the batter's own name (full/first/last) through one chosen cipher — a
-       single number, comparable against any source (custom #, DN spine, phrase…).
-       e.g. "full name Ord = 139" is [nameCipher full Ord] = [customNumber 139]. */
+    /* the batter's own name (full/first/last) run through ANY of the selected
+       ciphers — each cipher value is emitted as its own candidate, so the leg
+       fires if the source matches in any one of them. Comparable against any
+       source (custom #, DN spine, phrase…). e.g. "full name Ord = 139" is
+       [nameCipher full Ord] = [customNumber 139]. ciphers defaults to all
+       enabled; the legacy singular `cipher` sub-arg is still honored. */
     const p=ctx.batter.p;
     const parts=(p.fullName||'').trim().split(/\s+/);
     const first=p.firstName||parts[0]||'';
     const last=p.lastName||parts.slice(1).join(' ')||'';
     const part=cond.counterArg?.part||'full';
-    const cipher=cond.counterArg?.cipher||'Ord';
     const str=part==='first'?first:part==='last'?last:(p.fullName||'');
-    const n=calcAll(str)[cipher];
-    if(n>0)out.push({n,label:`${part} name ${cipher} ${n} (${str})`});
+    const arr=cond.counterArg?.ciphers;
+    const sel=Array.isArray(arr)?arr
+      :cond.counterArg?.cipher?[cond.counterArg.cipher]
+      :ALL_CIPHERS.filter(c=>ctx.ciphers?.[c]);
+    const vals=calcAll(str);
+    sel.forEach(cipher=>{const n=vals[cipher];
+      if(n>0)out.push({n,label:`${part} name ${cipher} ${n} (${str})`})});
   }else if(kind==='sinceLast'){
     /* needs the DEEP tier (p.deep.lastEvent from the gameLog pull) */
     const d=ctx.batter.p.deep?.lastEvent?.[stat];
@@ -300,12 +307,23 @@ export const SEED_PATTERNS=[
    Generated from the condition structure — never hand-written metadata,
    so they can't rot when a condition is edited and they cover
    user-created patterns too. */
+/* normalize the nameCipher counter's cipher selection for describe/summary:
+   null → defaults to all enabled ("any cipher"); [] → none; legacy singular
+   `cipher` becomes a 1-element list. */
+const nameCipherList=arg=>Array.isArray(arg?.ciphers)?arg.ciphers
+  :arg?.cipher?[arg.cipher]:null;
 const counterPhrase=(counter,scope,off,arg)=>{
   const [kind,stat]=counter.split(':');
   const win=off>1?` (within +${off})`:'';
   if(kind==='rung')return stat==='*'?`any next stat milestone${win}`
     :`the next ${scope||'season'} ${stat==='G'?'games-played count':stat==='SO'?'K':stat}${win}`;
-  if(kind==='nameCipher')return`the batter's ${arg?.part||'full'} name in the ${arg?.cipher||'Ord'} cipher`;
+  if(kind==='nameCipher'){
+    const list=nameCipherList(arg);
+    const cips=!list?'any cipher':list.length===0?'no cipher'
+      :list.length>=ALL_CIPHERS.length?'any cipher'
+      :`the ${list.join('/')} cipher${list.length>1?'s':''}`;
+    return`the batter's ${arg?.part||'full'} name in ${cips}`;
+  }
   if(kind==='teamGame'||kind==='seasonGame')return"the team's game number";
   if(kind==='stair')return`the team's next ${stat} landings`;
   if(kind==='doy')return'the day of year';
@@ -375,7 +393,9 @@ export const summarizeCondition=c=>{
     const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
     const arg=c.source==='customNumber'&&c.sourceArg!==''&&c.sourceArg!=null?` ${c.sourceArg}`
       :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
-    return`nameCipher(${c.counterArg?.part||'full'}, ${c.counterArg?.cipher||'Ord'}) = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
+    const list=nameCipherList(c.counterArg);
+    const cips=!list||list.length>=ALL_CIPHERS.length?'any':list.length===0?'none':list.join('/');
+    return`nameCipher(${c.counterArg?.part||'full'}, ${cips}) = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
   }
   const cnt=COUNTERS.find(x=>x.id===c.counter)?.label||c.counter;
   const off=c.counterArg?.off>1?`+1..${c.counterArg.off}`:'+1';

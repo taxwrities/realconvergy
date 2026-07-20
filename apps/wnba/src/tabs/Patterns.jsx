@@ -113,7 +113,8 @@ function PostSheet({onEdit,onClose}){
 }
 
 function Editor({pattern,onDone}){
-  const {patterns,setPatterns,previewPattern,templates,slate}=useApp();
+  const {patterns,setPatterns,previewPattern,templates,slate,ciphers}=useApp();
+  const enabledCiphers=NAME_CIPHERS.filter(c=>ciphers[c]);
   const [pt,setPt]=useState(pattern);
   /* preview player pick (PATTERN-RECIPES §9) — '' = the board selection */
   const [previewId,setPreviewId]=useState('');
@@ -174,16 +175,34 @@ function Editor({pattern,onDone}){
                   {COUNTERS.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}
                 </select>
                 {bool&&<span className="muted" style={{fontSize:11.5}}>— true when the player attended an AJCU Jesuit school</span>}
-                {c.counter==='nameCipher'&&<>
-                  <select style={sel} value={c.counterArg?.part||'full'}
-                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,part:e.target.value}})}>
-                    {NAME_PARTS.map(x=><option key={x} value={x}>{x} name</option>)}
-                  </select>
-                  <select style={sel} value={c.counterArg?.cipher||'Ord'}
-                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,cipher:e.target.value}})}>
-                    {NAME_CIPHERS.map(x=><option key={x} value={x}>{x}</option>)}
-                  </select>
-                </>}
+                {c.counter==='nameCipher'&&(()=>{
+                  const part=c.counterArg?.part||'full';
+                  const arr=c.counterArg?.ciphers;
+                  /* undefined → default all enabled (every chip on); legacy singular
+                     `cipher` → 1-list; [] → none. Toggling materializes an explicit
+                     array, canonicalizing a full-enabled set back to undefined. */
+                  const cur=Array.isArray(arr)?arr:c.counterArg?.cipher?[c.counterArg.cipher]:enabledCiphers;
+                  const allOn=cur.length===enabledCiphers.length&&enabledCiphers.every(x=>cur.includes(x));
+                  const setSel=next=>{
+                    const full=next.length===enabledCiphers.length&&enabledCiphers.every(x=>next.includes(x));
+                    upCond(i,{counterArg:{...c.counterArg,part,cipher:undefined,ciphers:full?undefined:next}});
+                  };
+                  return(<>
+                    <select style={sel} value={part}
+                      onChange={e=>upCond(i,{counterArg:{...c.counterArg,part:e.target.value}})}>
+                      {NAME_PARTS.map(x=><option key={x} value={x}>{x} name</option>)}
+                    </select>
+                    <span style={{display:'inline-flex',gap:4,flexWrap:'wrap',alignItems:'center'}}>
+                      {enabledCiphers.map(cp=>(
+                        <button key={cp} type="button" style={{padding:'3px 8px',fontSize:11}}
+                          className={`chip${cur.includes(cp)?' on':''}`}
+                          onClick={()=>setSel(cur.includes(cp)?cur.filter(x=>x!==cp):[...cur,cp])}>{cp}</button>
+                      ))}
+                      <button type="button" className="chip gray" style={{padding:'3px 8px',fontSize:11}}
+                        onClick={()=>setSel(allOn?[]:enabledCiphers)}>{allOn?'none':'all'}</button>
+                    </span>
+                  </>);
+                })()}
                 {rung&&<>
                   <select style={sel} value={c.counterArg?.off||1}
                     onChange={e=>upCond(i,{counterArg:{off:+e.target.value}})}>
