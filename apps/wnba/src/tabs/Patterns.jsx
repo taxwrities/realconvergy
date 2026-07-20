@@ -1,6 +1,6 @@
 import {useState,useMemo} from 'react';
 import {useApp} from '../state/store.jsx';
-import {COUNTERS,SCOPES,MODS,SOURCES,summarizeCondition,isDateDependent,
+import {COUNTERS,SCOPES,MODS,SOURCES,NAME_PARTS,NAME_CIPHERS,summarizeCondition,isDateDependent,
   describePattern,patternNeedsDeep,patternMissingTemplate} from '../engine/patterns.js';
 import {parsePost} from '../engine/parse.js';
 import {draftsToPattern} from '../engine/recipe.js';
@@ -174,6 +174,16 @@ function Editor({pattern,onDone}){
                   {COUNTERS.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}
                 </select>
                 {bool&&<span className="muted" style={{fontSize:11.5}}>— true when the player attended an AJCU Jesuit school</span>}
+                {c.counter==='nameCipher'&&<>
+                  <select style={sel} value={c.counterArg?.part||'full'}
+                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,part:e.target.value}})}>
+                    {NAME_PARTS.map(x=><option key={x} value={x}>{x} name</option>)}
+                  </select>
+                  <select style={sel} value={c.counterArg?.cipher||'Ord'}
+                    onChange={e=>upCond(i,{counterArg:{...c.counterArg,cipher:e.target.value}})}>
+                    {NAME_CIPHERS.map(x=><option key={x} value={x}>{x}</option>)}
+                  </select>
+                </>}
                 {rung&&<>
                   <select style={sel} value={c.counterArg?.off||1}
                     onChange={e=>upCond(i,{counterArg:{off:+e.target.value}})}>

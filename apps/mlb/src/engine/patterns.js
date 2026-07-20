@@ -23,6 +23,7 @@ export const COUNTERS=[
   {id:'dn',label:'date numerology (wide)',hint:'the full ~20-value date map — matches a LOT; prefer date figures'},
   {id:'dow',label:'day-of-week value',hint:"today's day name run through the ciphers"},
   {id:'age',label:'batter age figures',hint:'age, turns, days since/to bday, day-of-life, week'},
+  {id:'nameCipher',label:'name cipher',hint:'the batter’s own name (full/first/last) run through one chosen cipher — e.g. full name Ord = 139'},
   {id:'jesuit',label:'Jesuit educated',hint:'boolean — passes when the batter attended an AJCU Jesuit school (no source needed)'},
   {id:'oppPitcherClock',label:'opp SP birthday clock',hint:"opposing probable pitcher's birthday clock: days after/to, age, turns"},
   {id:'sinceLast:HR',label:'days since last HR',hint:'needs DEEP (game log)'},
@@ -52,6 +53,10 @@ export const SOURCES=[
   {id:'counterRef',label:'other counter',hint:'compare directly to another counter’s value — no spelling'},
   {id:'jersey',label:'jersey #',hint:'the batter’s jersey number'},
 ];
+/* nameCipher sub-args (counter side): which part of the batter's name and
+   which single cipher to run it through. Exposed to the Patterns editor. */
+export const NAME_PARTS=['full','first','last'];
+export const NAME_CIPHERS=ALL_CIPHERS;
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
   RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances',
@@ -120,6 +125,19 @@ export function resolveCounter(cond,ctx){
     (ctx.batter.ageFigures||[]).forEach(x=>out.push({n:x.n,label:x.label}));
   }else if(kind==='oppPitcherClock'){
     (ctx.oppPitcherClock||[]).forEach(x=>out.push({n:x.n,label:x.label}));
+  }else if(kind==='nameCipher'){
+    /* the batter's own name (full/first/last) through one chosen cipher — a
+       single number, comparable against any source (custom #, DN spine, phrase…).
+       e.g. "full name Ord = 139" is [nameCipher full Ord] = [customNumber 139]. */
+    const p=ctx.batter.p;
+    const parts=(p.fullName||'').trim().split(/\s+/);
+    const first=p.firstName||parts[0]||'';
+    const last=p.lastName||parts.slice(1).join(' ')||'';
+    const part=cond.counterArg?.part||'full';
+    const cipher=cond.counterArg?.cipher||'Ord';
+    const str=part==='first'?first:part==='last'?last:(p.fullName||'');
+    const n=calcAll(str)[cipher];
+    if(n>0)out.push({n,label:`${part} name ${cipher} ${n} (${str})`});
   }else if(kind==='sinceLast'){
     /* needs the DEEP tier (p.deep.lastEvent from the gameLog pull) */
     const d=ctx.batter.p.deep?.lastEvent?.[stat];
@@ -282,11 +300,12 @@ export const SEED_PATTERNS=[
    Generated from the condition structure — never hand-written metadata,
    so they can't rot when a condition is edited and they cover
    user-created patterns too. */
-const counterPhrase=(counter,scope,off)=>{
+const counterPhrase=(counter,scope,off,arg)=>{
   const [kind,stat]=counter.split(':');
   const win=off>1?` (within +${off})`:'';
   if(kind==='rung')return stat==='*'?`any next stat milestone${win}`
     :`the next ${scope||'season'} ${stat==='G'?'games-played count':stat==='SO'?'K':stat}${win}`;
+  if(kind==='nameCipher')return`the batter's ${arg?.part||'full'} name in the ${arg?.cipher||'Ord'} cipher`;
   if(kind==='teamGame'||kind==='seasonGame')return"the team's game number";
   if(kind==='stair')return`the team's next ${stat} landings`;
   if(kind==='doy')return'the day of year';
@@ -316,10 +335,10 @@ const sourcePhrase=c=>{
     case'customNumber':return a!==''&&a!=null?`the number ${a}`:'a custom number (not set)';
     case'loaded':return'any loaded value';
     case'numberWord':return a?.counter
-      ?`the spelled-out word for ${counterPhrase(a.counter,a.scope,a.off||1)}, run through the ciphers`
+      ?`the spelled-out word for ${counterPhrase(a.counter,a.scope,a.off||1,a)}, run through the ciphers`
       :'a spelled counter (not set)';
     case'counterRef':return a?.counter
-      ?counterPhrase(a.counter,a.scope,a.off||1)
+      ?counterPhrase(a.counter,a.scope,a.off||1,a)
       :'another counter (not set)';
     case'jersey':return"the batter's jersey number";
     default:return c.source;
@@ -328,7 +347,7 @@ const sourcePhrase=c=>{
 export const describeCondition=c=>{
   if(c.counter==='jesuit')return'the batter is Jesuit-educated (AJCU school)';
   const chain=c.lmod==='chain'||c.rmod==='chain';
-  const left=modWrap(counterPhrase(c.counter,c.scope,c.counterArg?.off||1),c.lmod);
+  const left=modWrap(counterPhrase(c.counter,c.scope,c.counterArg?.off||1,c.counterArg),c.lmod);
   const right=modWrap(sourcePhrase(c),c.rmod);
   return`${left} ${chain?'chains (9s) with':'lands on'} ${right}`;
 };
@@ -351,6 +370,13 @@ export const patternMissingTemplate=p=>p.conditions.some(c=>c.source==='template
 
 export const summarizeCondition=c=>{
   if(c.counter==='jesuit')return`Jesuit educated (${c.hard?'hard':'soft'})`;
+  if(c.counter==='nameCipher'){
+    const src=SOURCES.find(s=>s.id===c.source)?.label||c.source;
+    const rm=c.rmod?MODS.find(m=>m.id===c.rmod).label+' ':'';
+    const arg=c.source==='customNumber'&&c.sourceArg!==''&&c.sourceArg!=null?` ${c.sourceArg}`
+      :typeof c.sourceArg==='string'&&c.sourceArg?` "${c.sourceArg}"`:'';
+    return`nameCipher(${c.counterArg?.part||'full'}, ${c.counterArg?.cipher||'Ord'}) = ${rm}${src}${arg} (${c.hard?'hard':'soft'})`;
+  }
   const cnt=COUNTERS.find(x=>x.id===c.counter)?.label||c.counter;
   const off=c.counterArg?.off>1?`+1..${c.counterArg.off}`:'+1';
   const lm=c.lmod?MODS.find(m=>m.id===c.lmod).label+' ':'';
