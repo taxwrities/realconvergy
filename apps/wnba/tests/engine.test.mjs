@@ -152,21 +152,22 @@ eq('twoPM 56-11=45',twoPM(56,11),45);
 eq('twoPM null fg3m → fgm',twoPM(6,null),6);
 eq('twoPM 0/0',twoPM(0,0),0);
 
-/* (b) rung ranges are sensible per stat/magnitude */
+/* (b) rung offsets are dense (no gaps, Tony 2026-07) and scale with magnitude */
 const o3=rungOffsets('3PM',193);
-eq('3PM tight ticks 1..8',o3.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
+eq('3PM dense from +1',o3.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
 eq('3PM includes +7',o3.includes(7),true);
 eq('3PM includes +8',o3.includes(8),true);
 const oPts=rungOffsets('PTS',5000);
-eq('PTS jump +10',oPts.includes(10),true);
-eq('PTS jump +25',oPts.includes(25),true);
-eq('PTS jump +30',oPts.includes(30),true);
+eq('PTS includes +10',oPts.includes(10),true);
+eq('PTS includes +25',oPts.includes(25),true);
+eq('PTS includes +30',oPts.includes(30),true);
 const oMin=rungOffsets('MIN',12000);
-eq('MIN thousands-scale +50/100/250/500',
-  oMin.includes(50)&&oMin.includes(100)&&oMin.includes(250)&&oMin.includes(500),true);
+eq('MIN thousands-scale reaches +250, dense to N',
+  oMin.includes(50)&&oMin.includes(100)&&oMin.includes(250)&&oMin.length===250,true);
 const oReb=rungOffsets('REB',400);
 eq('REB extends past the tight window (8 & 10)',oReb.includes(8)&&oReb.includes(10),true);
 eq('offsets sorted ascending',oPts.every((n,i,a)=>i===0||a[i-1]<n),true);
+eq('offsets dense: no gaps',oPts.every((n,i)=>n===i+1),true);
 
 /* (c) DN / thread / institutional matching flags the right rungs */
 const loadedRung=new Map();

@@ -157,20 +157,21 @@ eq('deriveStats null extras → XBH=0',ds.XBH,0);
 eq('deriveStats no hits field untouched',deriveStats({era:'3.21'})['1B'],undefined);
 eq('deriveStats null-safe',deriveStats(null),null);
 
-/* (b) rung ranges are sensible per stat/magnitude */
+/* (b) rung offsets are dense (no gaps, Tony 2026-07) and scale with magnitude */
 const oHR=rungOffsets('HR',431);
-eq('HR tight ticks 1..8',oHR.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
+eq('HR dense from +1',oHR.slice(0,8).join(','),'1,2,3,4,5,6,7,8');
 const o1B=rungOffsets('1B',1500);
-eq('1B keeps the tight window at scale',o1B.includes(7)&&o1B.includes(8),true);
+eq('1B keeps the tight steps at scale',o1B.includes(7)&&o1B.includes(8),true);
 const oH=rungOffsets('H',2500);
-eq('H thousands-scale +25/50/100/250',
-  oH.includes(25)&&oH.includes(50)&&oH.includes(100)&&oH.includes(250),true);
+eq('H thousands-scale reaches +25/50/100',
+  oH.includes(25)&&oH.includes(50)&&oH.includes(100),true);
 const oPA=rungOffsets('PA',12000);
-eq('PA +50/100/250/500',
-  oPA.includes(50)&&oPA.includes(100)&&oPA.includes(250)&&oPA.includes(500),true);
+eq('PA reaches +250, dense to N',
+  oPA.includes(50)&&oPA.includes(100)&&oPA.includes(250)&&oPA.length===250,true);
 const oSO=rungOffsets('SO',400);
 eq('SO extends past the tight window (8 & 10)',oSO.includes(8)&&oSO.includes(10),true);
 eq('offsets sorted ascending',oPA.every((n,i,a)=>i===0||a[i-1]<n),true);
+eq('offsets dense: no gaps',oPA.every((n,i)=>n===i+1),true);
 
 /* (c) DN / thread / core(institutional) matching flags the right rungs */
 const loadedRung=new Map();

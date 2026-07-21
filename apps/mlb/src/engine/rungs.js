@@ -19,29 +19,19 @@ export function deriveStats(stat){
   return stat;
 }
 
-/* Small counting lanes get the tight tick window regardless of size. */
-const TIGHT_STATS=new Set(['HR','2B','3B','1B','XBH','CS','SB']);
-
-/* rungOffsets(stat,value) → sorted positive offsets N to probe as value+N.
-   Judgment per Tony (same shape as WNBA): single-tick stats get a tight
-   +1..+8 window; thousands-scale career totals (H, TB, AB, PA, SO, RBI,
-   BB) surface +25/50/100/250 instead of a wall of +1s. Small ticks are
-   always kept — a large total can still land on a meaningful small step. */
+/* rungOffsets(stat,value) → dense positive offsets 1..N to probe as value+N.
+   Tony 2026-07 (no-skip, mirrors WNBA): every integer offset in range, no
+   gaps — the old [1..8,10,25,50,100,250] ladder jumped and hid landing spots.
+   N scales with magnitude so a thousands-scale career total (H/TB/AB/PA)
+   reaches ~+250 while a tight lane (HR/2B/3B) stays short, but the sequence
+   in between is solid. N = clamp(round(v·0.075), 10, 250); stat kept for
+   signature compat. */
 export function rungOffsets(stat,value){
   const v=Math.max(0,Math.floor(+value||0));
-  const offs=new Set();
-  /* tight tick window — a touch wider for the small counting lanes */
-  const tick=TIGHT_STATS.has(stat)?8:(v>=2000?5:8);
-  for(let k=1;k<=tick;k++)offs.add(k);
-  /* magnitude ladder — step size scales with the number */
-  let steps=[];
-  if(v>=8000)steps=[50,100,250,500];
-  else if(v>=2000)steps=[25,50,100,250];
-  else if(v>=800)steps=[10,25,50,100];
-  else if(v>=300)steps=[10,15,20,25];
-  else if(v>=80)steps=[10,15,20];
-  steps.forEach(x=>offs.add(x));
-  return[...offs].sort((a,b)=>a-b);
+  const N=Math.min(250,Math.max(10,Math.round(v*0.075)));
+  const offs=[];
+  for(let k=1;k<=N;k++)offs.push(k);
+  return offs;
 }
 
 /* classifyRungs — build the ladder and flag each rung against the loaded

@@ -1,4 +1,4 @@
-import {useState,useRef,useCallback} from 'react';
+import {useState,useRef,useCallback,Fragment} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,LANE_STAT,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
@@ -571,7 +571,12 @@ function RungNum({stat,value,children,className='',style}){
 function RungPopup({stat,value,anchor,onClose}){
   const {loaded,colorFor}=useApp();
   const [sel,setSel]=useState(null); // clicked rung → highlighted for feedback
-  const ladder=classifyRungs(stat,value,{loaded});
+  /* highlighted rungs (DN/thread/core/any loaded hit) pinned to the top,
+     ascending offset among themselves; non-hits follow (Tony 2026-07). */
+  const ladder=[...classifyRungs(stat,value,{loaded})]
+    .sort((a,b)=>(b.hit-a.hit)||(a.off-b.off));
+  const firstColdIdx=ladder.findIndex(r=>!r.hit);
+  const hasSplit=firstColdIdx>0&&firstColdIdx<ladder.length;
   /* clamp to viewport; flip above the number if it would run off the bottom */
   const W=248,vw=window.innerWidth,vh=window.innerHeight;
   const left=Math.max(8,Math.min(anchor.x,vw-W-8));
@@ -589,7 +594,7 @@ function RungPopup({stat,value,anchor,onClose}){
           <button className="rung-pop-x" onClick={onClose}>✕</button>
         </div>
         <div className="rung-pop-body">
-          {ladder.map(r=>{
+          {ladder.map((r,i)=>{
             const color=colorFor(r.n,r.cats)
               ||(r.institutional?'var(--cvg-gold)':(r.hit?'var(--cvg-green)':null));
             const tags=[];
@@ -598,16 +603,19 @@ function RungPopup({stat,value,anchor,onClose}){
             if(r.institutional)tags.push(['CORE','var(--cvg-gold)']);
             const srcs=r.hits.map(h=>h.src).filter(Boolean);
             return(
-              <div key={r.off}
-                className={`rung-pop-row${r.hit?' hit':''}${sel===r.off?' sel':''}`}
-                onClick={()=>setSel(sel===r.off?null:r.off)}>
-                <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
-                <span className="muted mono off">+{r.off}</span>
-                <span className="tags">
-                  {tags.map(([t,c])=><span key={t} className="ptag" style={{color:c}}>{t}</span>)}
-                </span>
-                <span className="why muted">{srcs.slice(0,2).join(' · ')}{srcs.length>2?` +${srcs.length-2}`:''}</span>
-              </div>
+              <Fragment key={r.off}>
+                {hasSplit&&i===firstColdIdx&&<div className="rung-pop-div"/>}
+                <div
+                  className={`rung-pop-row${r.hit?' hit':''}${sel===r.off?' sel':''}`}
+                  onClick={()=>setSel(sel===r.off?null:r.off)}>
+                  <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
+                  <span className="muted mono off">+{r.off}</span>
+                  <span className="tags">
+                    {tags.map(([t,c])=><span key={t} className="ptag" style={{color:c}}>{t}</span>)}
+                  </span>
+                  <span className="why muted">{srcs.slice(0,2).join(' · ')}{srcs.length>2?` +${srcs.length-2}`:''}</span>
+                </div>
+              </Fragment>
             );
           })}
         </div>

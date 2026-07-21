@@ -288,6 +288,8 @@ body { background: #101319; overscroll-behavior-y: none; }
 .rung-pop-row .tags { display: inline-flex; gap: 3px; }
 .rung-pop-row .ptag { font-size: 8.5px; font-weight: 800; letter-spacing: .4px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; font-family: var(--cvg-mono); }
 .rung-pop-row .why { font-size: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* divider between pinned highlighted rungs (top) and the rest (Tony 2026-07) */
+.rung-pop-div { height: 0; margin: 4px 10px; border-top: 1px dashed #3a4252; }
 
 /* number-facts popover rows (bday / day-of-life counters, date spine) */
 .fact-row {
