@@ -180,10 +180,12 @@ function GameRail(){
   return(
     <div className="rail" ref={hRail}>
       {shown.map(g=>(
-        <button key={g.pk} className={`chip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
-          {g.away.abbrev||g.away.teamName} @ {g.home.abbrev||g.home.teamName}
-          {g.status==='Live'&&<span className="v-red">●</span>}
-          {g.status==='Final'&&<span className="muted">F</span>}
+        <button key={g.pk} className={`gchip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
+          <span className="gc-meta">
+            {g.status==='Live'?<span className="live">● LIVE</span>:g.status==='Final'?'FINAL':'TODAY'}
+          </span>
+          <span className="gc-team">{g.away.abbrev||g.away.teamName}</span>
+          <span className="gc-team"><span className="at">@</span>{g.home.abbrev||g.home.teamName}</span>
         </button>
       ))}
       {slate.games.length>4&&(
@@ -223,12 +225,14 @@ function TeamToggle(){
   const anyProj=isProjected(game,'away')||isProjected(game,'home');
   return(
     <div className="team-toggle">
-      {['away','home'].map(s=>(
-        <button key={s} className={`chip${side===s?' on':''}`}
-          onClick={()=>{setSide(s);setBatterId(null)}}>
-          {game[s].teamName}{isProjected(game,s)?' · proj':''}
-        </button>
-      ))}
+      <div className="seg">
+        {['away','home'].map(s=>(
+          <button key={s} className={side===s?'on':''}
+            onClick={()=>{setSide(s);setBatterId(null)}}>
+            {game[s].teamName}{isProjected(game,s)?' · proj':''}
+          </button>
+        ))}
+      </div>
       <button className="chip gold" style={{flex:'0 0 auto'}} disabled={game.deepDone||deepBusy}
         onClick={deepFetch} title="vs-team / vs-league / month / day-of-week splits for this game">
         ⚡{game.deepDone?' ✓':deepBusy?' …':' DEEP'}

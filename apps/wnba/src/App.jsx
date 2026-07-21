@@ -8,11 +8,16 @@ import SearchSheet from './components/SearchSheet.jsx';
 import QuickAddSheet from './components/QuickAddSheet.jsx';
 import SettingsSheet from './components/SettingsSheet.jsx';
 
+/* stroke icons for the tab dock — inline so they tint via currentColor */
+const svg=(paths)=>(
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths}</svg>
+);
 const TABS=[
-  {id:'board',label:'Board',ico:'▦'},
-  {id:'patterns',label:'Patterns',ico:'⌘'},
-  {id:'forecast',label:'Forecast',ico:'⟡'},
-  {id:'vocab',label:'Vocab',ico:'Ꮙ'},
+  {id:'board',label:'Board',ico:svg(<><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.8"/></>)},
+  {id:'patterns',label:'Patterns',ico:svg(<><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 15l9 5 9-5"/></>)},
+  {id:'forecast',label:'Forecast',ico:svg(<path d="M12 3c.7 4.6 3.4 7.3 8 8-4.6.7-7.3 3.4-8 8-.7-4.6-3.4-7.3-8-8 4.6-.7 7.3-3.4 8-8z"/>)},
+  {id:'vocab',label:'Vocab',ico:svg(<><path d="M6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></>)},
 ];
 
 export default function App(){
@@ -27,7 +32,7 @@ export default function App(){
       <header className="shell-header">
         <div>
           <div className="shell-title">CON<em>VERGENCE</em></div>
-          <div className="shell-sub">{date} · WNBA</div>
+          <div className="shell-sub">{date}<span className="lg-pill">WNBA</span></div>
         </div>
         <div className="shell-actions">
           <button className="icon-btn" aria-label="Search" onClick={()=>setSheet('search')}>⌕</button>

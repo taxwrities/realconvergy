@@ -86,8 +86,8 @@ function CoreTable(){
             padding:'8px 10px',flex:1,fontFamily:'var(--cvg-mono)',fontSize:13}}
           onChange={e=>setNewWord(e.target.value)}
           onKeyDown={e=>e.key==='Enter'&&add()}/>
-        <button className="btn acc" style={{background:'#101319',border:'1px solid var(--cvg-purple)',
-          color:'var(--cvg-purple)',borderRadius:8,padding:'8px 12px',cursor:'pointer'}} onClick={add}>+ add</button>
+        <button className="btn acc" style={{background:'#101319',border:'1px solid var(--cvg-acc)',
+          color:'var(--cvg-acc)',borderRadius:8,padding:'8px 12px',cursor:'pointer'}} onClick={add}>+ add</button>
       </div>
       {msg&&<div className={msg.startsWith('✓')?'v-green':'v-red'} style={{fontSize:11.5,marginTop:6}}>{msg}</div>}
       <div className="muted" style={{fontSize:11,marginTop:6}}>
@@ -116,8 +116,8 @@ function Phrases(){
           style={{background:'#101319',border:'1px solid #2a303c',borderRadius:8,color:'#e8eaf0',padding:'8px'}}>
           {OUTCOME_WORDS.map(w=><option key={w.word}>{w.word}</option>)}
         </select>
-        <button className="btn acc" style={{background:'#101319',border:'1px solid var(--cvg-purple)',
-          color:'var(--cvg-purple)',borderRadius:8,padding:'8px 12px',cursor:'pointer'}}
+        <button className="btn acc" style={{background:'#101319',border:'1px solid var(--cvg-acc)',
+          color:'var(--cvg-acc)',borderRadius:8,padding:'8px 12px',cursor:'pointer'}}
           onClick={()=>{
             const id=`${tok}+${word}`;
             if(!templates.some(t=>t.id===id))
