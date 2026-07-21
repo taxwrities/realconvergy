@@ -39,11 +39,17 @@ export const DAY_CLOCKS=[
 
 const seedVocab=()=>CORE_WORDS_MLB.map(word=>({word,enabled:true,source:'core',values:calcAll(word)}));
 
+/* Backfill precomputed values for vocab persisted before a cipher existed
+   (e.g. RevSat). Without this, older localStorage words lack the RevSat key
+   and its column renders blank even though the engine computes it. */
+const hydrateVocab=list=>list.map(w=>
+  (w.values&&ALL_CIPHERS.every(c=>c in w.values))?w:{...w,values:calcAll(w.word)});
+
 export function AppStateProvider({children}){
   /* ---------- persisted prefs (auto-save on change, §3) ---------- */
   const [profile]=useState(()=>load('cvg.profile','mlb'));
   const [ciphers,setCiphers]=useState(()=>load(`cvg.ciphers.${profile}`,CIPHER_DEFAULTS[profile]||CIPHER_DEFAULTS.mlb));
-  const [vocab,setVocab]=useState(()=>load(`cvg.vocab.${profile}`,null)||seedVocab());
+  const [vocab,setVocab]=useState(()=>{const st=load(`cvg.vocab.${profile}`,null);return st?hydrateVocab(st):seedVocab();});
   const [phrases,setPhrases]=useState(()=>load('cvg.phrases',[]));
   const [templates,setTemplates]=useState(()=>load('cvg.templates',[]));
   const [colorRules,setColorRules]=useState(()=>load('cvg.colorRules',DEFAULT_COLOR_RULES));
