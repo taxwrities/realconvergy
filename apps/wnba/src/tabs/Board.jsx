@@ -131,10 +131,12 @@ function GameRail(){
   return(
     <div className="rail" ref={hRail}>
       {shown.map(g=>(
-        <button key={g.pk} className={`chip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
-          {g.away.abbrev} @ {g.home.abbrev}
-          {g.status==='Final'&&<span className="muted">F</span>}
-          {g.startET&&g.status!=='Final'&&<span className="muted" style={{fontSize:10}}> {g.startET}</span>}
+        <button key={g.pk} className={`gchip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
+          <span className="gc-meta">
+            {g.status==='Final'?'FINAL':(g.startET||'TODAY')}
+          </span>
+          <span className="gc-team">{g.away.abbrev}</span>
+          <span className="gc-team"><span className="at">@</span>{g.home.abbrev}</span>
         </button>
       ))}
       {slate.games.length>4&&(
@@ -174,12 +176,14 @@ function TeamToggle(){
   if(!game)return null;
   return(
     <div className="team-toggle">
-      {['away','home'].map(s=>(
-        <button key={s} className={`chip${side===s?' on':''}`}
-          onClick={()=>{setSide(s);setBatterId(null)}}>
-          {game[s].teamName}{s==='home'?' 🏠':''}{game.projected?' · proj':''}
-        </button>
-      ))}
+      <div className="seg">
+        {['away','home'].map(s=>(
+          <button key={s} className={side===s?'on':''}
+            onClick={()=>{setSide(s);setBatterId(null)}}>
+            {game[s].teamName}{s==='home'?' 🏠':''}{game.projected?' · proj':''}
+          </button>
+        ))}
+      </div>
       <button className="chip gold" style={{flex:'0 0 auto'}} disabled={game.deepDone||deepBusy}
         onClick={deepFetch} title="vs-opponent split from this season's meetings">
         ⚡{game.deepDone?' ✓':deepBusy?' …':' DEEP'}
