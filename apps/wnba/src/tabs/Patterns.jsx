@@ -13,16 +13,19 @@ const REF_DEFAULT={counter:'rung:PTS',scope:'season',off:1};
 
 /* Patterns tab — LAYOUT-SPEC §5: library + condition-sentence editor
    with live preview against the currently selected player. */
-export default function PatternsTab(){
+export default function PatternsTab({goBoard}){
   const [editing,setEditing]=useState(null); // pattern object being edited
   return editing
     ?<Editor pattern={editing} onDone={()=>setEditing(null)}/>
-    :<Library onEdit={setEditing}/>;
+    :<Library onEdit={setEditing} goBoard={goBoard}/>;
 }
 
-function Library({onEdit}){
-  const {patterns,setPatterns,patternCounts}=useApp();
+function Library({onEdit,goBoard}){
+  const {patterns,setPatterns,patternCounts,patternHitsAll,setGamePk,setSide,setBatterId}=useApp();
+  const [hitsOpen,setHitsOpen]=useState(null); // pattern id with the full hit list expanded
   const [postOpen,setPostOpen]=useState(false); // paste-a-post parser sheet (Phase 3)
+  /* tap a name → land on that player's card on the Board */
+  const jump=h=>{setGamePk(h.pk);setSide(h.side);setBatterId(h.id);goBoard&&goBoard()};
   const blank=()=>({id:'pat-'+Date.now(),name:'New pattern',lane:'FB',enabled:true,
     conditions:[{counter:'rung:FG',counterArg:{off:1},scope:'season',lmod:'',rmod:'',source:'core',sourceArg:'',hard:true}]});
   return(
@@ -43,6 +46,12 @@ function Library({onEdit}){
             )}
             <span style={{marginLeft:'auto'}} className="mono v-green">
               {patternCounts[pt.id]||0} hits today
+              {pt.conditions.every(c=>!c.hard)&&(
+                <span className="muted" style={{marginLeft:6,fontWeight:400}}
+                  title="every leg is soft — a pattern needs at least one hard leg to fire, so this can't produce a hit">
+                  · no hard legs — won't fire
+                </span>
+              )}
             </span>
             <button className="chip" style={{padding:'3px 10px'}}
               onClick={e=>{e.stopPropagation();
@@ -51,6 +60,34 @@ function Library({onEdit}){
             </button>
           </div>
           <div className="pat-summary">{describePattern(pt)}</div>
+          {(patternHitsAll.legs[pt.id]?.some(n=>n>0))&&!(patternHitsAll.hits[pt.id]?.length)&&(
+            <div className="hint" title="how many slate players pass each condition individually — a 0-hit day usually means the legs fire separately but never together">
+              per-leg passes today:{' '}
+              {patternHitsAll.legs[pt.id].map((n,i)=>(
+                <span key={i}>{i>0&&' · '}<b className={pt.conditions[i]?.hard?'v-gold':''}>{n}</b></span>
+              ))}
+              {' '}(gold = hard)
+            </div>
+          )}
+          {(patternHitsAll.hits[pt.id]?.length>0)&&(()=>{
+            const hits=patternHitsAll.hits[pt.id];
+            const open=hitsOpen===pt.id;
+            const shown=open?hits:hits.slice(0,4);
+            return(
+              <div className="pat-name-row" style={{marginTop:6}} onClick={e=>e.stopPropagation()}>
+                {shown.map(h=>(
+                  <button key={`${h.pk}-${h.side}-${h.id}`} className="pat-who" onClick={()=>jump(h)}>
+                    {h.name}<span className="muted"> {h.abbr}</span>
+                  </button>
+                ))}
+                {hits.length>4&&(
+                  <button className="pat-more" onClick={()=>setHitsOpen(open?null:pt.id)}>
+                    {open?'less':`+${hits.length-4} more`}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           {patternMissingTemplate(pt)&&(
             <div className="pat-warn">⚠ needs a phrase template picked (make one in Vocab, pick it in the editor) before that leg can fire</div>
           )}

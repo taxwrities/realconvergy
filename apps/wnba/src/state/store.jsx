@@ -310,7 +310,9 @@ export function AppStateProvider({children}){
   /* ---------- board: starters first (already ordered by the pipeline) ---------- */
   const board=useMemo(()=>{
     if(!slate||!game)return{away:[],home:[]};
-    const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
+    /* date-dependent patterns evaluate fine against today's dn — excluding
+       them hid their hits from the Board cards (Tony 2026-07-20) */
+    const daily=patterns.filter(pt=>pt.enabled);
     const out={};
     ['away','home'].forEach(s=>{
       out[s]=game[s+'Ids'].map((id,i)=>{
@@ -342,24 +344,38 @@ export function AppStateProvider({children}){
     return{who:p.fullName,res:evalPattern(pattern,ctx)};
   },[slate,game,batterId,board,side,buildPatternCtx,dn]);
 
-  const patternCounts=useMemo(()=>{
-    if(!slate)return{};
-    const counts={};
-    const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
-    slate.games.forEach(g=>{
+  /* slate-wide pattern hits WITH identities (who/where), so the Patterns tab
+     can name the hitters instead of a bare count (Tony 2026-07-20). Date-
+     dependent patterns are included — they evaluate fine against today's dn;
+     excluding them made their cards read '0 hits today' while hitting. */
+  const patternHitsAll=useMemo(()=>{
+    if(!slate)return{hits:{},legs:{}};
+    const hits={},legs={};
+    const enabled=patterns.filter(pt=>pt.enabled);
+    if(enabled.length)slate.games.forEach(g=>{
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
           const p=slate.people[id];
           if(!p||(!p.career&&!p.season))return;
           const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
-          daily.forEach(pt=>{
-            if(evalPattern(pt,ctx).match)counts[pt.id]=(counts[pt.id]||0)+1;
+          enabled.forEach(pt=>{
+            const res=evalPattern(pt,ctx);
+            /* per-leg pass counts — so a 0-hit card can explain how close the
+               slate is (e.g. 20 pass leg 1, 16 pass leg 2, nobody both) */
+            const L=legs[pt.id]=legs[pt.id]||pt.conditions.map(()=>0);
+            res.details.forEach((d,i)=>{if(d.pass)L[i]++});
+            if(res.match)
+              (hits[pt.id]=hits[pt.id]||[]).push({id,side:s,pk:g.pk,
+                name:p.fullName,abbr:g[s].abbrev||g[s].teamName});
           });
         });
       });
     });
-    return counts;
+    return{hits,legs};
   },[slate,patterns,buildPatternCtx,dn]);
+  const patternCounts=useMemo(
+    ()=>Object.fromEntries(Object.entries(patternHitsAll.hits).map(([k,v])=>[k,v.length])),
+    [patternHitsAll]);
 
   /* deep (⚡): vs-opponent split from this season's meetings */
   const [deepBusy,setDeepBusy]=useState(false);
@@ -617,7 +633,7 @@ export function AppStateProvider({children}){
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,exportConfig,importConfig,
-    patterns,setPatterns,previewPattern,patternCounts,
+    patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     deepFetch,deepBusy,
     forecasts,generateForecasts,forecastBusy,grade,
     graduateTheme,exportDayLog,
