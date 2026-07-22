@@ -595,6 +595,14 @@ body {
 }
 .finder-row { padding: 6px 0; border-top: 1px solid #1a202b; }
 .finder-row .fr-top { font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+/* compact hit summary + expand caret on the collapsed result row (Tony
+   2026-07-22) — summary carries margin-left:auto so it and the trailing
+   ▸ caret cluster on the row's right edge. */
+.pf-summary { margin-left: auto; flex-shrink: 0; font-size: 11px; color: #8a90a0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.pf-caret { flex-shrink: 0; border: none; background: none; color: #6b7284;
+  font-size: 12px; line-height: 1; padding: 3px 4px; cursor: pointer; }
+.pf-caret:active { color: var(--cvg-acc); transform: scale(.92); }
 .finder-row .fr-bot { font-size: 12px; margin-top: 2px; }
 /* player-numerology cross-ref block under each phrase hit (Tony 2026-07-22) */
 .fr-xref { font-size: 11px; line-height: 1.5; margin: 3px 0 1px; padding-left: 4px;

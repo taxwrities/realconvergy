@@ -132,37 +132,17 @@ export default function PhraseFinder(){
             <span className="muted" style={{fontSize:12}}>tolerance (0 = exact)</span>
           </div>
 
-          {/* results — PlayerXref (defined below) hangs the numerology
-             cross-ref block under each hit group */}
+          {/* results — one scannable summary row per player (ResultRow, below).
+             The phrase-hit list + PLAYER/RUNGS/OPP cross-refs are computed but
+             hidden by default; the ↗ jumps to the full-sheet (where the WHY
+             panel surfaces the detail) and the ▸ caret expands them in place. */}
           {targets.length>0&&(
             <div className="id-card" style={{marginTop:6}}>
               <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
                 targets {targets.join(', ')} · ±{tol} · {hits.length} hit{hits.length===1?'':'s'} across {groups.length} player{groups.length===1?'':'s'}
               </div>
               {groups.map(g=>(
-                <div key={g.id} className="finder-row">
-                  <div className="fr-top">
-                    <b>{g.name}</b>
-                    <span className="muted"> {g.team}</span>
-                    <span className="badge blue" style={{marginLeft:6}}>{g.rows.length}</span>
-                    <span className="muted" style={{fontSize:11}}> · {g.gameLabel}</span>
-                    <button className="pf-open" title={`Open ${g.name}'s full sheet`}
-                      aria-label={`Open ${g.name}'s full sheet`}
-                      onClick={()=>focusPlayer({id:g.id,pk:g.rows[0].pk,side:g.rows[0].side,from:'search'})}>↗</button>
-                  </div>
-                  {g.rows.map((r,i)=>(
-                    <div key={i} className="fr-bot mono" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
-                      <span>{r.phrase}</span>
-                      {r.legal&&<span className="badge blue" title="legal/government name variant">LEGAL</span>}
-                      <span className="muted">· {cl(r.cipher)} =</span>
-                      <b className="v-green">{r.value}</b>
-                      <span className="muted">· target {r.target}{tol>0?` (${r.off>0?'+':''}${r.off})`:''}</span>
-                      {r.onSpine&&<span className="badge gold">DN</span>}
-                      {r.onInst&&<span className="badge green">INST</span>}
-                    </div>
-                  ))}
-                  <PlayerXref row={g.rows[0]} targets={g.rows.map(r=>r.target)}/>
-                </div>
+                <ResultRow key={g.id} g={g} tol={tol} focusPlayer={focusPlayer}/>
               ))}
               {!hits.length&&(
                 <div className="occ muted">No hits. Try more ciphers, more variations, or bumping tolerance to 1–2.</div>
@@ -175,18 +155,59 @@ export default function PhraseFinder(){
   );
 }
 
-/* cross-ref block (Tony 2026-07-22): under each hit group, surface the
-   convergences that ride with this player against the target(s) they landed
-   on — PLAYER (own life-clock / jersey), RUNGS (a tracked career/season stat
-   whose next milestone is the target), OPP (opponent-team gematria). Raw
-   equality = strong (gold); a shared digit-root = soft (dim gold, italic).
-   One line per group, comma-separated, deduped; empty groups render nothing
-   so the finder stays uncluttered. Same crossRefsForNumber() helper the
-   full-sheet WHY panel uses. */
-function PlayerXref({row,targets}){
+/* one result group → a single scannable summary row (Tony 2026-07-22). Collapsed
+   by default: player · team · game, a compact hit summary ("4 phrase · 2 rung ·
+   opp ✓"), the ↗ full-sheet jump, and a ▸ caret. The detail (every phrase×cipher
+   hit + the PLAYER/RUNGS/OPP cross-ref block) is still computed but only renders
+   when the caret is tapped — its real home is the full-sheet WHY panel. */
+function ResultRow({g,tol,focusPlayer}){
+  const [exp,setExp]=useState(false);
+  const {rungs,opp}=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target)),[g]);
+  const summary=`${g.rows.length} phrase`
+    +(rungs.length?` · ${rungs.length} rung`:'')
+    +(opp.length?' · opp ✓':'');
+  return(
+    <div className="finder-row">
+      <div className="fr-top">
+        <b>{g.name}</b>
+        <span className="muted"> {g.team}</span>
+        <span className="muted" style={{fontSize:11}}> · {g.gameLabel}</span>
+        <span className="pf-summary">{summary}</span>
+        <button className="pf-open" title={`Open ${g.name}'s full sheet`}
+          aria-label={`Open ${g.name}'s full sheet`}
+          onClick={()=>focusPlayer({id:g.id,pk:g.rows[0].pk,side:g.rows[0].side,from:'search'})}>↗</button>
+        <button className="pf-caret" aria-expanded={exp}
+          aria-label={exp?'Hide hit detail':'Show hit detail'}
+          onClick={()=>setExp(e=>!e)}>{exp?'▾':'▸'}</button>
+      </div>
+      {exp&&(<>
+        {g.rows.map((r,i)=>(
+          <div key={i} className="fr-bot mono" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+            <span>{r.phrase}</span>
+            {r.legal&&<span className="badge blue" title="legal/government name variant">LEGAL</span>}
+            <span className="muted">· {cl(r.cipher)} =</span>
+            <b className="v-green">{r.value}</b>
+            <span className="muted">· target {r.target}{tol>0?` (${r.off>0?'+':''}${r.off})`:''}</span>
+            {r.onSpine&&<span className="badge gold">DN</span>}
+            {r.onInst&&<span className="badge green">INST</span>}
+          </div>
+        ))}
+        <PlayerXref row={g.rows[0]} targets={g.rows.map(r=>r.target)}/>
+      </>)}
+    </div>
+  );
+}
+
+/* collect the PLAYER/RUNGS/OPP convergences that ride with this player against
+   the target(s) they landed on — PLAYER (own life-clock / jersey), RUNGS (a
+   tracked career/season stat whose next milestone is the target), OPP
+   (opponent-team gematria). Raw equality = strong; a shared digit-root = soft.
+   Deduped per group. Same crossRefsForNumber() helper the full-sheet WHY panel
+   uses; drives both the collapsed summary counts and the expanded PlayerXref. */
+function collectXref(row,targets){
   const tgts=[...new Set(targets)].filter(n=>n>0);
-  if(!row||!tgts.length)return null;
   const player=[],rungs=[],opp=[];
+  if(!row||!tgts.length)return{player,rungs,opp};
   const sN=new Set(),sR=new Set(),sO=new Set();
   tgts.forEach(tg=>{
     const cr=crossRefsForNumber(row,tg);
@@ -204,6 +225,13 @@ function PlayerXref({row,targets}){
       opp.push({strong:it.rawMatch,text:opponentText(it,tg)});
     });
   });
+  return{player,rungs,opp};
+}
+
+/* expanded cross-ref block — one line per group, comma-separated. Renders
+   nothing when every group is empty so the expanded row stays tight. */
+function PlayerXref({row,targets}){
+  const {player,rungs,opp}=collectXref(row,targets);
   if(!player.length&&!rungs.length&&!opp.length)return null;
   return(
     <div className="fr-xref mono">
