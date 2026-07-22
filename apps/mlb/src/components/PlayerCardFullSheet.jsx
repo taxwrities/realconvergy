@@ -3,7 +3,7 @@ import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
 import {isPrime,primeIndex} from '../engine/numbers.js';
 import {dateFigures} from '../engine/clocks.js';
-import {playerNumerologyMatches} from '../engine/numerology.js';
+import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../engine/numerology.js';
 import {CORE_WORDS_MLB} from '../data/defaults.js';
 
 /* ================================================================
@@ -116,6 +116,20 @@ export default function PlayerCardFullSheet({row,onClose}){
   const myTeam=game?game[side]:null;
   const oppTeam=game?game[side==='away'?'home':'away']:null;
   const abbr=t=>t?(t.abbrev||t.teamName||''):'';
+
+  /* opponent-team cipher grid (Tony 2026-07-22): nickname / city / full name
+     × the enabled ciphers, deduped by name|value — feeds the WHY panel's OPP
+     cross-ref the same way the Phrase Finder's store-side oppVals do. */
+  const oppVals=useMemo(()=>{
+    if(!oppTeam)return[];
+    const dd=new Set(),ov=[];
+    [...new Set([oppTeam.name,oppTeam.teamName,oppTeam.locationName].filter(Boolean))].forEach(tn=>{
+      const cv=calcAll(tn);
+      ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{const n=cv[c];if(!(n>0))return;
+        const k=`${tn}|${n}`;if(dd.has(k))return;dd.add(k);ov.push({name:tn,cipher:c,n})});
+    });
+    return ov;
+  },[oppTeam,ciphers]);
 
   /* ---- life-clock readings (each tappable + promotable) ---- */
   const bday=ev.bday,debut=ev.debut;
@@ -302,19 +316,33 @@ export default function PlayerCardFullSheet({row,onClose}){
     if(dn?.vals?.[spot])spine.push(`date-numerology · ${dn.vals[spot]}`);
     if(dn?.rulerVals?.[spot])spine.push(`ruling planet · ${dn.rulerVals[spot]}`);
 
-    /* ---- player-numerology cross-ref (Tony 2026-07-22): does this batter's
-       own life-clock / jersey echo the tapped number? Raw equality is the
-       strong signal; a shared digit-root is the soft bonus. Same helper the
-       Phrase Finder rows use. ---- */
-    const xref=playerNumerologyMatches(
-      {totalDays:bday?.totalDays??null,since:bday?.since??null,until:bday?.until??null,
-       years:bday?.years??null,jersey:p.jersey??null},spot);
+    /* ---- cross-refs (Tony 2026-07-22): does this batter's own life-clock /
+       jersey (PLAYER), a tracked career/season stat's next milestone (RUNGS),
+       or the opponent team's gematria (OPP) echo the tapped number? Raw
+       equality is the strong signal; a shared digit-root is the soft bonus.
+       Same crossRefsForNumber() helper the Phrase Finder rows use. Prebuilt
+       into ready-to-render groups so the panel markup stays flat. ---- */
+    const cr=crossRefsForNumber({
+      pn:{totalDays:bday?.totalDays??null,since:bday?.since??null,until:bday?.until??null,
+        years:bday?.years??null,jersey:p.jersey??null},
+      sr:{career:p.career||null,season:p.season||null},
+      opp:oppVals,
+    },spot);
+    const xrefGroups=[
+      ['PLAYER',cr.numerology,it=>numerologyText(it,spot,cr.numerology.targetDr)],
+      ['RUNGS',cr.statRungs,it=>statRungText(it)],
+      ['OPP',cr.opponent,it=>opponentText(it,spot)],
+    ].map(([lbl,grp,fmt])=>{
+      const rows=grp.items.filter(it=>it.rawMatch||it.softMatch)
+        .map(it=>({strong:it.rawMatch,text:fmt(it)}));
+      return rows.length?{lbl,rows}:null;
+    }).filter(Boolean);
 
     return{n:spot,
       reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
       props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
-      xref,locs};
-  },[spot,activeMap,model,cascade,dn,date,bday,p]);
+      xrefGroups,locs};
+  },[spot,activeMap,model,cascade,dn,date,bday,p,oppVals]);
 
   const Grid=g=>g&&(
     <div className="grp" key={g.title}>
@@ -476,17 +504,16 @@ export default function PlayerCardFullSheet({row,onClose}){
                 <div className="why-prop"><span className="wp-k">SPINE</span>
                   <span className="wp-v teal">{why.props.spine.join('   ')}</span></div>
               )}
-              {why.xref?.any&&(
-                <div className="why-prop"><span className="wp-k">PLAYER</span>
+              {why.xrefGroups?.map(g=>(
+                <div className="why-prop" key={g.lbl}><span className="wp-k">{g.lbl}</span>
                   <span className="wp-v">
-                    {why.xref.items.filter(it=>it.rawMatch||it.softMatch).map((it,i)=>(
-                      <span key={i} className={it.rawMatch?'xref-strong':'xref-soft'}>
-                        {i>0?'   ':''}{it.key} {it.value.toLocaleString()}
-                        {it.rawMatch?` = ${why.n}`:` (dr ${it.dr} = target dr ${why.xref.targetDr})`}
+                    {g.rows.map((r,i)=>(
+                      <span key={i} className={r.strong?'xref-strong':'xref-soft'}>
+                        {i>0?'   ':''}{r.text}
                       </span>
                     ))}
                   </span></div>
-              )}
+              ))}
             </div>
           )}
           <div className="why-locs">

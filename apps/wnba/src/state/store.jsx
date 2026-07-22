@@ -662,6 +662,21 @@ export function AppStateProvider({children}){
     const out=[];
     slate.games.forEach(g=>{
       const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      /* opponent-team gematria (Tony 2026-07-22): the OTHER side's own cipher
+         grid (nickname / city / full name × the swept ciphers) rides with each
+         hit so the finder can flag "facing <team> (79) = target". Built once
+         per side, deduped by name|value. */
+      const oppValsFor={};
+      ['away','home'].forEach(s=>{
+        const opp=g[s==='away'?'home':'away'];
+        const dd=new Set(),ov=[];
+        [...new Set([opp?.name,opp?.teamName,opp?.locationName].filter(Boolean))].forEach(tn=>{
+          const cv=calcAll(tn);
+          cix.forEach(c=>{const n=cv[c];if(!(n>0))return;const k=`${tn}|${n}`;
+            if(dd.has(k))return;dd.add(k);ov.push({name:tn,cipher:c,n})});
+        });
+        oppValsFor[s]=ov;
+      });
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
           const p=slate.people[id];
@@ -674,6 +689,10 @@ export function AppStateProvider({children}){
           const pbday=p.birthDate?clockFrom(p.birthDate,date):null;
           const pn={totalDays:pbday?.totalDays??null,since:pbday?.since??null,
             until:pbday?.until??null,years:pbday?.years??null,jersey:p.jersey??null};
+          /* stat-rung cross-refs (Tony 2026-07-22): entering career + season
+             counting totals travel too, so the finder can flag "career PTS sits
+             X → next is Y = target" (next-milestone convergence). */
+          const sr={career:p.career||null,season:p.season||null};
           const toks=nm.split(/\s+/);
           const first=toks[0]||'',last=toks.slice(1).join(' ');
           const np=[];
@@ -696,7 +715,7 @@ export function AppStateProvider({children}){
                   out.push({id,pk:g.pk,side:s,name:p.fullName,
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
-                    cipher:c,value,target,off,pn,
+                    cipher:c,value,target,off,pn,sr,opp:oppValsFor[s],
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });
               });

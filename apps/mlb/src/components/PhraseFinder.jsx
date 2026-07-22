@@ -2,7 +2,7 @@ import {useState,useMemo,useEffect} from 'react';
 import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
-import {playerNumerologyMatches} from '../engine/numerology.js';
+import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../engine/numerology.js';
 
 /* Phrase Variation Finder (Tony 2026-07-22) — sibling to the Day-of-Life
    finder. Sweeps <name part> + <outcome word> across every enabled cipher for
@@ -158,7 +158,7 @@ export default function PhraseFinder(){
                       {r.onInst&&<span className="badge green">INST</span>}
                     </div>
                   ))}
-                  <PlayerXref pn={g.rows[0].pn} targets={g.rows.map(r=>r.target)}/>
+                  <PlayerXref row={g.rows[0]} targets={g.rows.map(r=>r.target)}/>
                 </div>
               ))}
               {!hits.length&&(
@@ -172,43 +172,55 @@ export default function PhraseFinder(){
   );
 }
 
-/* player-numerology cross-ref block (Tony 2026-07-22): under each hit group,
-   echo the player's own life-clock readings + jersey against the target(s)
-   this player landed on. Raw equality = strong (gold); a shared digit-root is
-   the softer bonus (dim gold, italic). Renders nothing when nothing lines up
-   so the finder stays uncluttered. */
-function PlayerXref({pn,targets}){
+/* cross-ref block (Tony 2026-07-22): under each hit group, surface the
+   convergences that ride with this player against the target(s) they landed
+   on — PLAYER (own life-clock / jersey), RUNGS (a tracked career/season stat
+   whose next milestone is the target), OPP (opponent-team gematria). Raw
+   equality = strong (gold); a shared digit-root = soft (dim gold, italic).
+   One line per group, comma-separated, deduped; empty groups render nothing
+   so the finder stays uncluttered. Same crossRefsForNumber() helper the
+   full-sheet WHY panel uses. */
+function PlayerXref({row,targets}){
   const tgts=[...new Set(targets)].filter(n=>n>0);
-  if(!pn||!tgts.length)return null;
-  const base=playerNumerologyMatches(pn,tgts[0]);
-  if(!base.items.length)return null;
-  const strong=new Set(),soft=new Set(),lines=[];
+  if(!row||!tgts.length)return null;
+  const player=[],rungs=[],opp=[];
+  const sN=new Set(),sR=new Set(),sO=new Set();
   tgts.forEach(tg=>{
-    const m=playerNumerologyMatches(pn,tg);
-    m.items.forEach(it=>{
-      if(it.rawMatch){strong.add(it.key);
-        lines.push({strong:true,text:`${it.key} ${it.value.toLocaleString()} = target ${tg}`});}
-      else if(it.softMatch){soft.add(it.key);
-        lines.push({strong:false,text:`${it.key} dr ${it.dr} = target ${tg} dr ${m.targetDr}`});}
+    const cr=crossRefsForNumber(row,tg);
+    cr.numerology.items.forEach(it=>{
+      if(!(it.rawMatch||it.softMatch))return;
+      const k=`${it.key}|${tg}`;if(sN.has(k))return;sN.add(k);
+      player.push({strong:it.rawMatch,text:numerologyText(it,tg,cr.numerology.targetDr)});
+    });
+    cr.statRungs.items.forEach(it=>{
+      const k=`${it.scope}|${it.label}|${tg}`;if(sR.has(k))return;sR.add(k);
+      rungs.push({strong:it.rawMatch,text:statRungText(it)});
+    });
+    cr.opponent.items.forEach(it=>{
+      const k=`${it.name}|${it.value}|${tg}`;if(sO.has(k))return;sO.add(k);
+      opp.push({strong:it.rawMatch,text:opponentText(it,tg)});
     });
   });
-  if(!lines.length)return null;   // no cross-refs match → show nothing
+  if(!player.length&&!rungs.length&&!opp.length)return null;
   return(
     <div className="fr-xref mono">
-      <div className="xref-line">
-        <span className="xref-lbl">player:</span>
-        {base.items.map((it,k)=>(
-          <span key={k} className={strong.has(it.key)?'xref-strong':soft.has(it.key)?'xref-soft':'xref-mut'}>
-            {k>0?' · ':' '}{it.key} {it.value.toLocaleString()} (dr {it.dr})
-          </span>
-        ))}
-      </div>
-      <div className="xref-line">
-        <span className="xref-lbl">matches:</span>
-        {lines.map((ml,k)=>(
-          <span key={k} className={ml.strong?'xref-strong':'xref-soft'}>{k>0?' · ':' '}{ml.text}</span>
-        ))}
-      </div>
+      <XGroup lbl="player" rows={player}/>
+      <XGroup lbl="rungs" rows={rungs}/>
+      <XGroup lbl="opp" rows={opp}/>
+    </div>
+  );
+}
+
+/* one cross-ref group line — small label + comma-separated hits. Renders
+   nothing when the group is empty. */
+function XGroup({lbl,rows}){
+  if(!rows.length)return null;
+  return(
+    <div className="xref-line">
+      <span className="xref-lbl">{lbl}</span>
+      {rows.map((m,k)=>(
+        <span key={k} className={m.strong?'xref-strong':'xref-soft'}>{k>0?', ':' '}{m.text}</span>
+      ))}
     </div>
   );
 }
