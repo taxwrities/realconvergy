@@ -266,17 +266,31 @@ export default function PlayerCardFullSheet({row,onClose}){
   },[model,cascade]);
 
   /* cross-ref convergence set — numbers that echo an EXTERNAL reference even
-     when they aren't in today's active spine: a next stat-rung milestone or an
-     opponent-team cipher (raw equality only — the same strong signal the WHY
-     panel prints). Feeds the dim additive glow for single-occurrence
-     convergences; multi-occurrence values already go red via `counts`. */
+     when they aren't in today's active spine. Narrowed (Tony 2026-07-22, take
+     2): the raw-equality-on-anything net lit too much. A number now qualifies
+     only when it's telling Tony something he'd act on:
+       • it's a next-1 stat rung (current+1 on any tracked stat, raw match) —
+         i.e. the very next milestone, not a +2..+10 down the ladder; OR
+       • it lands on an opponent-team cipher AND also appears at least once on
+         the sheet OUTSIDE the opponent grid (a lone opp-cipher echo with no
+         other convergence is noise).
+     Feeds the dim additive glow (xhit) for single-occurrence convergences;
+     3+ occurrences already go red via `counts`. */
   const xrefSet=useMemo(()=>{
     const s=new Set();
     const srf={career:p.career||null,season:p.season||null};
+    /* occurrences away from the opponent grid — used to qualify opp echoes.
+       cascade values are never part of the opp grid, so they count too. */
+    const nonOppCount=new Map();
+    const bumpNonOpp=n=>nonOppCount.set(n,(nonOppCount.get(n)||0)+1);
+    model.cells.forEach(x=>{if(!x.section.startsWith('OPPONENT'))bumpNonOpp(x.n);});
+    cascade.forEach(x=>bumpNonOpp(x.n));
     const distinct=new Set([...model.cells.map(x=>x.n),...cascade.map(x=>x.n)]);
     distinct.forEach(n=>{
       const cr=crossRefsForNumber({sr:srf,opp:oppVals},n);
-      if(cr.statRungs.items.some(i=>i.rawMatch)||cr.opponent.items.some(i=>i.rawMatch))s.add(n);
+      const nextRung=cr.statRungs.items.some(i=>i.rawMatch&&i.off===1);
+      const oppEcho=cr.opponent.items.some(i=>i.rawMatch)&&(nonOppCount.get(n)||0)>0;
+      if(nextRung||oppEcho)s.add(n);
     });
     return s;
   },[model,cascade,oppVals,p]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -291,17 +305,19 @@ export default function PlayerCardFullSheet({row,onClose}){
 
   /* ---- filter helpers ---- */
   const lensMatch=n=>lens? (lens==='tfam'?tfamSet.has(n):activeMap.get(n)?.cat===lens) : false;
-  /* glow layering (additive, Tony 2026-07-22):
-       • 2+ occurrences anywhere on the sheet → red (hit2), active or not;
-         active AND multi-occurrence is the strongest — gold-ringed (strong).
-       • active, single occurrence → gold (hit).
-       • not active but a cross-ref convergence (next stat-rung / opp cipher)
-         → dim gold (xhit): softer than the active glow, still visible. */
+  /* glow layering (additive, Tony 2026-07-22, take 2 — thresholds tightened so
+     the cascade only lights what matters):
+       • 3+ occurrences anywhere on the sheet → red (hit2), active or not (twice
+         is common cipher coincidence; three-plus is a real convergence).
+         Active AND multi-occurrence is the strongest — gold-ringed (strong).
+       • active (in today's spine) → gold (hit).
+       • not active but a narrowed cross-ref convergence (next-1 stat rung, or
+         an opp cipher that also echoes elsewhere) → dim gold (xhit). */
   const cls=n=>{
     let c='';
     const occ=counts.get(n)||0;
     const active=isActive(n);
-    if(occ>=2)c+=active?' hit2 strong':' hit2';
+    if(occ>=3)c+=active?' hit2 strong':' hit2';
     else if(active)c+=' hit';
     else if(xrefSet.has(n))c+=' xhit';
     if(lens&&lensMatch(n))c+=' lensmatch';

@@ -347,6 +347,12 @@ body {
 
 /* pattern-hits panel (below the batter card) */
 .pattern-hits { margin-bottom: 0; }
+.pattern-hits .pat-hits-head {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.pattern-hits .pat-hits-head h3 { letter-spacing: .04em; }
+.pattern-hits .pat-hits-head .sum { color: #8a90a0; font-size: 11px; }
+.pattern-hits .pat-hits-head .car { margin-left: auto; color: #8a90a0; font-size: 11px; flex: 0 0 auto; }
 .pattern-hits .chip .n { color: inherit; }
 .pattern-hits .chip .cnt { font-size: 9px; opacity: .8; }
 .pat-names { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }

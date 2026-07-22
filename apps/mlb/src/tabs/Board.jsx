@@ -322,6 +322,16 @@ function BatterZone(){
 function PatternHitsPanel(){
   const {board,game,patterns,patternFilter,setPatternFilter,patternCounts,focusPlayer}=useApp();
   const [expanded,setExpanded]=useState(null); // pattern id whose full name-list is open
+  /* whole-card collapse — default collapsed so the roster sits high on the
+     board (Tony 2026-07-22); the card used to push the rows down. Expanded
+     state persists for the visit so if Tony opens it once it stays open. */
+  const [open,setOpen]=useState(()=>{
+    try{return sessionStorage.getItem('mlb.patternHits.open')==='1';}catch{return false;}
+  });
+  const toggleOpen=()=>setOpen(o=>{
+    const v=!o;try{sessionStorage.setItem('mlb.patternHits.open',v?'1':'0');}catch{/*private mode*/}
+    return v;
+  });
   if(!game)return null;
   const abbrev={away:game.away.abbrev||game.away.teamName,home:game.home.abbrev||game.home.teamName};
   const groups=patterns.filter(pt=>pt.enabled).map(pt=>{
@@ -333,10 +343,20 @@ function PatternHitsPanel(){
     return{pt,hits};
   }).filter(g=>g.hits.length>0);
   if(!groups.length)return null;
+  const totalHits=groups.reduce((a,g)=>a+g.hits.length,0);
   const jump=h=>focusPlayer({id:h.id,side:h.side,from:'board'});
   return(
     <div className="panel pattern-hits">
-      <h3>Pattern hits — this game</h3>
+      <div className="pat-hits-head" onClick={toggleOpen} role="button" tabIndex={0}
+        onKeyDown={e=>{if(e.key==='Enter')toggleOpen()}}>
+        <h3 style={{margin:0}}>PATTERNS</h3>
+        <span className="sum">
+          {groups.length} pattern{groups.length>1?'s':''} hitting today · {totalHits} hit{totalHits>1?'s':''}
+          {!open&&' · tap to expand'}
+        </span>
+        <span className="car">{open?'▴':'▾'}</span>
+      </div>
+      {open&&<>
       <div className="rail" style={{flexWrap:'wrap',overflowX:'visible'}}>
         {groups.map(({pt,hits})=>(
           <button key={pt.id}
@@ -368,6 +388,7 @@ function PatternHitsPanel(){
           );
         })}
       </div>
+      </>}
     </div>
   );
 }
