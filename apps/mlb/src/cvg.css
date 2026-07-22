@@ -564,6 +564,27 @@ body {
 .finder-row .fr-top { font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
 .finder-row .fr-bot { font-size: 12px; margin-top: 2px; }
 
+/* Phrase Variation Finder — collapsible section */
+.phrase-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; color: #767d8f; font-family: inherit; cursor: pointer;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  margin: 16px 0 4px; padding: 12px 2px 0; border-top: 1px solid #1a202b;
+}
+.phrase-head .ph-chev { font-size: 12px; letter-spacing: 0; }
+.phrase-body { margin-top: 4px; }
+.ph-lbl {
+  display: flex; align-items: center; justify-content: space-between;
+  color: #8a90a0; font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase;
+  margin: 12px 0 5px;
+}
+.ph-allnone { display: flex; gap: 4px; }
+.ph-mini {
+  background: none; border: 1px solid var(--sf-line); color: #8a90a0; cursor: pointer;
+  border-radius: 999px; padding: 1px 9px; font-size: 10px; font-family: inherit; letter-spacing: 0;
+}
+.ph-mini:hover { color: #e8eaf0; }
+
 /* vocab tab */
 .vtable { width: 100%; border-collapse: collapse; font-size: 12px; }
 .vtable th { text-align: left; color: #8a90a0; font-weight: 600; font-size: 10px; letter-spacing: .8px; padding: 4px 6px; }

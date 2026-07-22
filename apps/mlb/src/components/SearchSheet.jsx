@@ -1,5 +1,6 @@
 import {useState,useMemo} from 'react';
 import Sheet from './Sheet.jsx';
+import PhraseFinder from './PhraseFinder.jsx';
 import {useApp,INSTITUTIONAL,DAY_CLOCKS} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
@@ -10,6 +11,7 @@ export default function SearchSheet({onClose}){
   return(
     <Sheet title="Search & Finder" onClose={onClose}>
       <DayFinder/>
+      <PhraseFinder/>
       <div className="finder-sep">universal search</div>
       <UniversalSearch/>
     </Sheet>

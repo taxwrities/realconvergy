@@ -10,9 +10,9 @@
    - H2H context chips from data/wnba-h2h.json + live top-up
 ================================================================ */
 import {createContext,useContext,useEffect,useMemo,useState,useCallback} from 'react';
-import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun} from '../engine/gematria.js';
+import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun,letters} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/numbers.js';
-import {clockFrom,dateNumerology,todayISO} from '../engine/clocks.js';
+import {clockFrom,dateNumerology,dateFigures,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_WNBA,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
@@ -23,6 +23,10 @@ import {dateNumerology as dnFor} from '../engine/clocks.js';
 
 const Ctx=createContext(null);
 export const useApp=()=>useContext(Ctx);
+
+/* institutional day-count / recurring figure table (mirrors apps/mlb) — the
+   Phrase-finder quick-fill + the "lands on the table" badge source. */
+export const INSTITUTIONAL=[42,48,51,54,56,59,63,65,72,75,78,79,83,96,139,147];
 
 /* KAT Rule words (§2): name encoding these across ≥2 ciphers = premium FB lean */
 const KAT_WORDS=['BASKETBALL','WNBA','NBA','WOMENS BASKETBALL','FIRST BASKET'];
@@ -631,6 +635,68 @@ export function AppStateProvider({children}){
       })};
   },[slate,game,board,loaded,ciphers]);
 
+  /* ---------- Phrase Variation Finder (Tony 2026-07-22) ----------
+     the name×outcome×cipher sweep: for every player in every loaded game, every
+     enabled name-part (first/last/full), every selected outcome word and every
+     selected cipher, form "<namePart> <word>" and test its value against the
+     target number(s) within tol. The cipher engine strips non-letters, so
+     "SABRINA POINTS" == "SABRINAPOINTS" — the standard Zach concatenation needs
+     no separate space/no-space variant, and letter-identical words collapse to
+     one row via the seen-key. Rows carry DN-spine / institutional badges. words
+     are strings; parts/cipherKeys are key arrays. */
+  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0})=>{
+    if(!slate?.games?.length||!targets?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+    const t=Math.max(0,Math.min(5,Math.floor(+tol||0)));
+    const spine=new Set(dateFigures(date).map(f=>f.n));
+    const inst=new Set(INSTITUTIONAL);
+    const cix=cipherKeys.filter(c=>ALL_CIPHERS.includes(c));
+    const cleanWords=[...new Set(words.map(w=>String(w).trim().toUpperCase()).filter(Boolean))];
+    const cache=new Map();
+    const valsOf=s=>{let v=cache.get(s);if(!v){v=calcAll(s);cache.set(s,v)}return v};
+    const seen=new Set();
+    const out=[];
+    slate.games.forEach(g=>{
+      const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      ['away','home'].forEach(s=>{
+        g[s+'Ids'].forEach(id=>{
+          const p=slate.people[id];
+          if(!p)return;
+          const nm=(p.fullName||'').trim();
+          if(!nm)return;
+          const toks=nm.split(/\s+/);
+          const first=toks[0]||'',last=toks.slice(1).join(' ');
+          const np=[];
+          if(parts.includes('first')&&first)np.push({key:'first',str:first});
+          if(parts.includes('last')&&last)np.push({key:'last',str:last});
+          if(parts.includes('full')&&nm)np.push({key:'full',str:nm});
+          np.forEach(part=>{
+            cleanWords.forEach(word=>{
+              const phrase=`${part.str} ${word}`;
+              const v=valsOf(phrase);
+              cix.forEach(c=>{
+                const value=v[c];
+                if(!(value>0))return;
+                targets.forEach(target=>{
+                  const off=value-target;
+                  if(Math.abs(off)>t)return;
+                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${target}`;
+                  if(seen.has(k))return;
+                  seen.add(k);
+                  out.push({id,pk:g.pk,side:s,name:p.fullName,
+                    team:g[s].abbrev||g[s].teamName,gameLabel,
+                    namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
+                    cipher:c,value,target,off,
+                    onSpine:spine.has(value),onInst:inst.has(value)});
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+    return out;
+  },[slate,date]);
+
   const value={
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
@@ -638,7 +704,7 @@ export function AppStateProvider({children}){
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
-    addTheme,addThread,addLabel,search,exportConfig,importConfig,
+    addTheme,addThread,addLabel,search,findPhrases,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     deepFetch,deepBusy,
     forecasts,generateForecasts,forecastBusy,grade,

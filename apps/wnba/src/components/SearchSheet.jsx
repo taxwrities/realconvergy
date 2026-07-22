@@ -1,16 +1,19 @@
 import {useState} from 'react';
 import Sheet from './Sheet.jsx';
+import PhraseFinder from './PhraseFinder.jsx';
 import {useApp} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 
-/* Universal search (§8): number → identity card + live occurrences;
-   word → cipher values + occurrences. */
+/* Search & Finder (§8): the Phrase Variation Finder (slate-wide name×outcome×
+   cipher sweep) sits on top; the universal number/word search below it. */
 export default function SearchSheet({onClose}){
   const {search,ciphers,colorFor}=useApp();
   const [q,setQ]=useState('');
   const res=search(q);
   return(
-    <Sheet title="Search" onClose={onClose}>
+    <Sheet title="Search & Finder" onClose={onClose}>
+      <PhraseFinder/>
+      <div className="finder-sep">universal search</div>
       <div className="sheet-row">
         <input type="text" autoFocus placeholder="number or word…" value={q}
           onChange={e=>setQ(e.target.value)}/>

@@ -6,7 +6,7 @@
    AB/PA rungs are green-light signals, never the bet.
 ================================================================ */
 import {createContext,useContext,useEffect,useMemo,useState,useCallback} from 'react';
-import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun,cl} from '../engine/gematria.js';
+import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun,cl,letters} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/numbers.js';
 import {clockFrom,dateNumerology,dateFigures,daysBetween,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
@@ -117,6 +117,10 @@ export function AppStateProvider({children}){
      App reads this to hide the shell + mount the page; history is wired in the
      page component so the mobile / browser back button returns to the Board. */
   const [focusedPlayerId,setFocusedPlayerId]=useState(null);
+  /* searchOpen — app-level nav state for the Search page (Tony 2026-07-22: a
+     dedicated destination, not a bottom sheet). false = on the Board; true =
+     the Search page owns the viewport. Same pattern as focusedPlayerId. */
+  const [searchOpen,setSearchOpen]=useState(false);
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
   const [patternFilter,setPatternFilter]=useState(null); // pattern id filtering batter list
   const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
@@ -165,7 +169,7 @@ export function AppStateProvider({children}){
     setSeasonInfo(c?.seasonInfo||null);
     setSlateSavedAt(c?.savedAt||null);
     setGamePk(c?.slate?.games?.[0]?.pk??null);
-    setBatterId(null);setFocusedPlayerId(null);setContextFilter(null);setPatternFilter(null);setError('');
+    setBatterId(null);setFocusedPlayerId(null);setSearchOpen(false);setContextFilter(null);setPatternFilter(null);setError('');
   },[date]);
   /* auto-load whenever the current date has no slate (mount + date switch);
      error gates retries, loading gates re-entry */
@@ -892,14 +896,76 @@ export function AppStateProvider({children}){
     return out.sort((a,b)=>Math.abs(a.off)-Math.abs(b.off)||a.value-b.value);
   },[slate,date]);
 
+  /* ---------- Phrase Variation Finder (Tony 2026-07-22) ----------
+     the name×outcome×cipher sweep: for every batter in every loaded game, every
+     enabled name-part (first/last/full), every selected outcome word and every
+     selected cipher, form "<namePart> <word>" and test its value against the
+     target number(s) within tol. The cipher engine strips non-letters, so
+     "AARON HOMERUN" == "AARONHOMERUN" — the standard Zach concatenation needs
+     no separate space/no-space variant, and letter-identical words (STRIKEOUT vs
+     STRIKE OUT) collapse to one row via the seen-key. Rows carry DN-spine /
+     institutional badges. words are strings; parts/cipherKeys are key arrays. */
+  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0})=>{
+    if(!slate?.games?.length||!targets?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+    const t=Math.max(0,Math.min(5,Math.floor(+tol||0)));
+    const spine=new Set(dateFigures(date).map(f=>f.n));
+    const inst=new Set(INSTITUTIONAL);
+    const cix=cipherKeys.filter(c=>ALL_CIPHERS.includes(c));
+    const cleanWords=[...new Set(words.map(w=>String(w).trim().toUpperCase()).filter(Boolean))];
+    const cache=new Map();
+    const valsOf=s=>{let v=cache.get(s);if(!v){v=calcAll(s);cache.set(s,v)}return v};
+    const seen=new Set();
+    const out=[];
+    slate.games.forEach(g=>{
+      const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      ['away','home'].forEach(s=>{
+        g[s+'Ids'].forEach(id=>{
+          const p=slate.people[id];
+          if(!p)return;
+          const nm=(p.fullName||'').trim();
+          if(!nm)return;
+          const toks=nm.split(/\s+/);
+          const first=toks[0]||'',last=toks.slice(1).join(' ');
+          const np=[];
+          if(parts.includes('first')&&first)np.push({key:'first',str:first});
+          if(parts.includes('last')&&last)np.push({key:'last',str:last});
+          if(parts.includes('full')&&nm)np.push({key:'full',str:nm});
+          np.forEach(part=>{
+            cleanWords.forEach(word=>{
+              const phrase=`${part.str} ${word}`;
+              const v=valsOf(phrase);
+              cix.forEach(c=>{
+                const value=v[c];
+                if(!(value>0))return;
+                targets.forEach(target=>{
+                  const off=value-target;
+                  if(Math.abs(off)>t)return;
+                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${target}`;
+                  if(seen.has(k))return;
+                  seen.add(k);
+                  out.push({id,pk:g.pk,side:s,name:p.fullName,
+                    team:g[s].abbrev||g[s].teamName,gameLabel,
+                    namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
+                    cipher:c,value,target,off,
+                    onSpine:spine.has(value),onInst:inst.has(value)});
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+    return out;
+  },[slate,date]);
+
   const value={
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
-    batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
+    batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,searchOpen,setSearchOpen,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,
-    addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,
+    addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,findPhrases,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     recipeDraft,addDraft,removeDraft,toggleDraftHard,clearDrafts,pendingPattern,setPendingPattern,
     deepFetch,deepBusy,checkLineups,lineupBusy,
