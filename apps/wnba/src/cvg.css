@@ -507,14 +507,20 @@ body {
 }
 .sheet {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 61;
-  max-width: 720px; margin: 0 auto; max-height: 82vh; overflow-y: auto;
+  max-width: 720px; margin: 0 auto; max-height: 82vh; max-height: 82dvh;
+  display: flex; flex-direction: column;
   background: linear-gradient(180deg, #1a202b, #14181f);
   border: 1px solid var(--sf-line-hi); border-bottom: none;
-  border-radius: 22px 22px 0 0; padding: 8px 14px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0; padding: 8px 14px 0;
   animation: sheet-up .22s ease-out;
   box-shadow: 0 -16px 44px rgba(0, 0, 0, 0.55);
 }
 @keyframes sheet-up { from { transform: translateY(40%); opacity: .4; } to { transform: none; opacity: 1; } }
+.sheet-head { flex: 0 0 auto; touch-action: none; }
+.sheet-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
 .sheet-grab { width: 40px; height: 4px; border-radius: 2px; background: #38404f; margin: 6px auto 13px; }
 .sheet h2 { font-size: 14px; font-weight: 800; margin-bottom: 10px; }
 .sheet-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
