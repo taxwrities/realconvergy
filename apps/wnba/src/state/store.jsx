@@ -668,6 +668,12 @@ export function AppStateProvider({children}){
           if(!p)return;
           const nm=(p.fullName||'').trim();
           if(!nm)return;
+          /* player-numerology cross-refs (Tony 2026-07-22): the player's own
+             life-clock readings + jersey travel with each hit so the finder can
+             flag day-of-life / age / etc. that echo the target (raw or dr). */
+          const pbday=p.birthDate?clockFrom(p.birthDate,date):null;
+          const pn={totalDays:pbday?.totalDays??null,since:pbday?.since??null,
+            until:pbday?.until??null,years:pbday?.years??null,jersey:p.jersey??null};
           const toks=nm.split(/\s+/);
           const first=toks[0]||'',last=toks.slice(1).join(' ');
           const np=[];
@@ -690,7 +696,7 @@ export function AppStateProvider({children}){
                   out.push({id,pk:g.pk,side:s,name:p.fullName,
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
-                    cipher:c,value,target,off,
+                    cipher:c,value,target,off,pn,
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });
               });

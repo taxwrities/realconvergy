@@ -924,6 +924,12 @@ export function AppStateProvider({children}){
           if(!p)return;
           const nm=(p.fullName||'').trim();
           if(!nm)return;
+          /* player-numerology cross-refs (Tony 2026-07-22): the batter's own
+             life-clock readings + jersey travel with each hit so the finder can
+             flag day-of-life / age / etc. that echo the target (raw or dr). */
+          const pbday=p.birthDate?clockFrom(p.birthDate,date):null;
+          const pn={totalDays:pbday?.totalDays??null,since:pbday?.since??null,
+            until:pbday?.until??null,years:pbday?.years??null,jersey:p.jersey??null};
           const toks=nm.split(/\s+/);
           /* Preferred + legal + middle + compound-token variants (Tony 2026-07-22).
              Roster shows "Ben"/"Jung Hoo"; the sweep also tries the government
@@ -1001,7 +1007,7 @@ export function AppStateProvider({children}){
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
                     legal:!!part.legal,
-                    cipher:c,value,target,off,
+                    cipher:c,value,target,off,pn,
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });
               });

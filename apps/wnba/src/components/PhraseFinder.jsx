@@ -2,6 +2,7 @@ import {useState,useMemo,useEffect} from 'react';
 import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
+import {playerNumerologyMatches} from '../engine/numerology.js';
 
 /* Phrase Variation Finder (Tony 2026-07-22) — sweeps <name part> + <outcome
    word> across every enabled cipher for every player on the slate, reporting
@@ -133,7 +134,8 @@ export default function PhraseFinder(){
             <span className="muted" style={{fontSize:12}}>tolerance (0 = exact)</span>
           </div>
 
-          {/* results */}
+          {/* results — PlayerXref (defined below) hangs the numerology
+             cross-ref block under each hit group */}
           {targets.length>0&&(
             <div className="id-card" style={{marginTop:6}}>
               <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
@@ -157,6 +159,7 @@ export default function PhraseFinder(){
                       {r.onInst&&<span className="badge green">INST</span>}
                     </div>
                   ))}
+                  <PlayerXref pn={g.rows[0].pn} targets={g.rows.map(r=>r.target)}/>
                 </div>
               ))}
               {!hits.length&&(
@@ -166,6 +169,47 @@ export default function PhraseFinder(){
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* player-numerology cross-ref block (Tony 2026-07-22): under each hit group,
+   echo the player's own life-clock readings + jersey against the target(s)
+   this player landed on. Raw equality = strong (gold); a shared digit-root is
+   the softer bonus (dim gold, italic). Renders nothing when nothing lines up
+   so the finder stays uncluttered. */
+function PlayerXref({pn,targets}){
+  const tgts=[...new Set(targets)].filter(n=>n>0);
+  if(!pn||!tgts.length)return null;
+  const base=playerNumerologyMatches(pn,tgts[0]);
+  if(!base.items.length)return null;
+  const strong=new Set(),soft=new Set(),lines=[];
+  tgts.forEach(tg=>{
+    const m=playerNumerologyMatches(pn,tg);
+    m.items.forEach(it=>{
+      if(it.rawMatch){strong.add(it.key);
+        lines.push({strong:true,text:`${it.key} ${it.value.toLocaleString()} = target ${tg}`});}
+      else if(it.softMatch){soft.add(it.key);
+        lines.push({strong:false,text:`${it.key} dr ${it.dr} = target ${tg} dr ${m.targetDr}`});}
+    });
+  });
+  if(!lines.length)return null;   // no cross-refs match → show nothing
+  return(
+    <div className="fr-xref mono">
+      <div className="xref-line">
+        <span className="xref-lbl">player:</span>
+        {base.items.map((it,k)=>(
+          <span key={k} className={strong.has(it.key)?'xref-strong':soft.has(it.key)?'xref-soft':'xref-mut'}>
+            {k>0?' · ':' '}{it.key} {it.value.toLocaleString()} (dr {it.dr})
+          </span>
+        ))}
+      </div>
+      <div className="xref-line">
+        <span className="xref-lbl">matches:</span>
+        {lines.map((ml,k)=>(
+          <span key={k} className={ml.strong?'xref-strong':'xref-soft'}>{k>0?' · ':' '}{ml.text}</span>
+        ))}
+      </div>
     </div>
   );
 }

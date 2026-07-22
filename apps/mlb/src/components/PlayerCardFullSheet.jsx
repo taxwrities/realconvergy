@@ -3,6 +3,7 @@ import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
 import {isPrime,primeIndex} from '../engine/numbers.js';
 import {dateFigures} from '../engine/clocks.js';
+import {playerNumerologyMatches} from '../engine/numerology.js';
 import {CORE_WORDS_MLB} from '../data/defaults.js';
 
 /* ================================================================
@@ -301,11 +302,19 @@ export default function PlayerCardFullSheet({row,onClose}){
     if(dn?.vals?.[spot])spine.push(`date-numerology · ${dn.vals[spot]}`);
     if(dn?.rulerVals?.[spot])spine.push(`ruling planet · ${dn.rulerVals[spot]}`);
 
+    /* ---- player-numerology cross-ref (Tony 2026-07-22): does this batter's
+       own life-clock / jersey echo the tapped number? Raw equality is the
+       strong signal; a shared digit-root is the soft bonus. Same helper the
+       Phrase Finder rows use. ---- */
+    const xref=playerNumerologyMatches(
+      {totalDays:bday?.totalDays??null,since:bday?.since??null,until:bday?.until??null,
+       years:bday?.years??null,jersey:p.jersey??null},spot);
+
     return{n:spot,
       reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
       props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
-      locs};
-  },[spot,activeMap,model,cascade,dn,date]);
+      xref,locs};
+  },[spot,activeMap,model,cascade,dn,date,bday,p]);
 
   const Grid=g=>g&&(
     <div className="grp" key={g.title}>
@@ -466,6 +475,17 @@ export default function PlayerCardFullSheet({row,onClose}){
               {why.props.spine.length>0&&(
                 <div className="why-prop"><span className="wp-k">SPINE</span>
                   <span className="wp-v teal">{why.props.spine.join('   ')}</span></div>
+              )}
+              {why.xref?.any&&(
+                <div className="why-prop"><span className="wp-k">PLAYER</span>
+                  <span className="wp-v">
+                    {why.xref.items.filter(it=>it.rawMatch||it.softMatch).map((it,i)=>(
+                      <span key={i} className={it.rawMatch?'xref-strong':'xref-soft'}>
+                        {i>0?'   ':''}{it.key} {it.value.toLocaleString()}
+                        {it.rawMatch?` = ${why.n}`:` (dr ${it.dr} = target dr ${why.xref.targetDr})`}
+                      </span>
+                    ))}
+                  </span></div>
               )}
             </div>
           )}

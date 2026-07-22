@@ -168,6 +168,9 @@
 .pcfs .wp-v{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.4;}
 .pcfs .wp-v.gold{color:var(--gold);font-weight:700;}
 .pcfs .wp-v.teal{color:var(--teal);}
+/* PLAYER cross-ref matches — strong (gold) vs soft digit-root (dim gold) */
+.pcfs .wp-v .xref-strong{color:var(--gold);font-weight:700;}
+.pcfs .wp-v .xref-soft{color:color-mix(in srgb, var(--gold) 55%, transparent);font-style:italic;}
 .pcfs .why-locs{margin-top:9px;border-top:1px solid var(--line);padding-top:8px;max-height:34vh;overflow-y:auto;}
 .pcfs .why-loc{font-size:10.5px;color:var(--dim);font-family:var(--mono);padding:2px 0;}
 .pcfs .why-loc b{color:var(--text);}
