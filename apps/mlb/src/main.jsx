@@ -6,6 +6,7 @@ import '@astryxdesign/core/reset.css';
 import '@astryxdesign/core/astryx.css';
 import '@astryxdesign/theme-gothic/theme.css';
 import './cvg.css';
+import './player-card.css';
 import App from './App.jsx';
 import {AppStateProvider} from './state/store.jsx';
 

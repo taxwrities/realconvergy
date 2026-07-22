@@ -6,7 +6,7 @@
    AB/PA rungs are green-light signals, never the bet.
 ================================================================ */
 import {createContext,useContext,useEffect,useMemo,useState,useCallback} from 'react';
-import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun} from '../engine/gematria.js';
+import {calcAll,ALL_CIPHERS,CIPHER_DEFAULTS,checksum,nameRun,cl} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,chainBase} from '../engine/numbers.js';
 import {clockFrom,dateNumerology,dateFigures,daysBetween,todayISO} from '../engine/clocks.js';
 import {CORE_WORDS_MLB,OUTCOME_WORDS,STATS,STAT_DEPTH,LANES,LANE_STAT,
@@ -625,6 +625,61 @@ export function AppStateProvider({children}){
     return chips;
   },[game,board,dayState,registry,ciphers,dn,h2h]);
 
+  /* ---------- dayField: the ACTIVE set for the full-sheet player card ----------
+     Single source of truth per slate, grouped by category the way Tony's theme
+     pipeline labels the day (THREADS / DATE / TEAM / T-FAM). BIO is inherently
+     per-player (age / days-to-bday are the batter's own readings) so the card
+     fills that group itself from row.ev — see PlayerCardFullSheet. Shape matches
+     the reference mockup: {cat:{label, nums:{n:reason}}}. Numbers here are the
+     curated day spine (threads + date figures + team gematria + h2h), NOT the
+     full background vocab match set — the card glows any sheet value landing in
+     this set, and T-family membership mirrors into its own group. */
+  const dayField=useMemo(()=>{
+    const groups={
+      threads:{label:'THREADS',nums:{}},
+      date:{label:'DATE',nums:{}},
+      team:{label:'TEAM',nums:{}},
+      bio:{label:'BIO',nums:{}},
+      tfam:{label:'T-FAM',nums:{}},
+    };
+    const put=(bucket,n,reason)=>{
+      n=+n;if(!n||n<=0)return;
+      if(!groups[bucket].nums[n])groups[bucket].nums[n]=reason;
+      if(T_FAMILY.includes(n)||(isPrime(n)&&T_FAMILY.includes(primeIndex(n)))){
+        if(!groups.tfam.nums[n])
+          groups.tfam.nums[n]=T_FAMILY.includes(n)?'T-family':`T-family (prime #${primeIndex(n)})`;
+      }
+    };
+    /* THREADS — adhoc threads + themes (adhoc + game-relevant registry) */
+    dayState.adhocThread.forEach(n=>put('threads',n,'active thread'));
+    [...dayState.adhocThemes,
+     ...registry.filter(t=>!t.teams||!game||t.teams.includes(game.home.teamName)||t.teams.includes(game.away.teamName))]
+      .forEach(t=>ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{
+        const n=t.values?.[c];if(n)put('threads',n,`${t.name} ${cl(c)}`);
+      }));
+    /* DATE — the seven locked date figures + DOY/left + ruling-planet values */
+    dateFigures(date).forEach(f=>put('date',f.n,f.top?`date top · ${f.calc}`:`date · ${f.calc}`));
+    put('date',dn.doy,'day of year');
+    put('date',dn.left,'days left in year');
+    Object.entries(dn.rulerVals).forEach(([n,l])=>put('date',n,`${dn.ruler} · ${l}`));
+    /* TEAM — both clubs (nickname / city / full) gematria + game #s + H2H */
+    if(game){
+      [game.away,game.home].forEach(t=>{
+        [...new Set([t.teamName,t.locationName,t.name].filter(Boolean))].forEach(nm=>{
+          vals(nm).forEach(({cipher,n})=>put('team',n,`${nm} ${cl(cipher)}`));
+        });
+      });
+      put('team',game.gameNumber.home,`${game.home.teamName} game #${game.gameNumber.home}`);
+      put('team',game.gameNumber.away,`${game.away.teamName} game #${game.gameNumber.away}`);
+      if(h2h){
+        put('team',h2h.gameNo,`H2H meeting #${h2h.gameNo}`);
+        put('team',h2h.awayWins,`${game.away.abbrev||game.away.teamName} series wins`);
+        put('team',h2h.homeWins,`${game.home.abbrev||game.home.teamName} series wins`);
+      }
+    }
+    return groups;
+  },[dayState,registry,game,ciphers,dn,date,h2h,vals]);
+
   /* ---------- matchup: pitcher + CROSS rows + team staircases ---------- */
   const matchup=useMemo(()=>{
     if(!slate||!game||!batterId)return null;
@@ -837,7 +892,7 @@ export function AppStateProvider({children}){
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
     batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
-    board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
+    board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     recipeDraft,addDraft,removeDraft,toggleDraftHard,clearDrafts,pendingPattern,setPendingPattern,

@@ -1,0 +1,398 @@
+import {useState,useMemo,useEffect} from 'react';
+import {useApp} from '../state/store.jsx';
+import {calcAll} from '../engine/gematria.js';
+
+/* ================================================================
+   PlayerCardFullSheet — Tony's locked full-sheet player card (v2).
+   Design ref: player-card-fullsheet-v2.html (repo root). Pinned
+   ACTIVE / TEST / cascade stack over a scrolling sheet, with the
+   three-layer filter (ALL / lens / spotlight) + WHY bottom sheet.
+
+   Data rules honored here:
+   • ACTIVE set comes from the store's dayField (single slate source);
+     BIO is the per-player exception, filled from this batter's own
+     life-clock readings that land on the day spine.
+   • Every cipher value is computed live by the engine (calcAll) across
+     the ciphers enabled in Settings — never hardcoded.
+   • Cascade increments the full stat family off the CAREER line and
+     re-runs each value through the same active-number check.
+================================================================ */
+
+/* mockup's 6-column grid generalized to every enabled cipher (data
+   contract #2). Mockup order first, engine extras appended. */
+const CIPHER_COL=[
+  ['Ord','ORD'],['Red','RED'],['Rev','RVO'],['RR','RVR'],['Chal','CHL'],['Sat','SAT'],
+  ['RevSat','RSAT'],['Sept','SEP'],['Latin','JEW'],
+];
+
+const SK={PA:'plateAppearances',AB:'atBats',H:'hits','1B':'1B','2B':'doubles',
+  '3B':'triples',HR:'homeRuns',XBH:'XBH',RBI:'rbi',TB:'totalBases',
+  BB:'baseOnBalls',SO:'strikeOuts'};
+const STAT_ROWS=['PA','AB','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO'];
+
+/* each outcome increments its full stat family (spec §4); base = career line */
+const CASCADE={
+  '1B':[['H',1],['1B',1],['TB',1],['AB',1],['PA',1]],
+  '2B':[['H',1],['2B',1],['XBH',1],['TB',2],['AB',1],['PA',1]],
+  '3B':[['H',1],['3B',1],['XBH',1],['TB',3],['AB',1],['PA',1]],
+  'HR':[['H',1],['HR',1],['XBH',1],['RBI',1],['TB',4],['AB',1],['PA',1]],
+  'BB':[['BB',1],['PA',1]],
+  'SO':[['SO',1],['AB',1],['PA',1]],
+};
+const OUTCOMES=['none','1B','2B','3B','HR','BB','SO'];
+const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],['runs','R'],['hits','H']];
+const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
+const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
+
+export default function PlayerCardFullSheet({row,onClose}){
+  const {dayField,matchup,ciphers,game,side,dayState,addThread}=useApp();
+  const [outcome,setOutcome]=useState('3B');
+  const [lens,setLens]=useState(null);       // category key | null
+  const [spot,setSpot]=useState(null);       // spotlighted number | null
+
+  useEffect(()=>{
+    const esc=e=>{if(e.key==='Escape')onClose()};
+    window.addEventListener('keydown',esc);
+    return()=>window.removeEventListener('keydown',esc);
+  },[onClose]);
+
+  const ev=row.ev,p=ev.p;
+  const cols=useMemo(()=>CIPHER_COL.filter(([k])=>ciphers[k]),[ciphers]);
+  const sp=matchup?.sp||null;                // opposing probable pitcher
+  const spHand=sp?.pitchHand||null;
+
+  const myTeam=game?game[side]:null;
+  const oppTeam=game?game[side==='away'?'home':'away']:null;
+  const abbr=t=>t?(t.abbrev||t.teamName||''):'';
+
+  /* ---- life-clock readings (each tappable + promotable) ---- */
+  const bday=ev.bday,debut=ev.debut;
+  const bioReadings=[];
+  const bio=(label,value)=>{if(value!=null&&value>0)bioReadings.push({label,value})};
+  if(bday){bio('age',bday.years);bio('since bday',bday.since);bio('until bday',bday.until);
+    bio('day of life',bday.totalDays);bio('week of life',bday.weeks);}
+  if(debut){bio('career day',debut.totalDays);bio('career wk',debut.weeks);
+    bio('career mo',debut.months);bio('since anniv',debut.since);bio('until anniv',debut.until);}
+  bio('jersey',p.jersey);
+
+  /* ---- ACTIVE set: store dayField → per-card activeMap ----
+     primary category by priority threads>date>team; BIO overrides for this
+     player's active life readings; T-family is a cross-cutting mirror. */
+  const {activeMap,tfamSet}=useMemo(()=>{
+    const m=new Map();
+    ['threads','date','team'].forEach(cat=>{
+      Object.entries(dayField[cat]?.nums||{}).forEach(([n,reason])=>{
+        if(!m.has(+n))m.set(+n,{reason,cat});
+      });
+    });
+    const tf=new Set(Object.keys(dayField.tfam?.nums||{}).map(Number));
+    bioReadings.forEach(({label,value})=>{
+      if(m.has(value)){
+        const o=m.get(value);
+        m.set(value,{reason:`${label} = ${o.reason}`,cat:'bio'});
+      }
+    });
+    return{activeMap:m,tfamSet:tf};
+  },[dayField,p.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isActive=n=>activeMap.has(n);
+
+  /* ---- sheet model + cell collection (for hit2 counts + WHY locations) ---- */
+  const model=useMemo(()=>{
+    const cells=[];                                  // {n, section, item}
+    const collect=(n,section,item)=>{if(n>0)cells.push({n:+n,section,item})};
+
+    bioReadings.forEach(b=>collect(b.value,'BIRTH / LIFE',b.label));
+
+    const gridFor=(title,defs)=>{
+      const rows=defs.filter(d=>d.str&&d.str.trim()).map(d=>{
+        const v=calcAll(d.str);
+        const vals=cols.map(([k,h])=>({header:h,n:v[k]}));
+        vals.forEach(x=>collect(x.n,title,`${d.label} · ${x.header}`));
+        return{label:d.label,vals};
+      });
+      return{title,rows};
+    };
+    const nm=(full)=>{const parts=(full||'').trim().split(/\s+/);return{first:parts[0]||'',last:parts.slice(1).join(' ')};};
+    const pn=nm(p.fullName);
+    const nameGrid=gridFor('NAME',[
+      {label:pn.first.toUpperCase(),str:pn.first},
+      {label:(p.lastName||pn.last).toUpperCase(),str:p.lastName||pn.last},
+      {label:(p.fullName||'').toUpperCase(),str:p.fullName},
+    ]);
+    const teamGrid=myTeam?gridFor(`TEAM — ${abbr(myTeam)}`,[
+      {label:(myTeam.teamName||'').toUpperCase(),str:myTeam.teamName},
+      {label:(myTeam.locationName||'').toUpperCase(),str:myTeam.locationName},
+      {label:(myTeam.name||'').toUpperCase(),str:myTeam.name},
+    ]):null;
+    const oppGrid=oppTeam?gridFor(`OPPONENT — ${abbr(oppTeam)}`,[
+      {label:(oppTeam.teamName||'').toUpperCase(),str:oppTeam.teamName},
+      {label:(oppTeam.locationName||'').toUpperCase(),str:oppTeam.locationName},
+      {label:(oppTeam.name||'').toUpperCase(),str:oppTeam.name},
+    ]):null;
+    let pitcherGrid=null;
+    if(sp){
+      const spn=nm(sp.fullName);
+      pitcherGrid=gridFor(`OPP PITCHER — ${(spn.first[0]||'').toUpperCase()}. ${(sp.lastName||spn.last).toUpperCase()}${spHand?` · ${handLabel(spHand)}`:''}`,[
+        {label:spn.first.toUpperCase(),str:spn.first},
+        {label:(sp.lastName||spn.last).toUpperCase(),str:sp.lastName||spn.last},
+        {label:(sp.fullName||'').toUpperCase(),str:sp.fullName},
+      ]);
+    }
+
+    const car=p.career,ssn=p.season;
+    const statsRows=STAT_ROWS.map(st=>{
+      const k=SK[st];
+      const c=car?.[k],s=ssn?.[k];
+      const base=c!=null?c:(s!=null?s:null);
+      const next=base!=null?base+1:null;
+      if(c!=null)collect(c,'STATS',`${st} career`);
+      if(s!=null)collect(s,'STATS',`${st} season`);
+      if(next!=null)collect(next,'STATS',`${st} +1`);
+      return{stat:st,car:c,ssn:s,next};
+    });
+
+    const SPd=p.split||{};
+    const splitDefs=[
+      {label:'LHP',key:'season-vsL',hand:'L'},
+      {label:'RHP',key:'season-vsR',hand:'R'},
+      {label:'Home',key:'season-home'},
+      {label:'Away',key:'season-away'},
+    ];
+    const splitRows=splitDefs.map(d=>{
+      const line=SPd[d.key]||null;
+      const vals=SPLIT_COLS.map(([k,h])=>{
+        const v=line?line[k]:null;
+        if(v!=null)collect(v,'SPLITS',`${d.label} · ${h}`);
+        return v!=null?v:null;
+      });
+      const tonight=!!(d.hand&&spHand&&d.hand===spHand);
+      const offhand=!!(d.hand&&spHand&&d.hand!==spHand);
+      return{label:d.label,vals,tonight,offhand};
+    });
+    const splitTitle=`SPLITS — vs ${sp?(sp.lastName||'pitcher'):'pitcher'}${spHand?` (${handLabel(spHand)})`:''}`;
+
+    return{cells,nameGrid,teamGrid,oppGrid,pitcherGrid,statsRows,splitRows,splitTitle};
+  },[p,cols,myTeam,oppTeam,sp,spHand]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* cascade depends on the selected outcome; its values glow too */
+  const cascade=useMemo(()=>{
+    if(outcome==='none'||!CASCADE[outcome])return[];
+    const base=p.career||p.season||{};
+    return CASCADE[outcome].map(([st,d])=>{
+      const b=base[SK[st]];
+      return b==null?null:{stat:st,n:b+d};
+    }).filter(Boolean);
+  },[outcome,p]);
+
+  /* hit2 counts across the whole sheet + the pinned cascade (bar excluded) */
+  const counts=useMemo(()=>{
+    const c=new Map();
+    const bump=n=>{if(isActive(n))c.set(n,(c.get(n)||0)+1)};
+    model.cells.forEach(x=>bump(x.n));
+    cascade.forEach(x=>bump(x.n));
+    return c;
+  },[model,cascade,activeMap]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ---- bar groups derived from the (re-categorized) activeMap ---- */
+  const barGroups=GROUP_ORDER.map(([cat,label])=>{
+    const nums=cat==='tfam'
+      ? [...tfamSet].filter(n=>activeMap.has(n))
+      : [...activeMap.entries()].filter(([,v])=>v.cat===cat).map(([n])=>n);
+    return{cat,label,nums:[...new Set(nums)].sort((a,b)=>a-b)};
+  }).filter(g=>g.nums.length);
+
+  /* ---- filter helpers ---- */
+  const lensMatch=n=>lens? (lens==='tfam'?tfamSet.has(n):activeMap.get(n)?.cat===lens) : false;
+  const cls=n=>{
+    let c='';
+    if(isActive(n))c+=(counts.get(n)>=2?' hit2':' hit');
+    if(lens&&lensMatch(n))c+=' lensmatch';
+    if(spot===n)c+=' spot-match';
+    return c;
+  };
+  const toggleSpot=n=>{setSpot(s=>s===n?null:n);};
+  const toggleLens=cat=>{setSpot(null);setLens(l=>l===cat?null:cat);};
+  const goAll=()=>{setLens(null);setSpot(null);};
+
+  const rootCls=`pcfs${lens?' lensed':''}${spot!=null?' spotlight':''}`;
+
+  /* clickable number cell (spotlight on tap). Plain render fn, not a
+     component, so leaf spans diff in place instead of remounting each render. */
+  const numCell=(n,key,nx=false)=>(
+    <span key={key} data-n={n} className={`${nx?'nx':''}${cls(n)}`}
+      onClick={e=>{e.stopPropagation();toggleSpot(n);}}>{n}</span>
+  );
+
+  const promoted=new Set(dayState.adhocThread);
+
+  /* ---- WHY panel content for the spotlighted number ---- */
+  const why=useMemo(()=>{
+    if(spot==null)return null;
+    const a=activeMap.get(spot);
+    const locs=[];
+    const seen=new Set();
+    [...model.cells,...cascade.map(c=>({n:c.n,section:'CASCADE',item:`${c.stat} → projected`}))]
+      .forEach(x=>{if(x.n===spot){const key=x.section+'|'+x.item;if(!seen.has(key)){seen.add(key);locs.push(x);}}});
+    return{n:spot,reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`
+      :'Not in today’s active set — cross-reference only.',locs};
+  },[spot,activeMap,model,cascade]);
+
+  const Grid=g=>g&&(
+    <div className="grp" key={g.title}>
+      <div className="grplabel">{g.title}<span className="grpcount"/></div>
+      <div className="chead"><span className="w"/><div className="cvals">
+        {cols.map(([,h])=><span key={h}>{h}</span>)}
+      </div></div>
+      {g.rows.map((r,i)=>(
+        <div className="crow" key={i}>
+          <span className="w">{r.label}</span>
+          <div className="cvals">{r.vals.map((v,j)=>numCell(v.n,j))}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return(
+    <>
+      <div className="pcfs-scrim" onClick={onClose}/>
+      <div className={rootCls} onClick={()=>{if(spot!=null)setSpot(null);}}>
+        <button className="pcfs-dismiss" onClick={onClose} aria-label="Close">✕</button>
+
+        {/* ---------- pinned stack ---------- */}
+        <div className="pin" onClick={e=>e.stopPropagation()}>
+          <div className="activebar">
+            <button className={`ab-all${!lens&&spot==null?' on':''}`} onClick={goAll}>ALL</button>
+            {barGroups.map(g=>(
+              <div key={g.cat} className={`lensgrp${lens===g.cat?' lens-on':''}`}>
+                <button className="lensname" onClick={()=>toggleLens(g.cat)}>{g.label}</button>
+                <div className="lensnums">
+                  {g.nums.map(n=>(
+                    <button key={n} className={`ab-num${spot===n?' spot':''}`}
+                      onClick={()=>toggleSpot(n)}>{n}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="testbar">
+            <span className="tlabel">TEST</span>
+            {OUTCOMES.map(o=>(
+              <button key={o} className={`ochip${outcome===o?' sel':''}`}
+                onClick={()=>setOutcome(o)}>{o==='none'?'—':o}</button>
+            ))}
+          </div>
+          <div className="cascpin">
+            <div className="casc">
+              {cascade.length?cascade.map((c,i)=>(
+                <button key={i} className={`cv${cls(c.n)}`} data-n={c.n}
+                  onClick={e=>{e.stopPropagation();toggleSpot(c.n);}}>
+                  <span className="n">{c.n}</span><span className="k">{c.stat}</span>
+                </button>
+              )):<span className="casc-empty">no outcome selected</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- scrolling sheet ---------- */}
+        <div className="scroll">
+          <div className="header">
+            <div className="pname">{p.fullName}</div>
+            <div className="pmeta">
+              {p.jersey&&<>#{p.jersey} · </>}{p.position&&<>{p.position} · </>}
+              {abbr(myTeam)} vs {abbr(oppTeam)}
+              {p.school&&<> · {p.school}</>}{p.jesuit&&<> <span className="j">JESUIT</span></>}
+              {p.batSide&&<> · bats {p.batSide}</>}
+            </div>
+            {sp&&(
+              <div className="pmeta" style={{marginTop:5}}>
+                vs <b>{sp.fullName}</b>{spHand&&<> <span className="j">{handLabel(spHand)}</span></>}
+                {oppTeam&&<> · {abbr(oppTeam)} starter</>}
+              </div>
+            )}
+            {(row.patternHits.length>0||ev.dateNameHits.length>0||ev.dayMatches?.length>0||ev.threadHit)&&(
+              <div className="badges">
+                {row.patternHits.map(({pattern,res})=>(
+                  <span key={pattern.id} className="pcbadge">{pattern.name} {res.hardPass}✓</span>
+                ))}
+                {ev.dateNameHits.length>0&&<span className="pcbadge teal">NAME=DATE</span>}
+                {ev.dayMatches?.length>0&&<span className="pcbadge teal">DAY=DATE</span>}
+                {ev.threadHit&&<span className="pcbadge">THREAD</span>}
+              </div>
+            )}
+          </div>
+
+          <div className="grp">
+            <div className="grplabel">BIRTH / LIFE CLOCK<span className="grpcount"/></div>
+            <div className="bignums">
+              {bioReadings.map((b,i)=>(
+                <div className={`bn${cls(b.value)}`} data-n={b.value} key={i}
+                  onClick={e=>{e.stopPropagation();toggleSpot(b.value);}}>
+                  <span className="n">{b.value.toLocaleString()}</span>
+                  <div className="k">{b.label}</div>
+                  <button className={`promote${promoted.has(b.value)?' on':''}`}
+                    title="promote to thread candidate"
+                    onClick={e=>{e.stopPropagation();addThread(b.value);}}>+</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {Grid(model.nameGrid)}
+          {Grid(model.teamGrid)}
+          {Grid(model.oppGrid)}
+          {Grid(model.pitcherGrid)}
+
+          <div className="grp">
+            <div className="grplabel">STATS — career · season · next<span className="grpcount"/></div>
+            <div className="shead"><span className="w"/><div className="sv">
+              <span>CAR</span><span>SSN</span><span>+1→</span></div></div>
+            {model.statsRows.map((r,i)=>(
+              <div className="srow" key={i}>
+                <span className="w">{r.stat}</span>
+                <div className="sv">
+                  {r.car!=null?numCell(r.car,'c'):<span className="dash">–</span>}
+                  {r.ssn!=null?numCell(r.ssn,'s'):<span className="dash">–</span>}
+                  {r.next!=null?numCell(r.next,'n',true):<span className="dash nx">–</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grp">
+            <div className="grplabel">{model.splitTitle}<span className="grpcount"/></div>
+            <div className="shead"><span className="w"/><div className="sv">
+              {SPLIT_COLS.map(([,h])=><span key={h}>{h}</span>)}</div></div>
+            {model.splitRows.map((r,i)=>(
+              <div className={`srow${r.tonight?' tonight':''}${r.offhand?' offhand':''}`} key={i}>
+                <span className="w">{r.label}</span>
+                <div className="sv">
+                  {r.vals.map((v,j)=>v!=null?numCell(v,j):<span key={j} className="dash">–</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ---------- WHY bottom sheet ---------- */}
+        <div className={`why${why?' show':''}`} onClick={e=>e.stopPropagation()}>
+          <button className="why-close" onClick={()=>setSpot(null)}>✕</button>
+          <div className="why-num">{why?why.n:'—'}</div>
+          <div className="why-reason">{why?why.reason:''}</div>
+          <div className="why-locs">
+            {why&&(
+              <>
+                <div className="why-loc" style={{color:'var(--faint)'}}>
+                  {why.locs.length} place{why.locs.length===1?'':'s'} on this sheet
+                </div>
+                {why.locs.map((l,i)=>(
+                  <div className="why-loc" key={i}><b>{l.section}</b>{l.item?` — ${l.item}`:''}</div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

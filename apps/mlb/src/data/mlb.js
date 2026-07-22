@@ -105,6 +105,10 @@ export async function fetchSlate(dstr,onProgress){
         jersey:pp.primaryNumber?+pp.primaryNumber:null,
         legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null,
         school,jesuit:isJesuit(school),
+        /* handedness — standard person fields, no extra hydrate. Bat side feeds
+           the full-sheet header ("bats L/R"); a pitcher's throw hand feeds the
+           opposing-pitcher line + the SPLITS row highlight (Tony full-sheet v2). */
+        batSide:pp.batSide?.code||null,pitchHand:pp.pitchHand?.code||null,
         position:pp.primaryPosition?.abbreviation||'',split:{}};
       (pp.stats||[]).forEach(st=>{
         const tn=st.type.displayName;

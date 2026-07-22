@@ -8,6 +8,7 @@ import {isProjected} from '../data/lineups.js';
 import {cl} from '../engine/gematria.js';
 import {classifyRungs} from '../engine/rungs.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
+import PlayerCardFullSheet from '../components/PlayerCardFullSheet.jsx';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
    horizontal scroll on overflowing rails/tables (mouse users have no h-track).
@@ -250,6 +251,7 @@ function TeamToggle(){
 /* zones 6+7 — batter list (sticky left) + batter card */
 function BatterZone(){
   const {board,side,batterId,setBatterId,contextFilter,patternFilter,dayState}=useApp();
+  const [fullSheet,setFullSheet]=useState(false); // full-sheet player card overlay
   const rows=board[side]||[];
   const inFilter=r=>{
     if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
@@ -301,10 +303,11 @@ function BatterZone(){
         })}
       </div>
       <div className="card-col">
-        {sel&&<BatterCard row={sel}/>}
+        {sel&&<BatterCard row={sel} onOpenFull={()=>{setBatterId(sel.id);setFullSheet(true)}}/>}
         <PatternHitsPanel/>
         {sel&&<TotalsPanel row={sel}/>}
       </div>
+      {fullSheet&&sel&&<PlayerCardFullSheet row={sel} onClose={()=>setFullSheet(false)}/>}
     </div>
   );
 }
@@ -375,7 +378,7 @@ const ENTER_STATS=[
   ['RBI','rbi'],['TB','totalBases'],['BB','baseOnBalls'],['SO','strikeOuts'],
 ];
 
-function BatterCard({row}){
+function BatterCard({row,onOpenFull}){
   const {colorFor,contextFilter,patternFilter,addDraft,gameTotals,refreshGameTotals}=useApp();
   const ev=row.ev;
   const p=ev.p;
@@ -400,6 +403,9 @@ function BatterCard({row}){
         <span className="nm">{p.fullName}</span>
         {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#<FactNum value={p.jersey}>{p.jersey}</FactNum></span>}
         <span className="muted" style={{fontSize:11}}>{p.position}</span>
+        {onOpenFull&&<button type="button" className="chip gray full-sheet-btn"
+          style={{marginLeft:'auto',flex:'0 0 auto'}} title="open full-sheet player card"
+          onClick={onOpenFull}>⛶ full sheet</button>}
       </div>
       {p.school&&(
         <div style={{fontSize:11,margin:'1px 0 3px',display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>

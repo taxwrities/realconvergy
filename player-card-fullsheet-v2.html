@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Alan Roden — Full Sheet v2</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#11141a; --line:#1d222c;
+    --text:#e8ebf1; --dim:#79818f; --faint:#4a505c;
+    --gold:#e0b04b; --hot:#ff5a3c; --teal:#2dd4bf;
+    --ui:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --mono:'SF Mono','Menlo',monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--ui);height:100%;overflow:hidden;}
+  #app{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);position:relative;}
+
+  .pin{flex-shrink:0;background:var(--bg);}
+
+  .activebar{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:10px 12px 8px;align-items:stretch;}
+  .activebar::-webkit-scrollbar{display:none;}
+  .lensgrp{flex-shrink:0;display:flex;flex-direction:column;margin-right:14px;}
+  .lensname{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);padding:0 2px 4px;}
+  .lensgrp.lens-on .lensname{color:var(--gold);}
+  .lensnums{display:flex;gap:5px;}
+  .ab-num{font-family:var(--mono);font-size:12px;font-weight:700;padding:4px 8px;border-radius:6px;color:var(--gold);
+    background:rgba(224,176,75,0.09);}
+  .ab-all{flex-shrink:0;display:flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:0.5px;
+    padding:0 11px;margin-right:12px;border-radius:7px;color:var(--faint);background:var(--panel);}
+  .ab-all.on{color:var(--text);background:#1c212b;}
+  .ab-num.spot{background:var(--gold);color:#171204;}
+  body.lensed .lensgrp:not(.lens-on) .ab-num{opacity:0.25;}
+  body.lensed .lensgrp:not(.lens-on) .lensname{opacity:0.4;}
+
+  .testbar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 12px 9px;align-items:center;}
+  .testbar::-webkit-scrollbar{display:none;}
+  .tlabel{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);margin-right:2px;flex-shrink:0;}
+  .ochip{flex-shrink:0;padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:700;color:var(--dim);background:var(--panel);}
+  .ochip.sel{color:var(--gold);background:rgba(224,176,75,0.12);}
+
+  .cascpin{padding:0 12px 10px;border-bottom:1px solid var(--line);}
+  .casc{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;}
+  .casc::-webkit-scrollbar{display:none;}
+  .cv{flex-shrink:0;text-align:center;padding:5px 9px;border-radius:8px;background:var(--panel);}
+  .cv .n{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--dim);display:block;line-height:1.1;}
+  .cv .k{font-size:8.5px;color:var(--faint);letter-spacing:0.3px;}
+
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 60px;}
+
+  .header{padding:16px 0 4px;}
+  .pname{font-size:22px;font-weight:800;letter-spacing:-0.3px;}
+  .pmeta{font-size:11.5px;color:var(--dim);margin-top:3px;}
+  .pmeta .j{color:var(--gold);font-weight:700;}
+
+  .grp{padding:18px 0 4px;}
+  .grplabel{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--faint);margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:baseline;}
+  .grpcount{font-family:var(--mono);font-size:9.5px;color:var(--gold);font-weight:700;}
+
+  .bignums{display:flex;flex-wrap:wrap;gap:2px 18px;}
+  .bn{min-width:52px;padding:4px 2px;}
+  .bn .n{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--dim);line-height:1.15;}
+  .bn .k{font-size:8.5px;color:var(--faint);letter-spacing:0.3px;margin-top:1px;}
+
+  .crow{display:flex;align-items:baseline;padding:5px 0;}
+  .crow .w{flex:1;font-size:10.5px;color:var(--dim);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;}
+  .crow .cvals{display:flex;gap:2px;}
+  .crow .cvals span{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--dim);min-width:40px;text-align:right;padding:2px 3px;border-radius:4px;}
+  .chead{display:flex;padding:0 0 4px;}
+  .chead .w{flex:1;}
+  .chead .cvals{display:flex;gap:2px;}
+  .chead .cvals span{font-size:8px;color:var(--faint);font-weight:800;min-width:40px;text-align:right;letter-spacing:0.4px;padding:0 3px;}
+
+  .srow{display:flex;align-items:baseline;padding:5.5px 0;}
+  .srow .w{width:38px;font-size:10.5px;color:var(--dim);font-weight:700;}
+  .srow .sv{flex:1;display:flex;gap:2px;justify-content:flex-end;}
+  .srow .sv span{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--dim);min-width:52px;text-align:right;padding:2px 4px;border-radius:4px;}
+  .srow .sv span.nx{color:var(--teal);opacity:0.85;}
+  .shead{display:flex;padding:0 0 4px;}
+  .shead .w{width:38px;}
+  .shead .sv{flex:1;display:flex;gap:2px;justify-content:flex-end;}
+  .shead .sv span{font-size:8px;color:var(--faint);font-weight:800;min-width:52px;text-align:right;letter-spacing:0.4px;padding:0 4px;}
+
+  .srow.tonight .w{color:var(--gold);}
+  .srow.tonight .w::after{content:" ●";font-size:7px;vertical-align:2px;}
+  .srow.offhand{opacity:0.35;}
+
+  [data-n].hit{color:var(--gold) !important;background:rgba(224,176,75,0.13);}
+  [data-n].hit2{color:var(--hot) !important;background:rgba(255,90,60,0.13);}
+  .cv[data-n].hit .n, .cv[data-n].hit .k{color:var(--gold);}
+  .cv[data-n].hit2 .n, .cv[data-n].hit2 .k{color:var(--hot);}
+  .cv[data-n].hit{background:rgba(224,176,75,0.12);}
+  .cv[data-n].hit2{background:rgba(255,90,60,0.12);}
+  .bn[data-n].hit .n, .bn[data-n].hit .k{color:var(--gold);}
+  .bn[data-n].hit2 .n, .bn[data-n].hit2 .k{color:var(--hot);}
+  .bn[data-n].hit, .bn[data-n].hit2{background:none;}
+
+  body.lensed [data-n].hit:not(.lensmatch), body.lensed [data-n].hit2:not(.lensmatch){opacity:0.28;}
+  body.spotlight [data-n]:not(.spot-match){opacity:0.18 !important;}
+  .spot-match{opacity:1 !important;}
+
+  .why{position:absolute;left:12px;right:12px;bottom:14px;background:#161a22;border:1px solid var(--gold);
+    border-radius:14px;padding:13px 15px;z-index:20;transform:translateY(130%);transition:transform 0.22s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -6px 28px rgba(0,0,0,0.55);}
+  .why.show{transform:translateY(0);}
+  .why-num{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);}
+  .why-close{position:absolute;top:10px;right:13px;color:var(--faint);font-size:15px;padding:4px;}
+  .why-reason{font-size:11.5px;color:var(--text);margin-top:3px;line-height:1.45;}
+  .why-locs{margin-top:9px;border-top:1px solid var(--line);padding-top:8px;}
+  .why-loc{font-size:10.5px;color:var(--dim);font-family:var(--mono);padding:2px 0;}
+  .why-loc b{color:var(--text);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="pin">
+    <div class="activebar" id="activebar">
+      <span class="ab-all on" id="abAll">ALL</span>
+    </div>
+    <div class="testbar" id="testbar">
+      <span class="tlabel">TEST</span>
+      <div class="ochip" data-o="none">—</div>
+      <div class="ochip sel" data-o="3B">3B</div>
+      <div class="ochip" data-o="1B">1B</div>
+      <div class="ochip" data-o="2B">2B</div>
+      <div class="ochip" data-o="HR">HR</div>
+      <div class="ochip" data-o="BB">BB</div>
+      <div class="ochip" data-o="SO">SO</div>
+    </div>
+    <div class="cascpin">
+      <div class="casc" id="casc"></div>
+    </div>
+  </div>
+
+  <div class="scroll">
+
+    <div class="header">
+      <div class="pname">Alan Roden</div>
+      <div class="pmeta">#18 · RF · MIN vs CLE · Creighton <span class="j">JESUIT</span> · bats L</div>
+      <div class="pmeta" style="margin-top:5px;">vs <b style="color:var(--text);">Gavin Williams</b> <span class="j">RHP</span> · CLE starter</div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">BIRTH / LIFE CLOCK <span class="grpcount"></span></div>
+      <div class="bignums">
+        <div class="bn" data-n="26"><span class="n">26</span><div class="k">age</div></div>
+        <div class="bn" data-n="211"><span class="n">211</span><div class="k">since bday</div></div>
+        <div class="bn" data-n="154"><span class="n">154</span><div class="k">until bday</div></div>
+        <div class="bn" data-n="9708"><span class="n">9708</span><div class="k">day of life</div></div>
+        <div class="bn" data-n="1386"><span class="n">1386</span><div class="k">week of life</div></div>
+        <div class="bn" data-n="481"><span class="n">481</span><div class="k">career day</div></div>
+        <div class="bn" data-n="68"><span class="n">68</span><div class="k">career wk</div></div>
+        <div class="bn" data-n="15"><span class="n">15</span><div class="k">career mo</div></div>
+        <div class="bn" data-n="116"><span class="n">116</span><div class="k">since anniv</div></div>
+        <div class="bn" data-n="249"><span class="n">249</span><div class="k">until anniv</div></div>
+        <div class="bn" data-n="18"><span class="n">18</span><div class="k">jersey</div></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">NAME <span class="grpcount"></span></div>
+      <div class="chead"><span class="w"></span><div class="cvals"><span>ORD</span><span>RED</span><span>RVO</span><span>RVR</span><span>CHL</span><span>SAT</span></div></div>
+      <div class="crow"><span class="w">ALAN</span><div class="cvals"><span data-n="29">29</span><span data-n="11">11</span><span data-n="79">79</span><span data-n="25">25</span><span data-n="10">10</span><span data-n="169">169</span></div></div>
+      <div class="crow"><span class="w">RODEN</span><div class="cvals"><span data-n="61">61</span><span data-n="28">28</span><span data-n="74">74</span><span data-n="29">29</span><span data-n="24">24</span><span data-n="236">236</span></div></div>
+      <div class="crow"><span class="w">ALAN RODEN</span><div class="cvals"><span data-n="90">90</span><span data-n="39">39</span><span data-n="153">153</span><span data-n="54">54</span><span data-n="34">34</span><span data-n="405">405</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">TEAM — MIN <span class="grpcount"></span></div>
+      <div class="chead"><span class="w"></span><div class="cvals"><span>ORD</span><span>RED</span><span>RVO</span><span>RVR</span><span>CHL</span><span>SAT</span></div></div>
+      <div class="crow"><span class="w">TWINS</span><div class="cvals"><span data-n="88">88</span><span data-n="25">25</span><span data-n="47">47</span><span data-n="20">20</span><span data-n="21">21</span><span data-n="263">263</span></div></div>
+      <div class="crow"><span class="w">MINNESOTA</span><div class="cvals"><span data-n="110">110</span><span data-n="38">38</span><span data-n="133">133</span><span data-n="43">43</span><span data-n="32">32</span><span data-n="425">425</span></div></div>
+      <div class="crow"><span class="w">MINNESOTA TWINS</span><div class="cvals"><span data-n="198">198</span><span data-n="63">63</span><span data-n="180">180</span><span data-n="63">63</span><span data-n="53">53</span><span data-n="688">688</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">OPPONENT — CLE <span class="grpcount"></span></div>
+      <div class="chead"><span class="w"></span><div class="cvals"><span>ORD</span><span>RED</span><span>RVO</span><span>RVR</span><span>CHL</span><span>SAT</span></div></div>
+      <div class="crow"><span class="w">GUARDIANS</span><div class="cvals"><span data-n="90">90</span><span data-n="45">45</span><span data-n="153">153</span><span data-n="54">54</span><span data-n="33">33</span><span data-n="405">405</span></div></div>
+      <div class="crow"><span class="w">CLEVELAND</span><div class="cvals"><span data-n="84">84</span><span data-n="39">39</span><span data-n="159">159</span><span data-n="42">42</span><span data-n="28">28</span><span data-n="399">399</span></div></div>
+      <div class="crow"><span class="w">CLEVELAND GUARDIANS</span><div class="cvals"><span data-n="174">174</span><span data-n="84">84</span><span data-n="312">312</span><span data-n="96">96</span><span data-n="61">61</span><span data-n="804">804</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">OPP PITCHER — G. WILLIAMS · RHP <span class="grpcount"></span></div>
+      <div class="chead"><span class="w"></span><div class="cvals"><span>ORD</span><span>RED</span><span>RVO</span><span>RVR</span><span>CHL</span><span>SAT</span></div></div>
+      <div class="crow"><span class="w">GAVIN</span><div class="cvals"><span data-n="52">52</span><span data-n="25">25</span><span data-n="83">83</span><span data-n="29">29</span><span data-n="19">19</span><span data-n="227">227</span></div></div>
+      <div class="crow"><span class="w">WILLIAMS</span><div class="cvals"><span data-n="102">102</span><span data-n="30">30</span><span data-n="114">114</span><span data-n="42">42</span><span data-n="29">29</span><span data-n="382">382</span></div></div>
+      <div class="crow"><span class="w">GAVIN WILLIAMS</span><div class="cvals"><span data-n="154">154</span><span data-n="55">55</span><span data-n="197">197</span><span data-n="71">71</span><span data-n="48">48</span><span data-n="609">609</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">STATS — career · season · next <span class="grpcount"></span></div>
+      <div class="shead"><span class="w"></span><div class="sv"><span>CAR</span><span>SSN</span><span>+1→</span></div></div>
+      <div class="srow"><span class="w">PA</span><div class="sv"><span data-n="178">178</span><span data-n="25">25</span><span class="nx" data-n="179">179</span></div></div>
+      <div class="srow"><span class="w">AB</span><div class="sv"><span data-n="157">157</span><span data-n="21">21</span><span class="nx" data-n="158">158</span></div></div>
+      <div class="srow"><span class="w">H</span><div class="sv"><span data-n="30">30</span><span data-n="4">4</span><span class="nx" data-n="31">31</span></div></div>
+      <div class="srow"><span class="w">1B</span><div class="sv"><span data-n="21">21</span><span data-n="4">4</span><span class="nx" data-n="22">22</span></div></div>
+      <div class="srow"><span class="w">2B</span><div class="sv"><span data-n="6">6</span><span data-n="0">0</span><span class="nx" data-n="7">7</span></div></div>
+      <div class="srow"><span class="w">3B</span><div class="sv"><span data-n="1">1</span><span data-n="0">0</span><span class="nx" data-n="2">2</span></div></div>
+      <div class="srow"><span class="w">HR</span><div class="sv"><span data-n="2">2</span><span data-n="0">0</span><span class="nx" data-n="3">3</span></div></div>
+      <div class="srow"><span class="w">XBH</span><div class="sv"><span data-n="9">9</span><span data-n="0">0</span><span class="nx" data-n="10">10</span></div></div>
+      <div class="srow"><span class="w">RBI</span><div class="sv"><span data-n="13">13</span><span data-n="4">4</span><span class="nx" data-n="14">14</span></div></div>
+      <div class="srow"><span class="w">TB</span><div class="sv"><span data-n="44">44</span><span data-n="4">4</span><span class="nx" data-n="45">45</span></div></div>
+      <div class="srow"><span class="w">BB</span><div class="sv"><span data-n="11">11</span><span data-n="3">3</span><span class="nx" data-n="12">12</span></div></div>
+      <div class="srow"><span class="w">SO</span><div class="sv"><span data-n="41">41</span><span data-n="4">4</span><span class="nx" data-n="42">42</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div class="grplabel">SPLITS — vs G. WILLIAMS (RHP) <span class="grpcount"></span></div>
+      <div class="shead"><span class="w"></span><div class="sv"><span>G</span><span>PA</span><span>AB</span><span>R</span><span>H</span></div></div>
+      <div class="srow offhand"><span class="w">LHP</span><div class="sv"><span data-n="2">2</span><span data-n="3">3</span><span data-n="3">3</span><span>–</span><span data-n="1">1</span></div></div>
+      <div class="srow tonight"><span class="w">RHP</span><div class="sv"><span data-n="8">8</span><span data-n="22">22</span><span data-n="18">18</span><span>–</span><span data-n="3">3</span></div></div>
+      <div class="srow"><span class="w">Home</span><div class="sv"><span data-n="5">5</span><span data-n="16">16</span><span data-n="14">14</span><span data-n="0">0</span><span data-n="3">3</span></div></div>
+      <div class="srow"><span class="w">Away</span><div class="sv"><span data-n="4">4</span><span data-n="9">9</span><span data-n="7">7</span><span data-n="1">1</span><span data-n="1">1</span></div></div>
+    </div>
+
+  </div>
+
+  <div class="why" id="why">
+    <div class="why-close" id="whyClose">✕</div>
+    <div class="why-num" id="whyNum">—</div>
+    <div class="why-reason" id="whyReason"></div>
+    <div class="why-locs" id="whyLocs"></div>
+  </div>
+
+</div>
+
+<script>
+// day field: active numbers grouped by source category (real build: from theme pipeline)
+const dayField = {
+  threads: {label:"THREADS", nums:{47:"thread · Tuesday Red", 10:"PRIMARY rung (XBH sits 9)", 63:"thread"}},
+  date:    {label:"DATE",    nums:{3:"date reduces to 3", 22:"date numerology", 179:"date bridge"}},
+  team:    {label:"TEAM",    nums:{25:"TWINS Red", 84:"CLEVELAND Ord / Jesuit Order"}},
+  bio:     {label:"BIO",     nums:{26:"year 26 / age", 154:"until-bday echo"}},
+  tfam:    {label:"T-FAM",   nums:{43:"BLOCK", 57:"STEAL", 201:"Jesuit Order"}},
+};
+
+const activeNumbers = {};
+Object.entries(dayField).forEach(([cat, g])=>{
+  Object.entries(g.nums).forEach(([n, why])=>{ activeNumbers[n] = {why, cat}; });
+});
+
+let lens = null;
+let spotlights = new Set();
+
+const bar = document.getElementById('activebar');
+const abAll = document.getElementById('abAll');
+Object.entries(dayField).forEach(([cat, g])=>{
+  const grp = document.createElement('div');
+  grp.className = 'lensgrp';
+  grp.dataset.cat = cat;
+  const nm = document.createElement('div');
+  nm.className = 'lensname';
+  nm.textContent = g.label;
+  nm.onclick = ()=> toggleLens(cat);
+  grp.appendChild(nm);
+  const nums = document.createElement('div');
+  nums.className = 'lensnums';
+  Object.keys(g.nums).forEach(n=>{
+    const el = document.createElement('span');
+    el.className = 'ab-num';
+    el.textContent = n;
+    el.dataset.spot = n;
+    el.onclick = ()=> toggleSpot(n);
+    nums.appendChild(el);
+  });
+  grp.appendChild(nums);
+  bar.appendChild(grp);
+});
+
+abAll.onclick = ()=>{
+  lens = null;
+  spotlights.clear();
+  document.getElementById('why').classList.remove('show');
+  refresh();
+};
+
+function toggleLens(cat){
+  spotlights.clear();
+  document.getElementById('why').classList.remove('show');
+  lens = (lens === cat) ? null : cat;
+  refresh();
+}
+
+function toggleSpot(n){
+  if(spotlights.has(n)){
+    spotlights.delete(n);
+    document.getElementById('why').classList.remove('show');
+  } else {
+    spotlights.add(n);
+    openWhy(n);
+  }
+  refresh();
+}
+
+const cascadeData = {
+  "3B": [["H",31],["3B",2],["XBH",10],["TB",47],["AB",158],["PA",179]],
+  "1B": [["H",31],["1B",22],["TB",45],["AB",158],["PA",179]],
+  "2B": [["H",31],["2B",7],["XBH",10],["TB",46],["AB",158],["PA",179]],
+  "HR": [["H",31],["HR",3],["XBH",10],["RBI",14],["TB",48],["AB",158],["PA",179]],
+  "BB": [["BB",12],["PA",179]],
+  "SO": [["SO",42],["AB",158],["PA",179]],
+};
+let activeOutcome = "3B";
+function renderCascade(){
+  const c = document.getElementById('casc');
+  c.innerHTML = '';
+  if(activeOutcome === 'none' || !cascadeData[activeOutcome]){
+    c.innerHTML = '<span style="font-size:10px;color:var(--faint);padding:4px 0;">no outcome selected</span>';
+    return;
+  }
+  cascadeData[activeOutcome].forEach(([stat, after])=>{
+    const el = document.createElement('div');
+    el.className = 'cv';
+    el.dataset.n = after;
+    el.innerHTML = '<span class="n">'+after+'</span><span class="k">'+stat+'</span>';
+    c.appendChild(el);
+  });
+}
+document.getElementById('testbar').addEventListener('click',(e)=>{
+  const chip = e.target.closest('.ochip');
+  if(!chip) return;
+  document.querySelectorAll('.ochip').forEach(x=>x.classList.remove('sel'));
+  chip.classList.add('sel');
+  activeOutcome = chip.dataset.o;
+  renderCascade();
+  refresh();
+});
+
+function refresh(){
+  const counts = {};
+  document.querySelectorAll('[data-n]').forEach(el=>{
+    if(el.classList.contains('ab-num')) return;
+    if(activeNumbers[el.dataset.n]) counts[el.dataset.n] = (counts[el.dataset.n]||0)+1;
+  });
+  document.querySelectorAll('[data-n]').forEach(el=>{
+    if(el.classList.contains('ab-num')) return;
+    const n = el.dataset.n;
+    el.classList.remove('hit','hit2','lensmatch','spot-match');
+    if(activeNumbers[n]) el.classList.add(counts[n] >= 2 ? 'hit2' : 'hit');
+  });
+
+  document.body.classList.toggle('lensed', !!lens);
+  document.querySelectorAll('.lensgrp').forEach(g=> g.classList.toggle('lens-on', g.dataset.cat === lens));
+  if(lens){
+    document.querySelectorAll('[data-n]').forEach(el=>{
+      if(el.classList.contains('ab-num')) return;
+      const a = activeNumbers[el.dataset.n];
+      if(a && a.cat === lens) el.classList.add('lensmatch');
+    });
+  }
+
+  const spotOn = spotlights.size > 0;
+  document.body.classList.toggle('spotlight', spotOn);
+  if(spotOn){
+    document.querySelectorAll('[data-n]').forEach(el=>{
+      if(el.classList.contains('ab-num')) return;
+      if(spotlights.has(el.dataset.n)) el.classList.add('spot-match');
+    });
+  }
+  document.querySelectorAll('.ab-num').forEach(el=>{
+    el.classList.toggle('spot', spotlights.has(el.dataset.spot));
+  });
+
+  abAll.classList.toggle('on', !lens && !spotOn);
+  document.querySelectorAll('.grp').forEach(grp=>{
+    const label = grp.querySelector('.grpcount');
+    if(!label) return;
+    let c = 0;
+    grp.querySelectorAll('[data-n]').forEach(el=>{ if(activeNumbers[el.dataset.n]) c++; });
+    label.textContent = c ? c + ' hit' + (c>1?'s':'') : '';
+  });
+}
+
+function describeLocation(el){
+  const grp = el.closest('.grp');
+  let secName = grp ? grp.querySelector('.grplabel').firstChild.textContent.trim() : 'CASCADE';
+  let itemLabel = '';
+  if(el.classList.contains('cv')){ itemLabel = el.querySelector('.k').textContent + ' → projected'; secName = 'CASCADE'; }
+  const crow = el.closest('.crow');
+  if(crow){
+    const idx = [...crow.querySelectorAll('.cvals span')].indexOf(el);
+    const heads = ['ORD','RED','RVO','RVR','CHL','SAT'];
+    itemLabel = crow.querySelector('.w').textContent + ' · ' + (heads[idx]||'');
+  }
+  const srow = el.closest('.srow');
+  if(srow){ itemLabel = srow.querySelector('.w').textContent; }
+  const bn = el.closest('.bn');
+  if(bn){ itemLabel = bn.querySelector('.k').textContent; }
+  return {secName, itemLabel};
+}
+
+function openWhy(n){
+  const why = document.getElementById('why');
+  document.getElementById('whyNum').textContent = n;
+  const a = activeNumbers[n];
+  document.getElementById('whyReason').textContent = a
+    ? 'Active (' + dayField[a.cat].label + '): ' + a.why
+    : 'Not in today\u2019s active set \u2014 cross-reference only.';
+  const locs = [];
+  document.querySelectorAll('[data-n="'+n+'"]').forEach(el=>{
+    if(el.classList.contains('ab-num')) return;
+    const d = describeLocation(el);
+    locs.push('<div class="why-loc"><b>'+d.secName+'</b>'+(d.itemLabel ? ' — '+d.itemLabel : '')+'</div>');
+  });
+  document.getElementById('whyLocs').innerHTML =
+    '<div class="why-loc" style="color:var(--faint);">'+locs.length+' place'+(locs.length>1?'s':'')+' on this sheet</div>' + locs.join('');
+  why.classList.add('show');
+}
+document.getElementById('whyClose').onclick = ()=> document.getElementById('why').classList.remove('show');
+
+document.getElementById('app').addEventListener('click',(e)=>{
+  const el = e.target.closest('[data-n]');
+  if(!el) return;
+  if(e.target.closest('.ab-num') || e.target.closest('.ochip') || e.target.closest('.lensname')) return;
+  toggleSpot(el.dataset.n);
+});
+
+renderCascade();
+refresh();
+</script>
+</body>
+</html>
