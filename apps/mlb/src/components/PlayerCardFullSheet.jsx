@@ -36,6 +36,7 @@ const STAT_ROWS=['PA','AB','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO'];
 
 /* each outcome increments its full stat family (spec §4); base = career line */
 const CASCADE={
+  'H':[['H',1],['AB',1],['PA',1]],   // any hit, type-agnostic: no 1B/2B/3B/HR/XBH/RBI/TB advance
   '1B':[['H',1],['1B',1],['TB',1],['AB',1],['PA',1]],
   '2B':[['H',1],['2B',1],['XBH',1],['TB',2],['AB',1],['PA',1]],
   '3B':[['H',1],['3B',1],['XBH',1],['TB',3],['AB',1],['PA',1]],
@@ -43,7 +44,7 @@ const CASCADE={
   'BB':[['BB',1],['PA',1]],
   'SO':[['SO',1],['AB',1],['PA',1]],
 };
-const OUTCOMES=['none','1B','2B','3B','HR','BB','SO'];
+const OUTCOMES=['none','H','1B','2B','3B','HR','BB','SO'];
 const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],['runs','R'],['hits','H']];
 const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
 const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
