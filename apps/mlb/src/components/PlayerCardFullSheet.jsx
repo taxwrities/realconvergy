@@ -50,11 +50,26 @@ export default function PlayerCardFullSheet({row,onClose}){
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
 
+  /* dedicated-page navigation (Tony 2026-07-22): push one history entry on
+     entry so the mobile / browser back button (and back-swipe) returns to the
+     Board via popstate. Every dismiss path routes through history.back() so the
+     synthetic entry is always popped — no orphan entries left behind. Also lock
+     body scroll while the page owns the viewport. */
   useEffect(()=>{
-    const esc=e=>{if(e.key==='Escape')onClose()};
+    window.history.pushState({pcfs:1},'');
+    const onPop=()=>onClose();
+    const esc=e=>{if(e.key==='Escape')window.history.back()};
+    window.addEventListener('popstate',onPop);
     window.addEventListener('keydown',esc);
-    return()=>window.removeEventListener('keydown',esc);
-  },[onClose]);
+    const prevOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    return()=>{
+      window.removeEventListener('popstate',onPop);
+      window.removeEventListener('keydown',esc);
+      document.body.style.overflow=prevOverflow;
+    };
+  },[]); // eslint-disable-line react-hooks/exhaustive-deps
+  const dismiss=()=>window.history.back();
 
   const ev=row.ev,p=ev.p;
   const cols=useMemo(()=>CIPHER_COL.filter(([k])=>ciphers[k]),[ciphers]);
@@ -255,12 +270,17 @@ export default function PlayerCardFullSheet({row,onClose}){
 
   return(
     <>
-      <div className="pcfs-scrim" onClick={onClose}/>
+      <div className="pcfs-scrim" onClick={dismiss}/>
       <div className={rootCls} onClick={()=>{if(spot!=null)setSpot(null);}}>
-        <button className="pcfs-dismiss" onClick={onClose} aria-label="Close">✕</button>
 
         {/* ---------- pinned stack ---------- */}
         <div className="pin" onClick={e=>e.stopPropagation()}>
+          <div className="pcfs-topbar">
+            <button className="pcfs-back" onClick={dismiss} aria-label="Back to Board">
+              <span className="chev">‹</span>Board
+            </button>
+            <span className="pcfs-topname">{p.fullName}</span>
+          </div>
           <div className="activebar">
             <button className={`ab-all${!lens&&spot==null?' on':''}`} onClick={goAll}>ALL</button>
             {barGroups.map(g=>(

@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState,useEffect} from 'react';
 import {useApp} from './state/store.jsx';
 import BoardTab from './tabs/Board.jsx';
 import PatternsTab from './tabs/Patterns.jsx';
@@ -7,6 +7,7 @@ import VocabTab from './tabs/Vocab.jsx';
 import SearchSheet from './components/SearchSheet.jsx';
 import QuickAddSheet from './components/QuickAddSheet.jsx';
 import SettingsSheet from './components/SettingsSheet.jsx';
+import PlayerCardFullSheet from './components/PlayerCardFullSheet.jsx';
 
 /* stroke icons for the tab dock — inline so they tint via currentColor */
 const svg=(paths)=>(
@@ -21,14 +22,25 @@ const TABS=[
 ];
 
 export default function App(){
-  const {boot,date,error}=useApp();
+  const {boot,date,error,board,focusedPlayerId,setFocusedPlayerId}=useApp();
   /* tab state lives here so switches preserve each tab's internal state (§3) —
      all four stay mounted; CSS hides the inactive ones */
   const [tab,setTab]=useState('board');
   const [sheet,setSheet]=useState(null); // 'search' | 'quickadd' | 'settings'
 
+  /* full-sheet player page (Tony 2026-07-22): a dedicated destination that owns
+     the viewport. The shell below stays MOUNTED (display:none) so every tab keeps
+     its state — the page just renders on top and the shell isn't visible. */
+  const focusedRow=focusedPlayerId!=null
+    ?(board.away?.find(r=>r.id===focusedPlayerId)||board.home?.find(r=>r.id===focusedPlayerId)||null)
+    :null;
+  /* stale focus (slate/date changed out from under us) → fall back to the Board */
+  useEffect(()=>{if(focusedPlayerId!=null&&!focusedRow)setFocusedPlayerId(null)},
+    [focusedPlayerId,focusedRow,setFocusedPlayerId]);
+
   return(
-    <div className="shell">
+    <>
+    <div className="shell" style={focusedRow?{display:'none'}:undefined}>
       <header className="shell-header">
         <div>
           <div className="shell-title">CON<em>VERGENCE</em></div>
@@ -67,5 +79,7 @@ export default function App(){
       {sheet==='quickadd'&&<QuickAddSheet onClose={()=>setSheet(null)}/>}
       {sheet==='settings'&&<SettingsSheet onClose={()=>setSheet(null)}/>}
     </div>
+    {focusedRow&&<PlayerCardFullSheet row={focusedRow} onClose={()=>setFocusedPlayerId(null)}/>}
+    </>
   );
 }

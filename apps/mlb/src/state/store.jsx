@@ -111,6 +111,12 @@ export function AppStateProvider({children}){
   const [gamePk,setGamePk]=useState(()=>cachedSlate?.slate?.games?.[0]?.pk??null);
   const [side,setSide]=useState('away');
   const [batterId,setBatterId]=useState(null);
+  /* focusedPlayerId — app-level navigation state for the full-sheet player
+     page (Tony 2026-07-22: it's a dedicated destination, not a board overlay).
+     null = on the Board; an id = that player's full sheet owns the viewport.
+     App reads this to hide the shell + mount the page; history is wired in the
+     page component so the mobile / browser back button returns to the Board. */
+  const [focusedPlayerId,setFocusedPlayerId]=useState(null);
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
   const [patternFilter,setPatternFilter]=useState(null); // pattern id filtering batter list
   const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
@@ -159,7 +165,7 @@ export function AppStateProvider({children}){
     setSeasonInfo(c?.seasonInfo||null);
     setSlateSavedAt(c?.savedAt||null);
     setGamePk(c?.slate?.games?.[0]?.pk??null);
-    setBatterId(null);setContextFilter(null);setPatternFilter(null);setError('');
+    setBatterId(null);setFocusedPlayerId(null);setContextFilter(null);setPatternFilter(null);setError('');
   },[date]);
   /* auto-load whenever the current date has no slate (mount + date switch);
      error gates retries, loading gates re-entry */
@@ -891,7 +897,7 @@ export function AppStateProvider({children}){
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
-    batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
+    batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
