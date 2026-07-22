@@ -22,7 +22,7 @@ const TABS=[
 ];
 
 export default function App(){
-  const {boot,date,error,board,focusedPlayerId,setFocusedPlayerId}=useApp();
+  const {boot,date,error,board,focusedPlayerId,setFocusedPlayerId,searchOpen,setSearchOpen}=useApp();
   /* tab state lives here so switches preserve each tab's internal state (§3) —
      all four stay mounted; CSS hides the inactive ones */
   const [tab,setTab]=useState('board');
@@ -38,16 +38,21 @@ export default function App(){
   useEffect(()=>{if(focusedPlayerId!=null&&!focusedRow)setFocusedPlayerId(null)},
     [focusedPlayerId,focusedRow,setFocusedPlayerId]);
 
+  /* the shell stays MOUNTED but hidden whenever a full-viewport page (the
+     Search page or a focused player's full sheet) owns the screen — so every
+     tab keeps its state and the page just renders on top. */
+  const shellHidden=focusedRow||searchOpen;
+
   return(
     <>
-    <div className="shell" style={focusedRow?{display:'none'}:undefined}>
+    <div className="shell" style={shellHidden?{display:'none'}:undefined}>
       <header className="shell-header">
         <div>
           <div className="shell-title">CON<em>VERGENCE</em></div>
           <div className="shell-sub">{date}<span className="lg-pill">MLB</span></div>
         </div>
         <div className="shell-actions">
-          <button className="icon-btn" aria-label="Search" onClick={()=>setSheet('search')}>⌕</button>
+          <button className="icon-btn" aria-label="Search" onClick={()=>setSearchOpen(true)}>⌕</button>
           <button className="icon-btn" aria-label="Quick add" onClick={()=>setSheet('quickadd')}>＋</button>
           <button className="icon-btn" aria-label="Settings" onClick={()=>setSheet('settings')}>⚙</button>
         </div>
@@ -75,10 +80,10 @@ export default function App(){
         ))}
       </nav>
 
-      {sheet==='search'&&<SearchSheet onClose={()=>setSheet(null)}/>}
       {sheet==='quickadd'&&<QuickAddSheet onClose={()=>setSheet(null)}/>}
       {sheet==='settings'&&<SettingsSheet onClose={()=>setSheet(null)}/>}
     </div>
+    {searchOpen&&<SearchSheet onClose={()=>setSearchOpen(false)}/>}
     {focusedRow&&<PlayerCardFullSheet row={focusedRow} onClose={()=>setFocusedPlayerId(null)}/>}
     </>
   );

@@ -1,20 +1,51 @@
-import {useState,useMemo} from 'react';
-import Sheet from './Sheet.jsx';
+import {useState,useMemo,useEffect} from 'react';
 import PhraseFinder from './PhraseFinder.jsx';
 import {useApp,INSTITUTIONAL,DAY_CLOCKS} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
 
-/* Search sheet (§8): the Day-of-Life / Career-Day finder (the primary ±N
-   slate-wide query) sits on top; the universal number/word search below it. */
+/* Search page (§8, Tony 2026-07-22): promoted from a bottom sheet to a
+   dedicated full-viewport destination — same navigation pattern as the
+   full-sheet player card. It owns the screen (the shell stays mounted but
+   hidden); a synthetic history entry wires the mobile / browser back button
+   and back-swipe to return to the Board, and every dismiss routes through
+   history.back() so no orphan entries are left behind. Body scroll is locked
+   while the page is open. All finder functionality is unchanged — Day-of-Life /
+   Career-Day finder, phrase-variation finder, then universal search. */
 export default function SearchSheet({onClose}){
+  useEffect(()=>{
+    window.history.pushState({search:1},'');
+    const onPop=()=>onClose();
+    const esc=e=>{if(e.key==='Escape')window.history.back()};
+    window.addEventListener('popstate',onPop);
+    window.addEventListener('keydown',esc);
+    const prevOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    return()=>{
+      window.removeEventListener('popstate',onPop);
+      window.removeEventListener('keydown',esc);
+      document.body.style.overflow=prevOverflow;
+    };
+  },[]); // eslint-disable-line react-hooks/exhaustive-deps
+  const dismiss=()=>window.history.back();
   return(
-    <Sheet title="Search & Finder" onClose={onClose}>
-      <DayFinder/>
-      <PhraseFinder/>
-      <div className="finder-sep">universal search</div>
-      <UniversalSearch/>
-    </Sheet>
+    <>
+      <div className="search-scrim" onClick={dismiss}/>
+      <div className="search-page">
+        <div className="search-topbar">
+          <button className="search-back" onClick={dismiss} aria-label="Back to Board">
+            <span className="chev">‹</span>Board
+          </button>
+          <span className="search-topname">Search &amp; Finder</span>
+        </div>
+        <div className="search-scroll">
+          <DayFinder/>
+          <PhraseFinder/>
+          <div className="finder-sep">universal search</div>
+          <UniversalSearch/>
+        </div>
+      </div>
+    </>
   );
 }
 

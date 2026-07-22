@@ -21,21 +21,24 @@ const TABS=[
 ];
 
 export default function App(){
-  const {boot,date,error}=useApp();
+  const {boot,date,error,searchOpen,setSearchOpen}=useApp();
   /* tab state lives here so switches preserve each tab's internal state (§3) —
      all four stay mounted; CSS hides the inactive ones */
   const [tab,setTab]=useState('board');
-  const [sheet,setSheet]=useState(null); // 'search' | 'quickadd' | 'settings'
+  const [sheet,setSheet]=useState(null); // 'quickadd' | 'settings'
 
   return(
-    <div className="shell">
+    <>
+    {/* the shell stays MOUNTED but hidden while the Search page owns the
+       viewport, so every tab keeps its state and the page renders on top. */}
+    <div className="shell" style={searchOpen?{display:'none'}:undefined}>
       <header className="shell-header">
         <div>
           <div className="shell-title">CON<em>VERGENCE</em></div>
           <div className="shell-sub">{date}<span className="lg-pill">WNBA</span></div>
         </div>
         <div className="shell-actions">
-          <button className="icon-btn" aria-label="Search" onClick={()=>setSheet('search')}>⌕</button>
+          <button className="icon-btn" aria-label="Search" onClick={()=>setSearchOpen(true)}>⌕</button>
           <button className="icon-btn" aria-label="Quick add" onClick={()=>setSheet('quickadd')}>＋</button>
           <button className="icon-btn" aria-label="Settings" onClick={()=>setSheet('settings')}>⚙</button>
         </div>
@@ -63,9 +66,10 @@ export default function App(){
         ))}
       </nav>
 
-      {sheet==='search'&&<SearchSheet onClose={()=>setSheet(null)}/>}
       {sheet==='quickadd'&&<QuickAddSheet onClose={()=>setSheet(null)}/>}
       {sheet==='settings'&&<SettingsSheet onClose={()=>setSheet(null)}/>}
     </div>
+    {searchOpen&&<SearchSheet onClose={()=>setSearchOpen(false)}/>}
+    </>
   );
 }

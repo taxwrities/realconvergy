@@ -80,6 +80,11 @@ export function AppStateProvider({children}){
   /* away-encodes-home (§2): first bucket typically HOME side — default there */
   const [side,setSide]=useState('home');
   const [batterId,setBatterId]=useState(null);
+  /* searchOpen — app-level nav state for the Search page (Tony 2026-07-22: a
+     dedicated full-viewport destination, not a bottom sheet). false = on the
+     Board; true = the Search page owns the screen. Reset on date switch. */
+  const [searchOpen,setSearchOpen]=useState(false);
+  useEffect(()=>{setSearchOpen(false)},[date]);
   const [contextFilter,setContextFilter]=useState(null);
   const [patternFilter,setPatternFilter]=useState(null); // pattern id → dim non-hitters
   const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
@@ -702,7 +707,7 @@ export function AppStateProvider({children}){
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
-    batterId,setBatterId,contextFilter,setContextFilter,patternFilter,setPatternFilter,
+    batterId,setBatterId,searchOpen,setSearchOpen,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,addThread,addLabel,search,findPhrases,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
