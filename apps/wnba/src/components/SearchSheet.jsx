@@ -57,7 +57,7 @@ export default function SearchSheet({onClose}){
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
-            <div key={'r'+i} className="occ v-green">
+            <div key={'r'+i} className="occ v-green cvg-glow">
               {h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}
             </div>
           ))}
@@ -89,7 +89,7 @@ export default function SearchSheet({onClose}){
             ))}
           </div>
           {res.occ.map((o,i)=>(
-            <div key={i} className="occ v-green">
+            <div key={i} className="occ v-green cvg-glow">
               {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)})
             </div>
           ))}

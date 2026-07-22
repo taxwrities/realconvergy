@@ -166,7 +166,7 @@ function UniversalSearch(){
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
-            <div key={'r'+i} className="occ v-green" style={{display:'flex',alignItems:'center',gap:6}}>
+            <div key={'r'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6}}>
               <span>
                 {h.kind==='day'
                   ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
@@ -208,7 +208,7 @@ function UniversalSearch(){
             ))}
           </div>
           {res.occ.map((o,i)=>(
-            <div key={i} className="occ v-green">
+            <div key={i} className="occ v-green cvg-glow">
               {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)})
             </div>
           ))}

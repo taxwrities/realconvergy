@@ -593,7 +593,35 @@ body {
   text-align: center; color: #767d8f; font-size: 10px; letter-spacing: 1px;
   text-transform: uppercase; margin: 16px 0 8px; padding-top: 12px; border-top: 1px solid #1a202b;
 }
-.finder-row { padding: 6px 0; border-top: 1px solid #1a202b; }
+/* convergence glow (Tony 2026-07-22): every search-result row that represents a
+   live match gets a soft luminous gold halo — no hard border, just a low-opacity
+   box-shadow + faint tint that says "convergence" at a glance. Baseline for a
+   plain hit; .glow-strong for rows whose RUNGS/OPP cross-refs cascade onto the
+   same target as the phrase hit. Shared by the finders (.finder-row) and the
+   universal-search roster rows (.cvg-glow). A slow, calm 2.6s pulse breathes the
+   halo; disabled under prefers-reduced-motion. */
+.finder-row, .cvg-glow {
+  border-radius: 8px; padding: 6px 8px; margin: 6px 0;
+  background: color-mix(in srgb, var(--cvg-gold) 5%, transparent);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--cvg-gold) 20%, transparent);
+  animation: cvgGlow 2.6s ease-in-out infinite;
+}
+.occ.cvg-glow { border-top: none; font-size: 12.5px; }
+.finder-row.glow-strong, .cvg-glow.strong {
+  background: color-mix(in srgb, var(--cvg-gold) 9%, transparent);
+  animation-name: cvgGlowStrong;
+}
+@keyframes cvgGlow {
+  0%, 100% { box-shadow: 0 0 9px 1px color-mix(in srgb, var(--cvg-gold) 13%, transparent); }
+  50%      { box-shadow: 0 0 14px 3px color-mix(in srgb, var(--cvg-gold) 25%, transparent); }
+}
+@keyframes cvgGlowStrong {
+  0%, 100% { box-shadow: 0 0 14px 2px color-mix(in srgb, var(--cvg-gold) 24%, transparent); }
+  50%      { box-shadow: 0 0 22px 5px color-mix(in srgb, var(--cvg-gold) 40%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finder-row, .cvg-glow { animation: none; }
+}
 .finder-row .fr-top { font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
 /* ↗ open-full-sheet affordance on any search result row that names a player
    (Tony 2026-07-22) — pushed to the row's trailing edge, taps navigate to that

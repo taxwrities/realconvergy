@@ -166,8 +166,12 @@ export default function PhraseFinder(){
 function ResultRow({g,tol}){
   const [exp,setExp]=useState(false);
   const shown=g.rows.slice(0,PHRASE_CAP), extra=g.rows.length-shown.length;
+  /* cascade = a RUNGS/OPP cross-ref lands on the same target as a phrase hit →
+     stronger glow. Computed once here and reused by the expanded PlayerXref. */
+  const xref=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target)),[g]);
+  const strong=xref.rungs.length>0||xref.opp.length>0;
   return(
-    <div className="finder-row">
+    <div className={`finder-row${strong?' glow-strong':''}`}>
       <div className="fr-top">
         <b>{g.name}</b>
         <span className="muted"> {g.team}</span>
@@ -194,7 +198,7 @@ function ResultRow({g,tol}){
             {r.onInst&&<span className="badge green">INST</span>}
           </div>
         ))}
-        <PlayerXref row={g.rows[0]} targets={g.rows.map(r=>r.target)}/>
+        <PlayerXref xref={xref}/>
       </>)}
     </div>
   );
@@ -205,7 +209,7 @@ function ResultRow({g,tol}){
    tracked career/season stat whose next milestone is the target), OPP
    (opponent-team gematria). Raw equality = strong; a shared digit-root = soft.
    Deduped per group. Same crossRefsForNumber() helper the full-sheet WHY panel
-   uses; drives both the collapsed summary counts and the expanded PlayerXref. */
+   uses; drives the row's glow strength and the expanded PlayerXref. */
 function collectXref(row,targets){
   const tgts=[...new Set(targets)].filter(n=>n>0);
   const player=[],rungs=[],opp=[];
@@ -230,10 +234,11 @@ function collectXref(row,targets){
   return{player,rungs,opp};
 }
 
-/* expanded cross-ref block — one line per group, comma-separated. Renders
-   nothing when every group is empty so the expanded row stays tight. */
-function PlayerXref({row,targets}){
-  const {player,rungs,opp}=collectXref(row,targets);
+/* expanded cross-ref block — one line per group, comma-separated. Takes the
+   pre-collected xref from ResultRow (also drives the glow). Renders nothing when
+   every group is empty so the expanded row stays tight. */
+function PlayerXref({xref}){
+  const {player,rungs,opp}=xref;
   if(!player.length&&!rungs.length&&!opp.length)return null;
   return(
     <div className="fr-xref mono">
