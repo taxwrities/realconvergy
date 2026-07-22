@@ -1,34 +1,37 @@
 /* ================================================================
-   player-card.css — full-sheet player card (Tony v2, locked design).
-   Ported 1:1 from player-card-fullsheet-v2.html: same color tokens,
-   monospace / UI font stacks, and pixel spacing. Everything is scoped
-   under .pcfs so the reference tokens (--bg/--panel/--gold/…) never
-   collide with the app's own cvg.css palette.
+   player-card.css — full-sheet player card (Tony v2, LAYOUT locked).
+   Re-skinned onto the shared Convergence design system (cvg.css):
+   the mockup's ad-hoc tokens were dropped so the page speaks ONE visual
+   language with Board / Patterns / Forecast / Vocab. The local aliases
+   below now just re-point at the app's shared theme tokens, so every
+   downstream var(--gold/--panel/…) rule inherits the app palette; the
+   sans font inherits the app base (Fustat) and mono is the app's
+   JetBrains Mono. Only the grid/spacing structure stays from the mockup.
 ================================================================ */
 .pcfs{
-  --bg:#0a0c10; --panel:#11141a; --line:#1d222c;
-  --text:#e8ebf1; --dim:#79818f; --faint:#4a505c;
-  --gold:#e0b04b; --hot:#ff5a3c; --teal:#2dd4bf;
-  --ui:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --mono:'SF Mono','JetBrains Mono','Menlo',Consolas,monospace;
+  --bg:var(--sf-0); --panel:var(--sf-1); --line:var(--sf-line);
+  --text:var(--color-text-primary); --dim:var(--color-text-secondary); --faint:#767d8f;
+  --gold:var(--cvg-gold); --hot:var(--cvg-red); --teal:var(--cvg-cyan);
+  --mono:var(--cvg-mono);
 }
 
 /* full-screen overlay host */
 .pcfs-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:60;}
 .pcfs{position:fixed;inset:0;z-index:61;max-width:480px;margin:0 auto;
   height:100vh;height:100dvh;display:flex;flex-direction:column;
-  background:var(--bg);color:var(--text);font-family:var(--ui);
+  background:var(--bg);color:var(--text);font-family:inherit;
   -webkit-tap-highlight-color:transparent;}
 .pcfs *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 /* dedicated-page top bar: back-to-Board affordance (top-left) + player name.
    The mockup was a standalone page; this is the navigation chrome around it. */
 .pcfs-topbar{display:flex;align-items:center;gap:10px;padding:8px 12px 2px;}
-.pcfs-back{display:inline-flex;align-items:center;gap:2px;border:none;border-radius:8px;
-  background:var(--panel);color:var(--text);font-family:var(--ui);font-size:12px;font-weight:700;
-  padding:6px 12px 6px 8px;cursor:pointer;flex-shrink:0;}
+.pcfs-back{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--sf-line);border-radius:12px;
+  background:var(--card-grad);color:var(--text);font-family:inherit;font-size:12px;font-weight:700;
+  padding:6px 12px 6px 8px;cursor:pointer;flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);transition:border-color .15s,color .15s,transform .1s;}
 .pcfs-back .chev{font-size:20px;line-height:1;margin-top:-1px;}
-.pcfs-back:active{background:#1c212b;}
+.pcfs-back:active{border-color:var(--cvg-acc);color:var(--cvg-acc);transform:scale(.96);}
 .pcfs-topname{font-size:11px;color:var(--faint);font-weight:700;letter-spacing:0.4px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
@@ -38,29 +41,44 @@
 .pcfs .activebar::-webkit-scrollbar{display:none;}
 .pcfs .lensgrp{flex-shrink:0;display:flex;flex-direction:column;margin-right:14px;cursor:pointer;}
 .pcfs .lensname{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);padding:0 2px 4px;cursor:pointer;
-  border:none;background:none;text-align:left;font-family:var(--ui);}
+  border:none;background:none;text-align:left;font-family:inherit;}
 .pcfs .lensgrp.lens-on .lensname{color:var(--gold);}
 .pcfs .lensnums{display:flex;gap:5px;}
-.pcfs .ab-num{font-family:var(--mono);font-size:12px;font-weight:700;padding:4px 8px;border-radius:6px;color:var(--gold);
-  background:rgba(224,176,75,0.09);border:none;cursor:pointer;}
+.pcfs .ab-num{font-family:var(--mono);font-size:12px;font-weight:700;padding:4px 8px;border-radius:999px;color:var(--gold);
+  background:color-mix(in srgb, var(--gold) 9%, transparent);
+  border:1px solid color-mix(in srgb, var(--gold) 22%, transparent);cursor:pointer;
+  transition:background .15s,color .15s,box-shadow .15s,transform .1s;}
+.pcfs .ab-num:active{transform:scale(.94);}
 .pcfs .ab-all{flex-shrink:0;display:flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:0.5px;
-  padding:0 11px;margin-right:12px;border-radius:7px;color:var(--faint);background:var(--panel);border:none;cursor:pointer;}
-.pcfs .ab-all.on{color:var(--text);background:#1c212b;}
-.pcfs .ab-num.spot{background:var(--gold);color:#171204;}
+  padding:0 12px;margin-right:12px;border-radius:999px;color:var(--faint);background:var(--card-grad);
+  border:1px solid var(--sf-line);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+  transition:background .15s,color .15s,border-color .15s,transform .1s;}
+.pcfs .ab-all:active{transform:scale(.94);}
+.pcfs .ab-all.on{color:var(--text);background:var(--sf-2);border-color:var(--sf-line-hi);}
+.pcfs .ab-num.spot{background:var(--gold);border-color:var(--gold);color:var(--sf-0);
+  box-shadow:0 3px 12px color-mix(in srgb, var(--gold) 32%, transparent);}
 .pcfs.lensed .lensgrp:not(.lens-on) .ab-num{opacity:0.25;}
 .pcfs.lensed .lensgrp:not(.lens-on) .lensname{opacity:0.4;}
 
 .pcfs .testbar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 12px 9px;align-items:center;}
 .pcfs .testbar::-webkit-scrollbar{display:none;}
 .pcfs .tlabel{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);margin-right:2px;flex-shrink:0;}
-.pcfs .ochip{flex-shrink:0;padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:700;color:var(--dim);
-  background:var(--panel);border:none;cursor:pointer;}
-.pcfs .ochip.sel{color:var(--gold);background:rgba(224,176,75,0.12);}
+.pcfs .ochip{flex-shrink:0;padding:5px 12px;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--dim);
+  background:var(--card-grad);border:1px solid var(--sf-line);cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+  transition:background .15s,color .15s,box-shadow .15s,transform .1s;}
+.pcfs .ochip:active{transform:scale(.94);}
+.pcfs .ochip.sel{color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, transparent);
+  border-color:color-mix(in srgb, var(--gold) 45%, transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent) inset;}
 
 .pcfs .cascpin{padding:0 12px 10px;border-bottom:1px solid var(--line);}
 .pcfs .casc{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;}
 .pcfs .casc::-webkit-scrollbar{display:none;}
-.pcfs .cv{flex-shrink:0;text-align:center;padding:5px 9px;border-radius:8px;background:var(--panel);border:none;cursor:pointer;}
+.pcfs .cv{flex-shrink:0;text-align:center;padding:5px 9px;border-radius:8px;background:var(--card-grad);
+  border:1px solid var(--sf-line);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+  transition:background .15s,color .15s,transform .1s;}
+.pcfs .cv:active{transform:scale(.95);}
 .pcfs .cv .n{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--dim);display:block;line-height:1.1;}
 .pcfs .cv .k{font-size:8.5px;color:var(--faint);letter-spacing:0.3px;}
 .pcfs .casc-empty{font-size:10px;color:var(--faint);padding:4px 0;}
@@ -87,7 +105,7 @@
 .pcfs .bn .promote{position:absolute;top:-1px;right:-3px;width:15px;height:15px;line-height:14px;text-align:center;
   border:none;border-radius:4px;background:var(--panel);color:var(--faint);font-size:11px;cursor:pointer;opacity:0.5;}
 .pcfs .bn:hover .promote,.pcfs .bn:focus-within .promote{opacity:0.9;}
-.pcfs .bn .promote.on{opacity:1;color:var(--gold);background:rgba(224,176,75,0.15);}
+.pcfs .bn .promote.on{opacity:1;color:var(--gold);background:color-mix(in srgb, var(--gold) 15%, transparent);}
 
 .pcfs .crow{display:flex;align-items:baseline;padding:5px 0;}
 .pcfs .crow .w{flex:1;font-size:10.5px;color:var(--dim);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;}
@@ -116,16 +134,18 @@
 /* pattern-hit badges + jesuit badge preserved on the sheet header */
 .pcfs .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .pcfs .pcbadge{font-size:9px;font-weight:800;letter-spacing:0.5px;padding:3px 7px;border-radius:5px;
-  background:rgba(224,176,75,0.13);color:var(--gold);}
-.pcfs .pcbadge.teal{background:rgba(45,212,191,0.13);color:var(--teal);}
+  background:color-mix(in srgb, var(--gold) 13%, transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb, var(--gold) 40%, transparent);}
+.pcfs .pcbadge.teal{background:color-mix(in srgb, var(--teal) 13%, transparent);color:var(--teal);
+  border-color:color-mix(in srgb, var(--teal) 40%, transparent);}
 
 /* convergence glow — the three-layer filter core */
-.pcfs [data-n].hit{color:var(--gold) !important;background:rgba(224,176,75,0.13);}
-.pcfs [data-n].hit2{color:var(--hot) !important;background:rgba(255,90,60,0.13);}
+.pcfs [data-n].hit{color:var(--gold) !important;background:color-mix(in srgb, var(--gold) 13%, transparent);}
+.pcfs [data-n].hit2{color:var(--hot) !important;background:color-mix(in srgb, var(--hot) 13%, transparent);}
 .pcfs .cv[data-n].hit .n,.pcfs .cv[data-n].hit .k{color:var(--gold);}
 .pcfs .cv[data-n].hit2 .n,.pcfs .cv[data-n].hit2 .k{color:var(--hot);}
-.pcfs .cv[data-n].hit{background:rgba(224,176,75,0.12);}
-.pcfs .cv[data-n].hit2{background:rgba(255,90,60,0.12);}
+.pcfs .cv[data-n].hit{background:color-mix(in srgb, var(--gold) 12%, transparent);}
+.pcfs .cv[data-n].hit2{background:color-mix(in srgb, var(--hot) 12%, transparent);}
 .pcfs .bn[data-n].hit .n,.pcfs .bn[data-n].hit .k{color:var(--gold);}
 .pcfs .bn[data-n].hit2 .n,.pcfs .bn[data-n].hit2 .k{color:var(--hot);}
 .pcfs .bn[data-n].hit,.pcfs .bn[data-n].hit2{background:none;}
@@ -134,9 +154,10 @@
 .pcfs.spotlight [data-n]:not(.spot-match){opacity:0.18 !important;}
 .pcfs .spot-match{opacity:1 !important;}
 
-.pcfs .why{position:absolute;left:12px;right:12px;bottom:14px;background:#161a22;border:1px solid var(--gold);
+.pcfs .why{position:absolute;left:12px;right:12px;bottom:14px;background:var(--card-grad);
+  border:1px solid color-mix(in srgb, var(--gold) 45%, transparent);
   border-radius:14px;padding:13px 15px;z-index:20;transform:translateY(130%);transition:transform 0.22s cubic-bezier(.32,.72,0,1);
-  box-shadow:0 -6px 28px rgba(0,0,0,0.55);}
+  box-shadow:0 12px 34px rgba(0,0,0,0.6);}
 .pcfs .why.show{transform:translateY(0);}
 .pcfs .why-num{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);}
 .pcfs .why-close{position:absolute;top:10px;right:13px;color:var(--faint);font-size:15px;padding:4px;border:none;background:none;cursor:pointer;}
