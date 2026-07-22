@@ -22,10 +22,23 @@ const DOB=new Map();
 (BIRTHDAYS.players||[]).forEach(p=>{if(p.dob)DOB.set(norm(p.name),p.dob)});
 function norm(s){return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[.'’]/g,'').replace(/-/g,' ').replace(/\s+/g,' ').trim()}
 
-async function bdl(path,params){
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+/* Retry transient failures with exponential backoff. The career pull fires
+   hundreds of sequential pages (all-season game logs for the whole slate); a
+   single 429/5xx/network blip used to reject the whole batch, which the
+   caller's catch collapsed to {} — wiping EVERY player's career while the
+   lighter season batch survived (the "Season shows, Career missing" bug,
+   Tony 2026-07). Recovering per-request keeps career intact. */
+async function bdl(path,params,attempt=0){
   const qs=new URLSearchParams({path});
   for(const[k,v]of Object.entries(params||{})){if(Array.isArray(v))v.forEach(x=>qs.append(k,x));else qs.append(k,v)}
-  const r=await fetch(`${PROXY}?${qs}`);
+  let r;
+  try{r=await fetch(`${PROXY}?${qs}`)}
+  catch(e){if(attempt<5){await sleep(400*2**attempt);return bdl(path,params,attempt+1)}throw e}
+  if((r.status===429||r.status>=500)&&attempt<5){
+    await sleep(500*2**attempt);
+    return bdl(path,params,attempt+1);
+  }
   const j=await r.json().catch(()=>({error:'bad json'}));
   if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
   return j;
@@ -34,13 +47,18 @@ async function pull(path,params){
   /* guard is a runaway backstop, not a budget: a 25-player career chunk on a
      vet-heavy slate exceeds 8k rows, and cutting pagination silently drops the
      OLDEST seasons (found 2026-07: Azura Stevens career missing 2018-20). */
-  let out=[],cursor=null,guard=0;
+  let out=[],cursor=null,guard=0;const seen=new Set();
   do{
     const p=cursor?{...params,cursor}:params;
     const r=await bdl(path,p);
     out=out.concat(r.data||[]);
-    cursor=r.meta&&r.meta.next_cursor;
-  }while(cursor&&++guard<400);
+    const next=r.meta&&r.meta.next_cursor;
+    /* stop on a repeated/stuck cursor: BDL can echo next_cursor on large
+       unfiltered (career) pulls, which otherwise spins to the 400 guard and
+       floods the rate limiter (rows are deduped downstream, so we lose nothing) */
+    if(next==null||seen.has(next))break;
+    seen.add(next);cursor=next;
+  }while(++guard<400);
   return out;
 }
 export const parseMin=m=>{if(m==null)return 0;m=String(m).trim();if(!m||m==='0'||m==='00')return 0;if(m.includes(':')){const[a,b]=m.split(':').map(x=>parseInt(x,10)||0);return a+b/60}const n=parseInt(m,10);return isNaN(n)?0:n};
