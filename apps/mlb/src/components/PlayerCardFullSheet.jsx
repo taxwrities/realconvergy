@@ -251,14 +251,34 @@ export default function PlayerCardFullSheet({row,onClose}){
     }).filter(Boolean);
   },[outcome,p]);
 
-  /* hit2 counts across the whole sheet + the pinned cascade (bar excluded) */
+  /* occurrence counts across the whole sheet + the pinned cascade (bar
+     excluded). Counted over EVERY number, not just the active set (Tony
+     2026-07-22): a value that lands 2+ places on the sheet is a convergence
+     whether or not it sits in today's spine, so the red multi-occurrence glow
+     must be able to see it. */
   const counts=useMemo(()=>{
     const c=new Map();
-    const bump=n=>{if(isActive(n))c.set(n,(c.get(n)||0)+1)};
+    const bump=n=>c.set(n,(c.get(n)||0)+1);
     model.cells.forEach(x=>bump(x.n));
     cascade.forEach(x=>bump(x.n));
     return c;
-  },[model,cascade,activeMap]); // eslint-disable-line react-hooks/exhaustive-deps
+  },[model,cascade]);
+
+  /* cross-ref convergence set — numbers that echo an EXTERNAL reference even
+     when they aren't in today's active spine: a next stat-rung milestone or an
+     opponent-team cipher (raw equality only — the same strong signal the WHY
+     panel prints). Feeds the dim additive glow for single-occurrence
+     convergences; multi-occurrence values already go red via `counts`. */
+  const xrefSet=useMemo(()=>{
+    const s=new Set();
+    const srf={career:p.career||null,season:p.season||null};
+    const distinct=new Set([...model.cells.map(x=>x.n),...cascade.map(x=>x.n)]);
+    distinct.forEach(n=>{
+      const cr=crossRefsForNumber({sr:srf,opp:oppVals},n);
+      if(cr.statRungs.items.some(i=>i.rawMatch)||cr.opponent.items.some(i=>i.rawMatch))s.add(n);
+    });
+    return s;
+  },[model,cascade,oppVals,p]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---- bar groups derived from the (re-categorized) activeMap ---- */
   const barGroups=GROUP_ORDER.map(([cat,label])=>{
@@ -270,9 +290,19 @@ export default function PlayerCardFullSheet({row,onClose}){
 
   /* ---- filter helpers ---- */
   const lensMatch=n=>lens? (lens==='tfam'?tfamSet.has(n):activeMap.get(n)?.cat===lens) : false;
+  /* glow layering (additive, Tony 2026-07-22):
+       • 2+ occurrences anywhere on the sheet → red (hit2), active or not;
+         active AND multi-occurrence is the strongest — gold-ringed (strong).
+       • active, single occurrence → gold (hit).
+       • not active but a cross-ref convergence (next stat-rung / opp cipher)
+         → dim gold (xhit): softer than the active glow, still visible. */
   const cls=n=>{
     let c='';
-    if(isActive(n))c+=(counts.get(n)>=2?' hit2':' hit');
+    const occ=counts.get(n)||0;
+    const active=isActive(n);
+    if(occ>=2)c+=active?' hit2 strong':' hit2';
+    else if(active)c+=' hit';
+    else if(xrefSet.has(n))c+=' xhit';
     if(lens&&lensMatch(n))c+=' lensmatch';
     if(spot===n)c+=' spot-match';
     return c;
