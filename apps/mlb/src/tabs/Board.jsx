@@ -5,6 +5,7 @@ import {LANES,LANE_STAT,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
 import {draftFromCross,draftsToPattern} from '../engine/recipe.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {isProjected} from '../data/lineups.js';
+import {gameBucket} from '../data/mlb.js';
 import {cl} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
 
@@ -180,7 +181,7 @@ function GameRail(){
   return(
     <div className="rail" ref={hRail}>
       {shown.map(g=>(
-        <button key={g.pk} className={`gchip${g.pk===gamePk?' on':''}`} onClick={()=>pick(g.pk)}>
+        <button key={g.pk} className={`gchip${g.pk===gamePk?' on':''}${gameBucket(g)===2?' finished':''}`} onClick={()=>pick(g.pk)}>
           <span className="gc-meta">
             {g.status==='Live'?<span className="live">● LIVE</span>:g.status==='Final'?'FINAL':'TODAY'}
           </span>

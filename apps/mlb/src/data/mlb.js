@@ -17,6 +17,37 @@ async function jget(url){
   return r.json();
 }
 
+/* ---------------- carousel / list sort (Tony 2026-07-22) ----------------
+   One source of truth for game order everywhere the slate is rendered:
+   in-progress first, then upcoming, then finished at the bottom. Edge cases
+   per spec: Delayed/Suspended count as in-progress (still worth attention);
+   Postponed counts as finished (bottom). Uses the same status fields the app
+   already reads from statsapi — abstractGameState (g.status) + detailedState. */
+export function gameBucket(g){
+  const a=(g.status||'').toLowerCase();          // abstractGameState
+  const d=(g.detailedState||'').toLowerCase();   // finer detailedState
+  // finished — final / game over / completed early / postponed → bottom
+  if(a==='final'||d.includes('final')||d.includes('game over')
+     ||d.includes('completed early')||d.includes('postponed'))return 2;
+  // in progress — live / warmup / delayed / suspended → top
+  if(a==='live'||d.includes('in progress')||d.includes('warmup')
+     ||d.includes('delayed')||d.includes('suspended'))return 0;
+  // upcoming — preview / scheduled / pre-game
+  return 1;
+}
+/* Stable sort: bucket first, then first-pitch time (gameDate ISO string sorts
+   chronologically). In-progress + upcoming ascending; finished descending so
+   the most recently started game reads first among the dimmed tail. */
+export function sortGames(games){
+  return games.slice().sort((a,b)=>{
+    const ba=gameBucket(a),bb=gameBucket(b);
+    if(ba!==bb)return ba-bb;
+    const ta=a.gameDate||'',tb=b.gameDate||'';
+    if(ta===tb)return 0;
+    return ba===2?(ta<tb?1:-1):(ta<tb?-1:1);
+  });
+}
+
 /* Season meta → "Day N of MLB season". */
 export async function fetchSeasonInfo(season){
   const d=await jget(`${API}/seasons?sportId=1&season=${season}`);
@@ -38,6 +69,8 @@ export async function fetchSlate(dstr,onProgress){
     away:{id:g.teams.away.team.id,name:g.teams.away.team.name},
     venue:g.venue?.name,
     status:g.status?.abstractGameState||'',
+    detailedState:g.status?.detailedState||'',
+    gameDate:g.gameDate||null, // first-pitch ISO — carousel/list sort key
     gameNumber:{home:(g.teams.home.leagueRecord?.wins||0)+(g.teams.home.leagueRecord?.losses||0)+1,
       away:(g.teams.away.leagueRecord?.wins||0)+(g.teams.away.leagueRecord?.losses||0)+1},
     record:{home:g.teams.home.leagueRecord||null,away:g.teams.away.leagueRecord||null},
@@ -153,7 +186,9 @@ export async function fetchSlate(dstr,onProgress){
     }catch{/* staircases just absent for this team */}
   }));
   prog('');
-  return{games,people,teamStats};
+  // finished games sink to the bottom, in-progress float up — one source of
+  // truth so every consumer of slate.games inherits the order (Tony 2026-07-22)
+  return{games:sortGames(games),people,teamStats};
 }
 
 /* ---------------- H2H (MLB-PARITY.md §8, ported from Tony's Date Decoder) ----------------

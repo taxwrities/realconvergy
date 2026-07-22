@@ -166,7 +166,11 @@ body {
 .gchip .gc-meta .live { color: var(--cvg-red); }
 .gchip .gc-team { font-size: 12.5px; font-weight: 700; line-height: 1.25; font-family: var(--cvg-mono); }
 .gchip .gc-team .at { color: #767d8f; font-weight: 400; font-size: 10px; margin-right: 3px; }
+/* finished games sink to the tail of the carousel — dim them so they read as
+   deprioritized even when scrolled to (Tony 2026-07-22) */
+.gchip.finished { opacity: 0.6; }
 .gchip.on {
+  opacity: 1; /* the active game is never dimmed, even if it's finished */
   border-color: var(--cvg-acc);
   background: linear-gradient(180deg, color-mix(in srgb, var(--cvg-acc) 20%, #1a202b), #151a23);
   box-shadow: 0 0 0 1px var(--cvg-acc) inset, 0 6px 18px color-mix(in srgb, var(--cvg-acc) 22%, transparent);
