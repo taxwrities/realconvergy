@@ -14,6 +14,8 @@ import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../en
 const DEFAULT_WORDS=['SINGLE','DOUBLE','TRIPLE','HOMERUN','HR','STRIKEOUT','STRIKE OUT',
   'WALK','STOLEN BASE','HIT','RUN','RBI'];
 const NAME_PARTS=[['first','First'],['middle','Middle'],['last','Last'],['full','Full']];
+/* how many matched phrases to show inline on the collapsed row before "+N more" */
+const PHRASE_CAP=4;
 
 export default function PhraseFinder(){
   const {findPhrases,ciphers,date,dn,focusPlayer}=useApp();
@@ -155,24 +157,28 @@ export default function PhraseFinder(){
   );
 }
 
-/* one result group → a single scannable summary row (Tony 2026-07-22). Collapsed
-   by default: player · team · game, a compact hit summary ("4 phrase · 2 rung ·
-   opp ✓"), the ↗ full-sheet jump, and a ▸ caret. The detail (every phrase×cipher
-   hit + the PLAYER/RUNGS/OPP cross-ref block) is still computed but only renders
-   when the caret is tapped — its real home is the full-sheet WHY panel. */
+/* one result group → a single scannable row (Tony 2026-07-22). Collapsed by
+   default: player · team · game, then the matched phrases inline as
+   "PHRASE (Cipher=value)" (first PHRASE_CAP, then "+N more"), the ↗ full-sheet
+   jump, and a ▸ caret. The PLAYER/RUNGS/OPP cross-ref pile stays hidden — it's
+   still computed but only renders on caret-expand; its real home is the
+   full-sheet WHY panel behind the ↗. */
 function ResultRow({g,tol,focusPlayer}){
   const [exp,setExp]=useState(false);
-  const {rungs,opp}=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target)),[g]);
-  const summary=`${g.rows.length} phrase`
-    +(rungs.length?` · ${rungs.length} rung`:'')
-    +(opp.length?' · opp ✓':'');
+  const shown=g.rows.slice(0,PHRASE_CAP), extra=g.rows.length-shown.length;
   return(
     <div className="finder-row">
       <div className="fr-top">
         <b>{g.name}</b>
         <span className="muted"> {g.team}</span>
         <span className="muted" style={{fontSize:11}}> · {g.gameLabel}</span>
-        <span className="pf-summary">{summary}</span>
+        <span className="pf-phrases mono">
+          {' · '}
+          {shown.map((r,i)=>(
+            <span key={i}>{i>0?', ':''}{r.phrase} <span className="muted">({cl(r.cipher)}={r.value})</span></span>
+          ))}
+          {extra>0&&<span className="muted"> · +{extra} more</span>}
+        </span>
         <button className="pf-open" title={`Open ${g.name}'s full sheet`}
           aria-label={`Open ${g.name}'s full sheet`}
           onClick={()=>focusPlayer({id:g.id,pk:g.rows[0].pk,side:g.rows[0].side,from:'search'})}>↗</button>

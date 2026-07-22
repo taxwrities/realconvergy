@@ -605,11 +605,11 @@ body {
   transition: border-color .15s, color .15s, transform .1s;
 }
 .pf-open:active { border-color: var(--cvg-acc); color: var(--cvg-acc); transform: scale(.92); }
-/* compact hit summary + expand caret on the collapsed result row (Tony
-   2026-07-22) — summary carries margin-left:auto so it and the trailing
-   ↗/▸ controls cluster on the row's right edge. */
-.pf-summary { margin-left: auto; flex-shrink: 0; font-size: 11px; color: #8a90a0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+/* inline matched-phrase list + expand caret on the collapsed result row (Tony
+   2026-07-22) — the phrase list flexes to fill the row and wraps as needed, so
+   the trailing ↗/▸ controls sit right after it. */
+.pf-phrases { flex: 1 1 auto; min-width: 0; font-size: 11px; line-height: 1.45;
+  color: var(--color-text-primary); word-break: break-word; }
 .pf-caret { flex-shrink: 0; border: none; background: none; color: #6b7284;
   font-size: 12px; line-height: 1; padding: 3px 4px; cursor: pointer; }
 .pf-caret:active { color: var(--cvg-acc); transform: scale(.92); }
