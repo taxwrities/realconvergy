@@ -925,11 +925,34 @@ export function AppStateProvider({children}){
           const nm=(p.fullName||'').trim();
           if(!nm)return;
           const toks=nm.split(/\s+/);
-          const first=toks[0]||'',last=toks.slice(1).join(' ');
+          /* both preferred AND legal/government name variants (Tony 2026-07-22):
+             "Ben"→[Ben, Benjamin], last→[pref, legal], full→[pref full, legal
+             full, pref-first+legal-last, legal-first+pref-last]. legal* fields
+             are null when identical to display, so pref stays the default. Each
+             part deduped by its stripped letters so Ben==Ben collapses to one. */
+          const prefFirst=(p.firstName||toks[0]||'').trim();
+          const prefLast=(toks.slice(1).join(' ')||p.lastName||'').trim();
+          const legalFirst=(p.legalFirstName||prefFirst).trim();
+          const legalLast=(p.legalLastName||p.lastName||prefLast).trim();
+          const legalFull=`${legalFirst} ${legalLast}`.trim();
+          const variantsOf=key=>{
+            let list;
+            if(key==='first')list=[{str:prefFirst},{str:legalFirst,legal:true}];
+            else if(key==='last')list=[{str:prefLast},{str:legalLast,legal:true}];
+            else list=[{str:nm},{str:legalFull,legal:true},
+              {str:`${prefFirst} ${legalLast}`.trim(),legal:true},
+              {str:`${legalFirst} ${prefLast}`.trim(),legal:true}];
+            const dd=new Set(),o=[];
+            list.forEach(v=>{const s=(v.str||'').trim();if(!s)return;
+              const dk=letters(s).join('').toUpperCase();if(!dk||dd.has(dk))return;
+              dd.add(dk);o.push({str:s,legal:!!v.legal})});
+            return o;
+          };
           const np=[];
-          if(parts.includes('first')&&first)np.push({key:'first',str:first});
-          if(parts.includes('last')&&last)np.push({key:'last',str:last});
-          if(parts.includes('full')&&nm)np.push({key:'full',str:nm});
+          ['first','last','full'].forEach(key=>{
+            if(!parts.includes(key))return;
+            variantsOf(key).forEach(v=>np.push({key,str:v.str,legal:v.legal}));
+          });
           np.forEach(part=>{
             cleanWords.forEach(word=>{
               const phrase=`${part.str} ${word}`;
@@ -946,6 +969,7 @@ export function AppStateProvider({children}){
                   out.push({id,pk:g.pk,side:s,name:p.fullName,
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
+                    legal:!!part.legal,
                     cipher:c,value,target,off,
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });

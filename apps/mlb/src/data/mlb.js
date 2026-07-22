@@ -100,8 +100,20 @@ export async function fetchSlate(dstr,onProgress){
     const d=await jget(`${API}/people?personIds=${chunk.join(',')}&season=${season}&hydrate=education,stats(group=[hitting],type=[career,season,careerStatSplits,statSplits],sitCodes=[h,a,vl,vr],season=${season})`);
     d.people.forEach(pp=>{
       const school=pp.education?.colleges?.[0]?.name||null; // first college; Jesuit flag off it
+      /* Preferred vs legal names (live-verified 2026-07-22): statsapi carries the
+         display name in fullName/useName ("Ben") and the government first name in
+         firstName ("Benjamin"); useLastName is the display last, lastName the
+         legal last. The Phrase Finder sweeps BOTH so BENJAMIN HOMERUN lands even
+         when the roster only shows "Ben". legal* is null when it matches display. */
+      const prefFirst=pp.useName||pp.fullName.split(' ')[0]||'';
+      const legalFirst=pp.firstName||prefFirst;
+      const prefLast=pp.useLastName||pp.lastName||pp.fullName.split(' ').slice(-1)[0]||'';
+      const legalLast=pp.lastName||prefLast;
       const rec={id:pp.id,fullName:pp.fullName,birthDate:pp.birthDate,debutDate:pp.mlbDebutDate||null,
         lastName:pp.lastName||pp.fullName.split(' ').slice(-1)[0],
+        firstName:prefFirst,
+        legalFirstName:legalFirst&&legalFirst!==prefFirst?legalFirst:null,
+        legalLastName:legalLast&&legalLast!==prefLast?legalLast:null,
         jersey:pp.primaryNumber?+pp.primaryNumber:null,
         legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null,
         school,jesuit:isJesuit(school),

@@ -148,6 +148,7 @@ export default function PhraseFinder(){
                   {g.rows.map((r,i)=>(
                     <div key={i} className="fr-bot mono" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
                       <span>{r.phrase}</span>
+                      {r.legal&&<span className="badge blue" title="legal/government name variant">LEGAL</span>}
                       <span className="muted">· {cl(r.cipher)} =</span>
                       <b className="v-green">{r.value}</b>
                       <span className="muted">· target {r.target}{tol>0?` (${r.off>0?'+':''}${r.off})`:''}</span>
