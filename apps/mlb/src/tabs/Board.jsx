@@ -1,12 +1,11 @@
-import {useState,useRef,useCallback,Fragment} from 'react';
+import {useState,useRef,useCallback,useEffect} from 'react';
 import {createPortal} from 'react-dom';
 import {useApp} from '../state/store.jsx';
 import {LANES,LANE_STAT,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
-import {draftFromRung,draftFromCross,draftsToPattern} from '../engine/recipe.js';
+import {draftFromCross,draftsToPattern} from '../engine/recipe.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {isProjected} from '../data/lineups.js';
 import {cl} from '../engine/gematria.js';
-import {classifyRungs} from '../engine/rungs.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
@@ -43,8 +42,9 @@ export default function BoardTab({goPatterns}){
       <GameRail/>
       <ContextRail/>
       <TeamToggle/>
-      <BatterZone/>
       <MatchupPanel/>
+      <PatternHitsPanel/>
+      <BatterZone/>
       <RecipeDrawer goPatterns={goPatterns}/>
     </div>
   );
@@ -247,64 +247,71 @@ function TeamToggle(){
   );
 }
 
-/* zones 6+7 — batter list (sticky left) + batter card */
+/* zone 6 — the roster (single scrollable list). Each row shows the batter's
+   name + jersey + quick convergence badges; the WHOLE row taps through to the
+   dedicated full-sheet page (pitcher / team / totals / all convergences live
+   there now). No inline preview — the two-column split retired 2026-07-22. */
 function BatterZone(){
   const {board,side,batterId,setBatterId,focusPlayer,contextFilter,patternFilter,dayState}=useApp();
   const rows=board[side]||[];
+  /* keep a leadoff batter selected for the current side so the Matchup header
+     (which reads the selected batter's venue split) is populated on load —
+     the roster rows themselves navigate to the full-sheet, not this state. */
+  useEffect(()=>{
+    if(rows.length&&!rows.some(r=>r.id===batterId))setBatterId(rows[0].id);
+  },[side,rows,batterId,setBatterId]);
   const inFilter=r=>{
     if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
     if(patternFilter!=null&&!r.patternHits.some(x=>x.pattern.id===patternFilter))return false;
     return true;
   };
   const filtered=rows.filter(inFilter);
-  const sel=rows.find(r=>r.id===batterId)||filtered[0]||rows[0];
   if(!rows.length)return <div className="panel muted">No lineup yet — roster projection loads with the slate.</div>;
   return(
-    <div className="batter-zone">
-      <div className="batter-list">
-        {rows.map(r=>{
-          const dim=(contextFilter!=null||patternFilter!=null)&&!filtered.includes(r);
-          const labels=dayState.labels[r.id]||[];
-          return(
-            <button key={r.id} className={`batter-row${sel?.id===r.id?' on':''}${dim?' skip':''}`}
-              onClick={()=>setBatterId(r.id)}>
-              <span className="nm"><span className="ord">{r.order}</span>{r.ev.p.fullName}</span>
-              <span className="badges">
-                {r.patternHits.map(({pattern})=>(
-                  <span key={pattern.id} className="badge gold" title={pattern.name}>{pattern.lane}</span>
-                ))}
-                {Object.entries(r.ev.lanes).filter(([L,v])=>v&&!r.patternHits.some(x=>x.pattern.lane===L))
-                  .map(([L])=><span key={L} className="badge green">{L}</span>)}
-                {r.forecast&&(
-                  <span className={`badge purple${r.maturing?' mat':''}`}
-                    title={`${r.forecast.pattern} · ${r.forecast.hard}✓`}>
-                    ⟡ {r.forecast.date.slice(5).replace('-','/')}
-                  </span>
-                )}
-                {r.ev.dateNameHits.length>0&&(
-                  <span className="badge cyan"
-                    title={r.ev.dateNameHits.map(h=>`${h.label} ${h.cipher} ${h.n} = ${h.calc}`).join(' · ')}>
-                    ◈ {[...new Set(r.ev.dateNameHits.map(h=>h.n))].join('/')}
-                  </span>
-                )}
-                {r.ev.dayMatches?.length>0&&(
-                  <span className="badge cyan"
-                    title={r.ev.dayMatches.map(m=>`${m.label} ${m.n.toLocaleString()} = ${m.calc}`).join(' · ')}>
-                    ◷ {r.ev.dayMatches.map(m=>m.kind==='life'?'life':'career').join('/')}
-                  </span>
-                )}
-                {r.ev.threadHit&&<span className="badge blue">THR</span>}
-                {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="card-col">
-        {sel&&<BatterCard row={sel} onOpenFull={()=>focusPlayer({id:sel.id,side,from:'board'})}/>}
-        <PatternHitsPanel/>
-        {sel&&<TotalsPanel row={sel}/>}
-      </div>
+    <div className="roster-list">
+      {rows.map(r=>{
+        const dim=(contextFilter!=null||patternFilter!=null)&&!filtered.includes(r);
+        const labels=dayState.labels[r.id]||[];
+        const p=r.ev.p;
+        return(
+          <button key={r.id} className={`batter-row${dim?' skip':''}`}
+            onClick={()=>focusPlayer({id:r.id,side,from:'board'})}
+            title="open full sheet">
+            <span className="rrow">
+              <span className="nm"><span className="ord">{r.order}</span>{p.fullName}
+                {p.jersey&&<span className="jer">#{p.jersey}</span>}</span>
+              <span className="go">›</span>
+            </span>
+            <span className="badges">
+              {r.patternHits.map(({pattern})=>(
+                <span key={pattern.id} className="badge gold" title={pattern.name}>{pattern.lane}</span>
+              ))}
+              {Object.entries(r.ev.lanes).filter(([L,v])=>v&&!r.patternHits.some(x=>x.pattern.lane===L))
+                .map(([L])=><span key={L} className="badge green">{L}</span>)}
+              {r.forecast&&(
+                <span className={`badge purple${r.maturing?' mat':''}`}
+                  title={`${r.forecast.pattern} · ${r.forecast.hard}✓`}>
+                  ⟡ {r.forecast.date.slice(5).replace('-','/')}
+                </span>
+              )}
+              {r.ev.dateNameHits.length>0&&(
+                <span className="badge cyan"
+                  title={r.ev.dateNameHits.map(h=>`${h.label} ${h.cipher} ${h.n} = ${h.calc}`).join(' · ')}>
+                  ◈ {[...new Set(r.ev.dateNameHits.map(h=>h.n))].join('/')}
+                </span>
+              )}
+              {r.ev.dayMatches?.length>0&&(
+                <span className="badge cyan"
+                  title={r.ev.dayMatches.map(m=>`${m.label} ${m.n.toLocaleString()} = ${m.calc}`).join(' · ')}>
+                  ◷ {r.ev.dayMatches.map(m=>m.kind==='life'?'life':'career').join('/')}
+                </span>
+              )}
+              {r.ev.threadHit&&<span className="badge blue">THR</span>}
+              {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -313,7 +320,7 @@ function BatterZone(){
    Pills filter the batter list (dim non-hitters); names tap through to the
    matching batter's card. Game-scoped (both sides); hidden when no hits. */
 function PatternHitsPanel(){
-  const {board,game,patterns,patternFilter,setPatternFilter,patternCounts,setSide,setBatterId}=useApp();
+  const {board,game,patterns,patternFilter,setPatternFilter,patternCounts,focusPlayer}=useApp();
   const [expanded,setExpanded]=useState(null); // pattern id whose full name-list is open
   if(!game)return null;
   const abbrev={away:game.away.abbrev||game.away.teamName,home:game.home.abbrev||game.home.teamName};
@@ -326,7 +333,7 @@ function PatternHitsPanel(){
     return{pt,hits};
   }).filter(g=>g.hits.length>0);
   if(!groups.length)return null;
-  const jump=h=>{setSide(h.side);setBatterId(h.id)};
+  const jump=h=>focusPlayer({id:h.id,side:h.side,from:'board'});
   return(
     <div className="panel pattern-hits">
       <h3>Pattern hits — this game</h3>
@@ -362,273 +369,6 @@ function PatternHitsPanel(){
         })}
       </div>
     </div>
-  );
-}
-
-/* entering-stats line: every tracked counting stat as a career/season pair.
-   PA + AB lead and are green-lit (the green-light signals, never the bet —
-   §2 house rule) so they're never missing from the card at a glance. Each
-   number is a RungNum → tap for its next-rungs ladder. (Tony 2026-07-17) */
-const ENTER_STATS=[
-  ['PA','plateAppearances'],['AB','atBats'],['H','hits'],['1B','1B'],
-  ['2B','doubles'],['3B','triples'],['HR','homeRuns'],['XBH','XBH'],
-  ['RBI','rbi'],['TB','totalBases'],['BB','baseOnBalls'],['SO','strikeOuts'],
-];
-
-function BatterCard({row,onOpenFull}){
-  const {colorFor,contextFilter,patternFilter,addDraft,gameTotals,refreshGameTotals}=useApp();
-  const ev=row.ev;
-  const p=ev.p;
-  const today=gameTotals[row.id]; // today-only box line (top-of-card game total)
-  const hitRungs=ev.rungs.filter(r=>r.hits.length>0);
-  /* TB rungs headline; BB never buried; full ladders surfaced (§4.7) */
-  const order={TB:0,HR:1,'1B':2,XBH:3,RBI:4,BB:5,H:6,'2B':7,'3B':8,SO:9,AB:10,PA:11};
-  hitRungs.sort((a,b)=>(order[a.stat]??12)-(order[b.stat]??12)||b.hits.length-a.hits.length||a.off-b.off);
-  /* active pattern tile: the numbers this pattern actually matched on this card,
-     so the tile gets the same sort-first + ring + badge treatment as a chip. */
-  const patHit=patternFilter!=null?row.patternHits.find(x=>x.pattern.id===patternFilter):null;
-  const patNums=new Set(patHit?patHit.res.details.flatMap(d=>d.matches.map(m=>m.n)):[]);
-  if(patNums.size)
-    hitRungs.sort((a,b)=>(patNums.has(b.n)?1:0)-(patNums.has(a.n)?1:0));
-  /* active context chip: rungs landing on that number sort first + ring (§feedback).
-     Last sort wins the top slot — a tapped chip is the more specific intent. */
-  if(contextFilter!=null)
-    hitRungs.sort((a,b)=>(b.n===contextFilter?1:0)-(a.n===contextFilter?1:0));
-  return(
-    <div className="bcard">
-      <div className="who">
-        <span className="nm">{p.fullName}</span>
-        {p.jersey&&<span className={`jer${ev.jerseyHits.length?' hit':''}`}>#<FactNum value={p.jersey}>{p.jersey}</FactNum></span>}
-        <span className="muted" style={{fontSize:11}}>{p.position}</span>
-        {onOpenFull&&<button type="button" className="chip gray full-sheet-btn"
-          style={{marginLeft:'auto',flex:'0 0 auto'}} title="open the full-sheet player page"
-          onClick={onOpenFull}>↗ full sheet</button>}
-      </div>
-      {p.school&&(
-        <div style={{fontSize:11,margin:'1px 0 3px',display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
-          <span className="muted">{p.school}</span>
-          {p.jesuit&&<span className="badge gold">JESUIT</span>}
-        </div>
-      )}
-      {ev.bday&&(
-        <div className="bday-line">
-          <FactNum value={ev.bday.since}>{ev.bday.since}</FactNum>d since bday
-          {' · '}<FactNum value={ev.bday.until}>{ev.bday.until}</FactNum>d until
-          {' · '}age <FactNum value={ev.bday.years}>{ev.bday.years}</FactNum>
-          {' · '}day <FactNum value={ev.bday.totalDays}>{ev.bday.totalDays}</FactNum> of life
-          {' · '}week <FactNum value={ev.bday.weeks}>{ev.bday.weeks}</FactNum>
-        </div>
-      )}
-      {ev.debut&&(
-        <div className="bday-line">
-          debut {p.debutDate}
-          {' · '}career day <FactNum value={ev.debut.totalDays}>{ev.debut.totalDays}</FactNum>
-          {' · '}week <FactNum value={ev.debut.weeks}>{ev.debut.weeks}</FactNum>
-          {' · '}month <FactNum value={ev.debut.months}>{ev.debut.months}</FactNum>
-          {' · '}<FactNum value={ev.debut.years}>{ev.debut.years}</FactNum>y
-          {' · '}<FactNum value={ev.debut.since}>{ev.debut.since}</FactNum>d since anniv
-          {' · '}<FactNum value={ev.debut.until}>{ev.debut.until}</FactNum>d until
-        </div>
-      )}
-      {(p.career||p.season)&&(
-        <div className="ent-stats">
-          {ENTER_STATS.map(([lbl,key])=>{
-            const c=p.career?.[key],s=p.season?.[key];
-            if(c==null&&s==null)return null;
-            const green=lbl==='PA'||lbl==='AB';
-            return(
-              <span key={lbl} className={`ent${green?' green':''}`}>
-                <span className="el">{lbl}</span>
-                {c!=null?<RungNum stat={lbl} value={c}>{c}</RungNum>:<span className="muted">–</span>}
-                <span className="sl">/</span>
-                {s!=null?<RungNum stat={lbl} value={s}>{s}</RungNum>:<span className="muted">–</span>}
-              </span>
-            );
-          })}
-          <span className="ent-key muted">career/season</span>
-        </div>
-      )}
-      {today&&(
-        <div className="ent-stats today-line">
-          <span className="ent">
-            <span className="el" style={{color:'var(--cvg-gold)'}}>TODAY</span>
-            <button type="button" className="today-refresh" title="refresh today's line"
-              onClick={refreshGameTotals}>↻</button>
-          </span>
-          <span className="ent">
-            <RungNum stat="H" value={today.hits}>{today.hits}</RungNum>
-            <span className="sl">-</span>
-            <RungNum stat="AB" value={today.atBats}>{today.atBats}</RungNum></span>
-          {[['HR','homeRuns'],['RBI','rbi'],['R','runs'],['TB','totalBases'],
-            ['BB','baseOnBalls'],['SO','strikeOuts']].map(([lbl,key])=>today[key]>0&&(
-            <span key={lbl} className="ent">
-              <span className="el">{lbl}</span>
-              <RungNum stat={lbl} value={today[key]}>{today[key]}</RungNum>
-            </span>
-          ))}
-          {today.summary&&<span className="ent-key muted">{today.summary}</span>}
-        </div>
-      )}
-      {row.patternHits.length>0&&(
-        <div className="badges" style={{marginBottom:8}}>
-          {row.patternHits.map(({pattern,res})=>(
-            <span key={pattern.id} className="badge gold">
-              {pattern.name} {res.hardPass}✓{res.softPass?` +${res.softPass} soft`:''}
-            </span>
-          ))}
-        </div>
-      )}
-      {ev.dateNameHits.length>0&&(
-        <div className="call-line" style={{borderLeftColor:'var(--cvg-cyan)',marginBottom:6}}>
-          <span className="tag" style={{color:'var(--cvg-cyan)'}}>NAME = DATE</span>
-          {ev.dateNameHits.map((h,i)=>(
-            <span key={i} className="mono">
-              {i>0&&' · '}{h.label} {h.cipher} <FactNum value={h.n}><b className={h.top?'v-gold':'v-cyan'}>{h.n}</b></FactNum>
-            </span>
-          ))}
-        </div>
-      )}
-      {ev.dayMatches?.length>0&&(
-        <div className="call-line" style={{borderLeftColor:'var(--cvg-cyan)',marginBottom:6}}>
-          <span className="tag" style={{color:'var(--cvg-cyan)'}}>DAY = DATE</span>
-          {ev.dayMatches.map((m,i)=>(
-            <span key={i} className="mono">
-              {i>0&&' · '}{m.label} = <FactNum value={m.n}><b className={m.top?'v-gold':'v-cyan'}>{m.n.toLocaleString()}</b></FactNum> {m.top?'(top DN)':'(DN)'}
-            </span>
-          ))}
-        </div>
-      )}
-      {row.forecast&&(
-        <div className="call-line" style={{borderLeftColor:'var(--cvg-purple)',marginBottom:6}}>
-          <span className="tag" style={{color:'var(--cvg-purple)'}}>⟡ FORECAST</span>
-          {row.forecast.date.slice(5).replace('-','/')} · {row.forecast.pattern} ·
-          <b className="mono v-purple"> {row.forecast.hard}✓ hard{row.forecast.soft?` +${row.forecast.soft} soft`:''}</b>
-          <div className="muted" style={{fontSize:11,marginTop:3}}>
-            {row.forecast.evidence?.slice(0,2).join(' · ')}
-          </div>
-        </div>
-      )}
-      {ev.primary&&(
-        <div className="call-line">
-          <button className="draft-add" title="add to recipe draft"
-            onClick={()=>addDraft(draftFromRung(ev.primary))}>⊕</button>
-          <span className="tag">PRIMARY</span>
-          {ev.primary.scope} {ev.primary.stat} → <b className="mono">{ev.primary.n}</b>
-          <span className="muted"> (sits {ev.primary.cur}{ev.primary.off>1?`, needs +${ev.primary.off}`:''})</span>
-          <div className="muted" style={{fontSize:11.5,marginTop:3}}>
-            {ev.primary.hits.map(h=>h.src).join(' · ')}
-          </div>
-        </div>
-      )}
-      {ev.alt&&(
-        <div className="call-line alt">
-          <button className="draft-add" title="add to recipe draft"
-            onClick={()=>addDraft(draftFromRung(ev.alt))}>⊕</button>
-          <span className="tag">ALT</span>
-          {ev.alt.scope} {ev.alt.stat} → <b className="mono">{ev.alt.n}</b>
-          <span className="muted"> (sits {ev.alt.cur}{ev.alt.off>1?`, needs +${ev.alt.off}`:''})</span>
-        </div>
-      )}
-      <div className="rung-rows">
-        {hitRungs.slice(0,14).map((r,i)=>{
-          const color=colorFor(r.n,r.hits.map(h=>h.cat));
-          const greenlight=r.stat==='AB'||r.stat==='PA';
-          const flt=contextFilter!=null&&r.n===contextFilter;
-          const pflt=patNums.has(r.n);
-          return(
-            <div key={i} className={`rung hit${flt?' flt':''}${pflt&&!flt?' pflt':''}`}>
-              <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
-              <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
-              <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
-              {flt&&<span className="badge blue">◈ CHIP</span>}
-              {pflt&&!flt&&<span className="badge gold">◈ {patHit.pattern.name}</span>}
-              <span className="why">{r.hits.slice(0,2).map(h=>h.src).join(' · ')}{r.hits.length>2?` +${r.hits.length-2}`:''}</span>
-              <button className="draft-add" title="add to recipe draft"
-                onClick={()=>addDraft(draftFromRung(r))}>⊕</button>
-            </div>
-          );
-        })}
-        {!hitRungs.length&&<div className="muted" style={{fontSize:12}}>no loaded rungs — light/skip</div>}
-      </div>
-      <div className="mono" style={{fontSize:11.5}}>
-        <span className="muted">thread </span>
-        {ev.threadHit?<b className="v-blue">Y</b>:<span className="muted">N</span>}
-      </div>
-    </div>
-  );
-}
-
-/* ---- clickable numbers → "next rungs" popover (Tony 2026-07) ----
-   Any counting total is a RungNum; tapping it opens the ladder of value+N
-   checked against the loaded spine (date/thread/theme/core), colored with
-   the same rules the rest of the board uses. Institutional = the rung hits
-   an enabled Core-vocab word (editable in Vocab, Tony decision #3). */
-function RungNum({stat,value,children,className='',style}){
-  const [anchor,setAnchor]=useState(null);
-  const open=e=>{const r=e.currentTarget.getBoundingClientRect();setAnchor({x:r.left,y:r.bottom,top:r.top})};
-  /* .active = this number's menu is open → feedback on which stat you tapped */
-  return(
-    <>
-      <button type="button" className={`rungnum ${className}${anchor?' active':''}`} style={style} onClick={open}>{children}</button>
-      {anchor&&<RungPopup stat={stat} value={+value} anchor={anchor} onClose={()=>setAnchor(null)}/>}
-    </>
-  );
-}
-
-function RungPopup({stat,value,anchor,onClose}){
-  const {loaded,colorFor}=useApp();
-  const [sel,setSel]=useState(null); // clicked rung → highlighted for feedback
-  /* highlighted rungs (DN/thread/core/any loaded hit) pinned to the top,
-     ascending offset among themselves; non-hits follow (Tony 2026-07). */
-  const ladder=[...classifyRungs(stat,value,{loaded})]
-    .sort((a,b)=>(b.hit-a.hit)||(a.off-b.off));
-  const firstColdIdx=ladder.findIndex(r=>!r.hit);
-  const hasSplit=firstColdIdx>0&&firstColdIdx<ladder.length;
-  /* clamp to viewport; flip above the number if it would run off the bottom */
-  const W=248,vw=window.innerWidth,vh=window.innerHeight;
-  const left=Math.max(8,Math.min(anchor.x,vw-W-8));
-  const below=anchor.y+6, wantAbove=below>vh-220;
-  const style=wantAbove
-    ?{left,bottom:Math.max(8,vh-anchor.top+6),width:W}
-    :{left,top:below,width:W};
-  return createPortal(
-    <>
-      <div className="rung-pop-scrim" onClick={onClose}/>
-      <div className="rung-pop" style={style} onClick={e=>e.stopPropagation()}>
-        <div className="rung-pop-head">
-          <b className="mono">{stat} {value}</b>
-          <span className="muted">→ next rungs</span>
-          <button className="rung-pop-x" onClick={onClose}>✕</button>
-        </div>
-        <div className="rung-pop-body">
-          {ladder.map((r,i)=>{
-            const color=colorFor(r.n,r.cats)
-              ||(r.institutional?'var(--cvg-gold)':(r.hit?'var(--cvg-green)':null));
-            const tags=[];
-            if(r.isDate)tags.push(['DN','var(--cvg-cyan)']);
-            if(r.isThread)tags.push(['THR','var(--cvg-blue)']);
-            if(r.institutional)tags.push(['CORE','var(--cvg-gold)']);
-            const srcs=r.hits.map(h=>h.src).filter(Boolean);
-            return(
-              <Fragment key={r.off}>
-                {hasSplit&&i===firstColdIdx&&<div className="rung-pop-div"/>}
-                <div
-                  className={`rung-pop-row${r.hit?' hit':''}${sel===r.off?' sel':''}`}
-                  onClick={()=>setSel(sel===r.off?null:r.off)}>
-                  <b className="mono val" style={color?{color}:undefined}>{r.n}</b>
-                  <span className="muted mono off">+{r.off}</span>
-                  <span className="tags">
-                    {tags.map(([t,c])=><span key={t} className="ptag" style={{color:c}}>{t}</span>)}
-                  </span>
-                  <span className="why muted">{srcs.slice(0,2).join(' · ')}{srcs.length>2?` +${srcs.length-2}`:''}</span>
-                </div>
-              </Fragment>
-            );
-          })}
-        </div>
-      </div>
-    </>,
-    document.body
   );
 }
 
@@ -723,89 +463,30 @@ function NumPopup({n,anchor,onClose}){
   );
 }
 
-/* Baseball-Reference-style batter totals — COUNTING STATS ONLY (Tony: no
-   BA/OBP/SLG/OPS rate columns, no pitcher pitching table). Career + Season
-   read straight off the hydrated stat objects; every cell is a RungNum. */
-const TOTALS_COLS=[
-  {k:'gamesPlayed',h:'G'},{k:'plateAppearances',h:'PA'},{k:'atBats',h:'AB'},
-  {k:'runs',h:'R'},{k:'hits',h:'H'},{k:'1B',h:'1B'},{k:'doubles',h:'2B'},
-  {k:'triples',h:'3B'},{k:'homeRuns',h:'HR'},{k:'XBH',h:'XBH'},{k:'rbi',h:'RBI'},
-  {k:'totalBases',h:'TB'},{k:'baseOnBalls',h:'BB'},{k:'strikeOuts',h:'SO'},
-  {k:'stolenBases',h:'SB'},{k:'caughtStealing',h:'CS'},{k:'groundIntoDoublePlay',h:'GDP'},
-  {k:'hitByPitch',h:'HBP'},{k:'sacBunts',h:'SH'},{k:'sacFlies',h:'SF'},
-  {k:'intentionalWalks',h:'IBB'},
-];
-
-function TotalsCell({col,line}){
-  const v=line[col.k];
-  if(v==null)return <td className="muted">–</td>;
-  return <td className="mono num"><RungNum stat={col.h} value={v}>{v}</RungNum></td>;
-}
-
-function TotalsTable({player}){
-  const hWrap=useHScroll();
-  const rows=[];
-  if(player?.career)rows.push({scope:'Career',line:player.career});
-  if(player?.season)rows.push({scope:'Season',line:player.season});
-  /* SPLITS rows (Tony 2026-07): same columns as career/season. Handedness +
-     venue ride along on the slate fetch (season scope = current form); Last N
-     and the situational splits arrive with ⚡ DEEP. Only rows with data show. */
-  const S=player?.split||{},D=player?.deep||{};
-  const split=(scope,line)=>{if(line)rows.push({scope,line,split:true})};
-  split('vs LHP',S['season-vsL']);
-  split('vs RHP',S['season-vsR']);
-  split('Home',S['season-home']);
-  split('Away',S['season-away']);
-  if(D.lastN)[7,15,30].forEach(n=>split('Last '+n,D.lastN[n]));
-  if(D.month)split(D.monthTag||'Month',D.month);
-  if(D.dow)split(D.dowTag||'Day',D.dow);
-  if(D.vsOpp)split('vs '+(D.oppTag||'Opp'),D.vsOpp);
-  if(!rows.length)return <div className="muted" style={{fontSize:12}}>no totals loaded yet</div>;
-  return(
-    <div className="totals-wrap" ref={hWrap}>
-      <table className="totals">
-        <thead>
-          <tr><th className="pl">Scope</th>{TOTALS_COLS.map(c=><th key={c.h}>{c.h}</th>)}</tr>
-        </thead>
-        <tbody>
-          {rows.map((r,i)=>(
-            <tr key={i} className={r.split?'split':''}>
-              <td className="pl">{r.scope}</td>
-              {TOTALS_COLS.map(c=><TotalsCell key={c.h} col={c} line={r.line}/>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/* card column, under the card: the selected batter's bbref counting line.
-   Batter only — a pitcher's batting line is meaningless post-DH. */
-function TotalsPanel({row}){
-  const p=row.ev.p;
-  if(!p.career&&!p.season)return null;
-  return(
-    <div className="panel">
-      <h3>Totals — {p.fullName}</h3>
-      <TotalsTable player={p}/>
-    </div>
-  );
-}
-
-/* zone 8 — matchup panel (flex slot v1 default): pitcher + CROSS + staircases */
+/* zone 7 — matchup header (pitcher + CROSS + team staircases). Sits above the
+   roster as the always-visible game context; the opposing pitcher's name stays
+   on the header row, the gematria detail + team staircases collapse so the
+   scannable list stays high on the page (Tony 2026-07-22). Per-batter splits
+   and the full pitcher grid live on each player's full-sheet. */
 function MatchupPanel(){
-  const {matchup,ciphers,addDraft}=useApp();
+  const {matchup,addDraft}=useApp();
+  const [open,setOpen]=useState(false);
   if(!matchup)return null;
-  const {sp,spRun,spBday,cross,stair,vsHand}=matchup;
+  const {sp,spRun,spBday,cross,stair,vsHand,bat}=matchup;
+  const summ=[stair.length&&`${stair.length} staircase${stair.length>1?'s':''}`,
+    cross.length&&`${cross.length} cross`].filter(Boolean).join(' · ');
   return(
-    <div className="panel" style={{marginTop:10}}>
-      <h3>Matchup — opposing pitcher</h3>
+    <div className="panel matchup-panel" style={{marginTop:10}}>
+      <div className="matchup-head" onClick={()=>setOpen(o=>!o)} role="button" tabIndex={0}
+        onKeyDown={e=>{if(e.key==='Enter')setOpen(o=>!o)}}>
+        <h3 style={{margin:0}}>Matchup — {sp?sp.fullName:'opposing pitcher'}
+          {sp?.jersey&&<span className="muted mono" style={{fontSize:11}}> #{sp.jersey}</span>}</h3>
+        {summ&&<span className="muted" style={{marginLeft:'auto',fontSize:11}}>{summ}</span>}
+        <span className="car">{open?'▴':'▾'}</span>
+      </div>
+      {open&&<>
       {sp?(
         <>
-          <div style={{fontWeight:800,fontSize:14}}>{sp.fullName}
-            {sp.jersey&&<span className="muted mono" style={{fontSize:11}}> #<FactNum value={sp.jersey}>{sp.jersey}</FactNum></span>}
-          </div>
           {spBday&&(
             <div className="bday-line" style={{marginTop:3}}>
               <FactNum value={spBday.since}>{spBday.since}</FactNum>d since bday
@@ -821,7 +502,7 @@ function MatchupPanel(){
       ):<div className="muted" style={{fontSize:12}}>probable not posted</div>}
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
-          selected batter venue split:{' '}
+          {bat?.ev.p.fullName||'batter'} venue split:{' '}
           {vsHand.homeRuns!=null?<FactNum value={vsHand.homeRuns}>{vsHand.homeRuns}</FactNum>:'–'} HR ·{' '}
           {vsHand.hits!=null?<FactNum value={vsHand.hits}>{vsHand.hits}</FactNum>:'–'} H ·{' '}
           {vsHand.totalBases!=null?<FactNum value={vsHand.totalBases}>{vsHand.totalBases}</FactNum>:'–'} TB
@@ -847,6 +528,7 @@ function MatchupPanel(){
           ))}
         </>
       )}
+      </>}
     </div>
   );
 }
