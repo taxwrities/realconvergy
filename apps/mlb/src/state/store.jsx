@@ -283,7 +283,7 @@ export function AppStateProvider({children}){
       sources:{core:patternSources.core,theme:patternSources.theme,
         dateThread:dateThread||patternSources.dateThread,
         loadedAll:loadedAll||patternSources.loadedAll},
-      batter:{p,side,nameVals:nameRun(p.fullName,ciphers),
+      batter:{p,side,bday,nameVals:nameRun(p.fullName,ciphers),
         ageFigures:bday?[
           {n:bday.years,label:`age ${bday.years}`},{n:bday.years+1,label:`turns ${bday.years+1}`},
           {n:bday.since,label:`${bday.since}d since bday`},{n:bday.until,label:`${bday.until}d to bday`},

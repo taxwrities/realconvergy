@@ -5,7 +5,7 @@
    Soft conditions never block a match; they upgrade it.
 ================================================================ */
 import {calcAll,ALL_CIPHERS} from './gematria.js';
-import {primeIndex,compositeIndex,chainBase,numberToWords} from './numbers.js';
+import {primeIndex,compositeIndex,chainBase,numberToWords,isPrime} from './numbers.js';
 import {daysBetween,dateFigures} from './clocks.js';
 
 export const COUNTERS=[
@@ -24,6 +24,15 @@ export const COUNTERS=[
   {id:'dow',label:'day-of-week value',hint:"today's day name run through the ciphers"},
   {id:'age',label:'batter age figures',hint:'age, turns, days since/to bday, day-of-life, week'},
   {id:'nameCipher',label:'name cipher',hint:'the batter’s own name (full/first/last) run through one chosen cipher — e.g. full name Ord = 139'},
+  /* player-info counters — emit a raw player attribute as the counter value,
+     compared to any source (custom #, DN spine, phrase, other counter…). */
+  {id:'jerseyNum',label:'Jersey #',hint:'the batter’s jersey number as a raw integer'},
+  {id:'jerseyPrime',label:'Jersey is prime',hint:'the jersey number, but only when it is prime (otherwise the leg misses)'},
+  {id:'jerseyComposite',label:'Jersey is composite',hint:'the jersey number, but only when it is composite (otherwise the leg misses)'},
+  {id:'dayOfLife',label:'Day of life',hint:'the batter’s total days alive (bday.totalDays)'},
+  {id:'bdaySince',label:'Days after birthday',hint:'days since the batter’s last birthday'},
+  {id:'bdayUntil',label:'Days until birthday',hint:'days until the batter’s next birthday'},
+  {id:'ageYears',label:'Age (years)',hint:'the batter’s age in whole years'},
   {id:'jesuit',label:'Jesuit educated',hint:'boolean — passes when the batter attended an AJCU Jesuit school (no source needed)'},
   {id:'oppPitcherClock',label:'opp SP birthday clock',hint:"opposing probable pitcher's birthday clock: days after/to, age, turns"},
   {id:'sinceLast:HR',label:'days since last HR',hint:'needs DEEP (game log)'},
@@ -64,7 +73,10 @@ const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B'
 /* G stays out of the rung:* wildcard — NAME LOCK et al predate it and their
    hit counts must not shift under an engine addition. */
 const WILDCARD_STATS=Object.keys(STAT_KEY).filter(s=>s!=='G');
-export const DATE_COUNTERS=new Set(['doy','dateFig','dn','dow','teamGame','seasonGame','age','oppPitcherClock']);
+export const DATE_COUNTERS=new Set(['doy','dateFig','dn','dow','teamGame','seasonGame','age','oppPitcherClock',
+  /* birthday/age figures recompute each day → forecast-eligible. Jersey # is
+     static, so jerseyNum/jerseyPrime/jerseyComposite stay out. */
+  'dayOfLife','bdaySince','bdayUntil','ageYears']);
 
 export const isDateDependent=pattern=>pattern.conditions.some(c=>DATE_COUNTERS.has(c.counter)||c.counter?.startsWith('sinceLast'));
 
@@ -172,6 +184,32 @@ export function resolveCounter(cond,ctx){
     const vals=calcAll(str);
     sel.forEach(cipher=>{const n=vals[cipher];
       if(n>0)out.push({n,label:`${part} name ${cipher} ${n} (${str})`})});
+  }else if(kind==='jerseyNum'){
+    /* player-info: raw jersey number, compared to any source. */
+    const j=+ctx.batter.p.jersey;
+    if(j>0)out.push({n:j,label:`#${j} jersey`});
+  }else if(kind==='jerseyPrime'){
+    /* the jersey number, gated on primality — misses (no candidate) if not. */
+    const j=+ctx.batter.p.jersey;
+    if(j>0&&isPrime(j))out.push({n:j,label:`#${j} jersey (prime)`});
+  }else if(kind==='jerseyComposite'){
+    /* mirror of jerseyPrime — 4 is the smallest composite; 1 is neither. */
+    const j=+ctx.batter.p.jersey;
+    if(j>=4&&!isPrime(j))out.push({n:j,label:`#${j} jersey (composite)`});
+  }else if(kind==='dayOfLife'){
+    const b=ctx.batter.bday;
+    if(b?.totalDays>0)out.push({n:b.totalDays,label:`day ${b.totalDays} of life`});
+  }else if(kind==='bdaySince'){
+    const b=ctx.batter.bday;
+    if(b&&b.since>0)out.push({n:b.since,label:`${b.since}d after bday`});
+  }else if(kind==='bdayUntil'){
+    const b=ctx.batter.bday;
+    if(b&&b.until>0)out.push({n:b.until,label:`${b.until}d to bday`});
+  }else if(kind==='ageYears'){
+    const b=ctx.batter.bday;
+    /* bday.years is precomputed; derive from totalDays if an older ctx lacks it. */
+    const y=b?.years??(b?Math.floor(b.totalDays/365.25):0);
+    if(y>0)out.push({n:y,label:`age ${y}`});
   }else if(kind==='sinceLast'){
     /* needs the DEEP tier (p.deep.lastEvent from the gameLog pull) */
     const d=ctx.batter.p.deep?.lastEvent?.[stat];
@@ -356,6 +394,13 @@ const counterPhrase=(counter,scope,off,arg)=>{
       :`the ${list.join('/')} cipher${list.length>1?'s':''}`;
     return`the batter's ${arg?.part||'full'} name in ${cips}`;
   }
+  if(kind==='jerseyNum')return"the batter's jersey number";
+  if(kind==='jerseyPrime')return"the batter's jersey number (when prime)";
+  if(kind==='jerseyComposite')return"the batter's jersey number (when composite)";
+  if(kind==='dayOfLife')return"the batter's day of life";
+  if(kind==='bdaySince')return'days after the birthday';
+  if(kind==='bdayUntil')return'days until the birthday';
+  if(kind==='ageYears')return'age in years';
   if(kind==='teamGame'||kind==='seasonGame')return"the team's game number";
   if(kind==='stair')return`the team's next ${stat} landings`;
   if(kind==='doy')return'the day of year';
