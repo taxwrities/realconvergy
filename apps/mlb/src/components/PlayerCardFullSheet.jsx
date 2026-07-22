@@ -4,6 +4,7 @@ import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
 import {isPrime,primeIndex} from '../engine/numbers.js';
 import {dateFigures} from '../engine/clocks.js';
 import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../engine/numerology.js';
+import {draftFromCross} from '../engine/recipe.js';
 import {CORE_WORDS_MLB} from '../data/defaults.js';
 
 /* ================================================================
@@ -83,10 +84,11 @@ const INST_LABELS=(()=>{
 })();
 
 export default function PlayerCardFullSheet({row,onClose}){
-  const {dayField,matchup,ciphers,game,side,dayState,addThread,dn,date,focusReturn}=useApp();
+  const {dayField,matchup,ciphers,game,side,dayState,addThread,addDraft,dn,date,focusReturn}=useApp();
   const [outcome,setOutcome]=useState('3B');
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
+  const [showAllXref,setShowAllXref]=useState(false); // convergence-bullet cap toggle
 
   /* dedicated-page navigation (Tony 2026-07-22): push one history entry on
      entry so the mobile / browser back button (and back-swipe) returns to the
@@ -303,6 +305,22 @@ export default function PlayerCardFullSheet({row,onClose}){
     return{cat,label,nums:[...new Set(nums)].sort((a,b)=>a-b)};
   }).filter(g=>g.nums.length);
 
+  /* named convergence bullets — the same opp-SP-name × batter cross rows and
+     team staircases the Board card shows, now ported onto the full-sheet
+     (Tony 2026-07-22). Sourced from the store's `matchup` (already keyed to
+     this player: focusPlayer points batterId here before opening). Ranked so
+     the hard-rung rows (career TB→444 / season PA→208) lead, then the team
+     game # rows, then plain name-value echoes. Capped so the block can't
+     dominate the sheet; overflow behind a +N more toggle. */
+  const XREF_CAP=10;
+  const xrefRows=useMemo(()=>{
+    const cross=matchup?.cross||[];
+    const rank=c=>c.rung?0:c.gameNo?1:2;
+    return[...cross].map((c,i)=>({c,i})).sort((a,b)=>rank(a.c)-rank(b.c)||a.i-b.i).map(x=>x.c);
+  },[matchup]);
+  const teamStair=matchup?.stair||[];
+  const shownXref=showAllXref?xrefRows:xrefRows.slice(0,XREF_CAP);
+
   /* ---- filter helpers ---- */
   const lensMatch=n=>lens? (lens==='tfam'?tfamSet.has(n):activeMap.get(n)?.cat===lens) : false;
   /* glow layering (additive, Tony 2026-07-22, take 2 — thresholds tightened so
@@ -501,6 +519,47 @@ export default function PlayerCardFullSheet({row,onClose}){
           {Grid(model.teamGrid)}
           {Grid(model.oppGrid)}
           {Grid(model.pitcherGrid)}
+
+          {(xrefRows.length>0||teamStair.length>0)&&(
+            <div className="grp">
+              <div className="grplabel">CONVERGENCES{sp?` — vs ${sp.lastName}`:''}
+                <span className="grpcount">{xrefRows.length||''}</span></div>
+              <div className="xrefs">
+                {shownXref.map((c,i)=>{
+                  const d=draftFromCross(c);
+                  return(
+                    <div className={`xref-row${cls(c.n)}`} data-n={c.n} key={i}
+                      onClick={e=>{e.stopPropagation();toggleSpot(c.n);}}>
+                      <b className="xn">{c.n}</b>
+                      <span className="xtext">— {c.text}</span>
+                      {d&&<button className="xpromote" title="add to recipe draft"
+                        onClick={e=>{e.stopPropagation();addDraft(d);}}>+</button>}
+                    </div>
+                  );
+                })}
+                {xrefRows.length>XREF_CAP&&(
+                  <button className="xref-more"
+                    onClick={e=>{e.stopPropagation();setShowAllXref(v=>!v);}}>
+                    {showAllXref?'less':`+${xrefRows.length-XREF_CAP} more`}
+                  </button>
+                )}
+              </div>
+              {teamStair.length>0&&(
+                <>
+                  <div className="grplabel xstair-label">TEAM STAIRCASES<span className="grpcount"/></div>
+                  <div className="xrefs">
+                    {teamStair.map((s,i)=>(
+                      <div className={`xref-row stair${cls(s.n)}`} data-n={s.n} key={i}
+                        onClick={e=>{e.stopPropagation();toggleSpot(s.n);}}>
+                        <span className="xtext">team {s.k} sits <b className="xcur">{s.cur}</b> → <b className="xn">{s.n}</b>
+                          <span className="xdim"> (+{s.need}) · {s.why}</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="grp">
             <div className="grplabel">STATS — career · season · next<span className="grpcount"/></div>

@@ -131,6 +131,27 @@
 .pcfs .srow.tonight .w::after{content:" ●";font-size:7px;vertical-align:2px;}
 .pcfs .srow.offhand{opacity:0.35;}
 
+/* named convergence bullets (Tony 2026-07-22) — the opp-SP-name × batter
+   cross rows + team staircases ported from the Board card. Reuses the sheet's
+   mono/dim tokens; the leading number carries the convergence-green (staircase
+   targets go blue, matching the Board). Rows tie into the same data-n glow +
+   spotlight system as every other value on the sheet. */
+.pcfs .xrefs{display:flex;flex-direction:column;gap:1px;}
+.pcfs .xstair-label{margin-top:15px;}
+.pcfs .xref-row{display:flex;align-items:baseline;gap:6px;padding:5px 6px;border-radius:6px;
+  cursor:pointer;position:relative;line-height:1.4;}
+.pcfs .xref-row .xn{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--cvg-green);flex-shrink:0;}
+.pcfs .xref-row .xcur{font-family:var(--mono);font-weight:700;color:var(--dim);}
+.pcfs .xref-row .xtext{font-size:11.5px;color:var(--dim);min-width:0;}
+.pcfs .xref-row .xdim{color:var(--faint);}
+.pcfs .xref-row.stair .xn{color:var(--cvg-blue);}
+.pcfs .xref-row .xpromote{margin-left:auto;flex-shrink:0;width:16px;height:16px;line-height:15px;text-align:center;
+  border:none;border-radius:4px;background:var(--panel);color:var(--faint);font-size:12px;cursor:pointer;opacity:0.6;}
+.pcfs .xref-row:hover .xpromote,.pcfs .xref-row:focus-within .xpromote{opacity:0.95;color:var(--gold);}
+.pcfs .xref-more{align-self:flex-start;margin-top:5px;font-size:10.5px;font-weight:700;color:var(--faint);
+  background:none;border:none;cursor:pointer;padding:3px 2px;font-family:inherit;}
+.pcfs .xref-more:active{transform:scale(.96);}
+
 /* pattern-hit badges + jesuit badge preserved on the sheet header */
 .pcfs .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .pcfs .pcbadge{font-size:9px;font-weight:800;letter-spacing:0.5px;padding:3px 7px;border-radius:5px;
