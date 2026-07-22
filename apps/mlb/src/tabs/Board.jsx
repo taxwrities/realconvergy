@@ -249,7 +249,7 @@ function TeamToggle(){
 
 /* zones 6+7 — batter list (sticky left) + batter card */
 function BatterZone(){
-  const {board,side,batterId,setBatterId,setFocusedPlayerId,contextFilter,patternFilter,dayState}=useApp();
+  const {board,side,batterId,setBatterId,focusPlayer,contextFilter,patternFilter,dayState}=useApp();
   const rows=board[side]||[];
   const inFilter=r=>{
     if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
@@ -301,7 +301,7 @@ function BatterZone(){
         })}
       </div>
       <div className="card-col">
-        {sel&&<BatterCard row={sel} onOpenFull={()=>{setBatterId(sel.id);setFocusedPlayerId(sel.id)}}/>}
+        {sel&&<BatterCard row={sel} onOpenFull={()=>focusPlayer({id:sel.id,side,from:'board'})}/>}
         <PatternHitsPanel/>
         {sel&&<TotalsPanel row={sel}/>}
       </div>

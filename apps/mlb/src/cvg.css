@@ -595,6 +595,16 @@ body {
 }
 .finder-row { padding: 6px 0; border-top: 1px solid #1a202b; }
 .finder-row .fr-top { font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+/* ↗ open-full-sheet affordance on any search result row that names a player
+   (Tony 2026-07-22) — pushed to the row's trailing edge, taps navigate to that
+   player's full sheet with the Search page preserved underneath. */
+.pf-open {
+  margin-left: auto; flex-shrink: 0; border: 1px solid var(--sf-line); border-radius: 9px;
+  background: var(--card-grad); color: var(--color-text-primary); font-family: inherit;
+  font-size: 13px; font-weight: 700; line-height: 1; padding: 3px 7px; cursor: pointer;
+  transition: border-color .15s, color .15s, transform .1s;
+}
+.pf-open:active { border-color: var(--cvg-acc); color: var(--cvg-acc); transform: scale(.92); }
 .finder-row .fr-bot { font-size: 12px; margin-top: 2px; }
 /* player-numerology cross-ref block under each phrase hit (Tony 2026-07-22) */
 .fr-xref { font-size: 11px; line-height: 1.5; margin: 3px 0 1px; padding-left: 4px;

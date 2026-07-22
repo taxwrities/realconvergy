@@ -16,7 +16,7 @@ const DEFAULT_WORDS=['SINGLE','DOUBLE','TRIPLE','HOMERUN','HR','STRIKEOUT','STRI
 const NAME_PARTS=[['first','First'],['middle','Middle'],['last','Last'],['full','Full']];
 
 export default function PhraseFinder(){
-  const {findPhrases,ciphers,date,dn}=useApp();
+  const {findPhrases,ciphers,date,dn,focusPlayer}=useApp();
   const [open,setOpen]=useState(false);
   const [words,setWords]=useState(()=>DEFAULT_WORDS.map(w=>({w,on:true})));
   const [custom,setCustom]=useState('');
@@ -146,6 +146,9 @@ export default function PhraseFinder(){
                     <span className="muted"> {g.team}</span>
                     <span className="badge blue" style={{marginLeft:6}}>{g.rows.length}</span>
                     <span className="muted" style={{fontSize:11}}> · {g.gameLabel}</span>
+                    <button className="pf-open" title={`Open ${g.name}'s full sheet`}
+                      aria-label={`Open ${g.name}'s full sheet`}
+                      onClick={()=>focusPlayer({id:g.id,pk:g.rows[0].pk,side:g.rows[0].side,from:'search'})}>↗</button>
                   </div>
                   {g.rows.map((r,i)=>(
                     <div key={i} className="fr-bot mono" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>

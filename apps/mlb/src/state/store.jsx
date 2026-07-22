@@ -121,9 +121,28 @@ export function AppStateProvider({children}){
      dedicated destination, not a bottom sheet). false = on the Board; true =
      the Search page owns the viewport. Same pattern as focusedPlayerId. */
   const [searchOpen,setSearchOpen]=useState(false);
+  /* focusReturn — which surface the full-sheet was opened FROM (Tony 2026-07-22),
+     so the back button reads "‹ Search" vs "‹ Board". 'search' also means the
+     Search page stays mounted underneath (searchOpen left true), so returning
+     lands back on it with filters / target / results / scroll intact. */
+  const [focusReturn,setFocusReturn]=useState('board');
   const [contextFilter,setContextFilter]=useState(null); // chip value filtering batter list
   const [patternFilter,setPatternFilter]=useState(null); // pattern id filtering batter list
   const [gameTotals,setGameTotals]=useState({}); // playerId → today's box line (top-of-card)
+
+  /* focusPlayer — the single entry point that opens a player's full-sheet page.
+     Search results can name a player in a DIFFERENT game than the board's current
+     selection, and the full-sheet's data (row / matchup / splits) is sourced from
+     the board for the selected game+side — so we point the board there first, then
+     focus. `from` records the origin surface for the back-button label + restore. */
+  const focusPlayer=useCallback(({id,pk,side,from='board'})=>{
+    if(id==null)return;
+    if(pk!=null)setGamePk(pk);
+    if(side)setSide(side);
+    setBatterId(id);
+    setFocusReturn(from);
+    setFocusedPlayerId(id);
+  },[]);
 
   const refresh=useCallback(async()=>{
     setError('');setLoading('Loading slate…');
@@ -169,7 +188,7 @@ export function AppStateProvider({children}){
     setSeasonInfo(c?.seasonInfo||null);
     setSlateSavedAt(c?.savedAt||null);
     setGamePk(c?.slate?.games?.[0]?.pk??null);
-    setBatterId(null);setFocusedPlayerId(null);setSearchOpen(false);setContextFilter(null);setPatternFilter(null);setError('');
+    setBatterId(null);setFocusedPlayerId(null);setFocusReturn('board');setSearchOpen(false);setContextFilter(null);setPatternFilter(null);setError('');
   },[date]);
   /* auto-load whenever the current date has no slate (mount + date switch);
      error gates retries, loading gates re-entry */
@@ -820,7 +839,7 @@ export function AppStateProvider({children}){
       off=Math.max(0,Math.floor(+off||0));
       /* stat-total rungs landing on n (the original behavior) */
       const rungHits=roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n)
-        .map(g=>({kind:'rung',who:r.ev.p.fullName,rung:g})));
+        .map(g=>({kind:'rung',id:r.id,pk:game.pk,side:r.ev.p._side,who:r.ev.p.fullName,rung:g})));
       /* day-of-life / career-day hits (within ±off) — the birth/debut clocks
          already feed rung scoring; this makes them directly searchable. Tony
          2026-07-20. */
@@ -831,7 +850,7 @@ export function AppStateProvider({children}){
           const val=clock[field];
           if(!(val>0))return;
           const d=val-n;
-          if(Math.abs(d)<=off)out.push({kind:'day',who:ev.p.fullName,n:val,delta:d,label:mk(val)});
+          if(Math.abs(d)<=off)out.push({kind:'day',id:r.id,pk:game.pk,side:ev.p._side,who:ev.p.fullName,n:val,delta:d,label:mk(val)});
         };
         chk(ev.bday,'totalDays',v=>`day ${v.toLocaleString()} of life`);
         chk(ev.bday,'since',v=>`${v} days since bday`);
@@ -852,7 +871,7 @@ export function AppStateProvider({children}){
     return{kind:'word',word:q.toUpperCase(),values:v,
       occ:ALL_CIPHERS.filter(c=>ciphers[c]).flatMap(c=>{
         const n=v[c];
-        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({who:r.ev.p.fullName,cipher:c,rung:g})));
+        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({id:r.id,pk:game.pk,side:r.ev.p._side,who:r.ev.p.fullName,cipher:c,rung:g})));
       })};
   },[slate,game,board,loaded,ciphers]);
 
@@ -1043,7 +1062,7 @@ export function AppStateProvider({children}){
     templates,setTemplates,colorRules,setColorRules,registry,setRegistry,
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
-    batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,searchOpen,setSearchOpen,contextFilter,setContextFilter,patternFilter,setPatternFilter,
+    batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,focusReturn,setFocusReturn,focusPlayer,searchOpen,setSearchOpen,contextFilter,setContextFilter,patternFilter,setPatternFilter,
     board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,findPhrases,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,

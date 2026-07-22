@@ -1,4 +1,4 @@
-import {useState,useMemo,useEffect} from 'react';
+import {useState,useMemo,useEffect,useRef} from 'react';
 import PhraseFinder from './PhraseFinder.jsx';
 import {useApp,INSTITUTIONAL,DAY_CLOCKS} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
@@ -13,10 +13,18 @@ import {dateFigures} from '../engine/clocks.js';
    while the page is open. All finder functionality is unchanged — Day-of-Life /
    Career-Day finder, phrase-variation finder, then universal search. */
 export default function SearchSheet({onClose}){
+  /* while a full-sheet is open ON TOP of the search page, this page stays mounted
+     (display:none) — but its popstate listener is still live. A back-press meant
+     for the full-sheet must NOT also unwind Search; the full-sheet's own handler
+     owns that pop. Guard on the live focusedPlayerId via a ref so the closure
+     always reads the current value. */
+  const {focusedPlayerId}=useApp();
+  const focusedRef=useRef(focusedPlayerId);
+  focusedRef.current=focusedPlayerId;
   useEffect(()=>{
     window.history.pushState({search:1},'');
-    const onPop=()=>onClose();
-    const esc=e=>{if(e.key==='Escape')window.history.back()};
+    const onPop=()=>{if(focusedRef.current==null)onClose()};
+    const esc=e=>{if(e.key==='Escape'&&focusedRef.current==null)window.history.back()};
     window.addEventListener('popstate',onPop);
     window.addEventListener('keydown',esc);
     const prevOverflow=document.body.style.overflow;
@@ -54,7 +62,7 @@ export default function SearchSheet({onClose}){
    every player in every loaded game. Quick-fill from today's DN spine or the
    institutional table runs immediately at the current tolerance. */
 function DayFinder(){
-  const {findDays,date}=useApp();
+  const {findDays,date,focusPlayer}=useApp();
   const [raw,setRaw]=useState('');
   const [tol,setTol]=useState(3);
   const [on,setOn]=useState(()=>Object.fromEntries(DAY_CLOCKS.map(c=>[c.key,true])));
@@ -109,6 +117,9 @@ function DayFinder(){
                 </span>
                 {r.onSpine&&<span className="badge gold">DN</span>}
                 {r.onInst&&<span className="badge green">INST</span>}
+                <button className="pf-open" title={`Open ${r.name}'s full sheet`}
+                  aria-label={`Open ${r.name}'s full sheet`}
+                  onClick={()=>focusPlayer({id:r.id,pk:r.pk,side:r.side,from:'search'})}>↗</button>
               </div>
               <div className="fr-bot mono">
                 <b className="v-green">{r.value.toLocaleString()}</b>
@@ -126,7 +137,7 @@ function DayFinder(){
 
 /* ---- universal search (§8): number → identity card; word → cipher values ---- */
 function UniversalSearch(){
-  const {search,ciphers,colorFor}=useApp();
+  const {search,ciphers,colorFor,focusPlayer}=useApp();
   const [q,setQ]=useState('');
   const [off,setOff]=useState(0);
   const isNum=/^\d+$/.test(q.trim());
@@ -155,10 +166,15 @@ function UniversalSearch(){
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
-            <div key={'r'+i} className="occ v-green">
-              {h.kind==='day'
-                ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
-                :<>{h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}</>}
+            <div key={'r'+i} className="occ v-green" style={{display:'flex',alignItems:'center',gap:6}}>
+              <span>
+                {h.kind==='day'
+                  ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
+                  :<>{h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}</>}
+              </span>
+              {h.id!=null&&<button className="pf-open" title={`Open ${h.who}'s full sheet`}
+                aria-label={`Open ${h.who}'s full sheet`}
+                onClick={()=>focusPlayer({id:h.id,pk:h.pk,side:h.side,from:'search'})}>↗</button>}
             </div>
           ))}
           {!res.tableHits.length&&!res.rosterHits.length&&<div className="occ muted">no live occurrences today</div>}
@@ -175,6 +191,9 @@ function UniversalSearch(){
               <span className="badge gold">JESUIT</span>
               <span className="muted">{h.school}</span>
               <span className="muted" style={{fontSize:11}}>· {h.gameLabel}</span>
+              <button className="pf-open" title={`Open ${h.who}'s full sheet`}
+                aria-label={`Open ${h.who}'s full sheet`}
+                onClick={()=>focusPlayer({id:h.id,pk:h.pk,side:h.side,from:'search'})}>↗</button>
             </div>
           ))}
           {!res.players.length&&<div className="occ muted">no Jesuit-educated players on today's slate</div>}

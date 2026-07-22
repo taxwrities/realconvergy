@@ -83,7 +83,14 @@ export default function App(){
       {sheet==='quickadd'&&<QuickAddSheet onClose={()=>setSheet(null)}/>}
       {sheet==='settings'&&<SettingsSheet onClose={()=>setSheet(null)}/>}
     </div>
-    {searchOpen&&<SearchSheet onClose={()=>setSearchOpen(false)}/>}
+    {/* Search page stays MOUNTED (display:none) when a full-sheet opens over it
+        from a search result — so returning restores its filters / results /
+        scroll exactly. Same display:none trick as the board shell above. */}
+    {searchOpen&&(
+      <div style={focusedRow?{display:'none'}:undefined}>
+        <SearchSheet onClose={()=>setSearchOpen(false)}/>
+      </div>
+    )}
     {focusedRow&&<PlayerCardFullSheet row={focusedRow} onClose={()=>setFocusedPlayerId(null)}/>}
     </>
   );

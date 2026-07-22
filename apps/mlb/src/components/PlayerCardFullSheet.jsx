@@ -82,7 +82,7 @@ const INST_LABELS=(()=>{
 })();
 
 export default function PlayerCardFullSheet({row,onClose}){
-  const {dayField,matchup,ciphers,game,side,dayState,addThread,dn,date}=useApp();
+  const {dayField,matchup,ciphers,game,side,dayState,addThread,dn,date,focusReturn}=useApp();
   const [outcome,setOutcome]=useState('3B');
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
@@ -367,8 +367,9 @@ export default function PlayerCardFullSheet({row,onClose}){
         {/* ---------- pinned stack ---------- */}
         <div className="pin" onClick={e=>e.stopPropagation()}>
           <div className="pcfs-topbar">
-            <button className="pcfs-back" onClick={dismiss} aria-label="Back to Board">
-              <span className="chev">‹</span>Board
+            <button className="pcfs-back" onClick={dismiss}
+              aria-label={focusReturn==='search'?'Back to Search':'Back to Board'}>
+              <span className="chev">‹</span>{focusReturn==='search'?'Search':'Board'}
             </button>
             <span className="pcfs-topname">{p.fullName}</span>
           </div>
