@@ -1,6 +1,9 @@
 import {useState,useMemo,useEffect} from 'react';
-import {useApp} from '../state/store.jsx';
-import {calcAll} from '../engine/gematria.js';
+import {useApp,INSTITUTIONAL} from '../state/store.jsx';
+import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
+import {isPrime,primeIndex} from '../engine/numbers.js';
+import {dateFigures} from '../engine/clocks.js';
+import {CORE_WORDS_MLB} from '../data/defaults.js';
 
 /* ================================================================
    PlayerCardFullSheet — Tony's locked full-sheet player card (v2).
@@ -44,8 +47,41 @@ const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],
 const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
 const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
 
+/* ---- number-property helpers (WHY panel enrichment) ----
+   Prime/composite via the engine sieve; factorization by trial division
+   (WHY numbers are small — sheet values, stat lines, life-clock readings).
+   digital root uses the mod-9 shortcut. */
+const digitSum=n=>String(Math.abs(n)).split('').reduce((a,d)=>a+ +d,0);
+const digitalRoot=n=>n>0?1+((n-1)%9):0;
+const primeFactors=n=>{
+  const f=[];let x=Math.abs(n);
+  for(let d=2;d*d<=x;d++)while(x%d===0){f.push(d);x/=d;}
+  if(x>1)f.push(x);
+  return f;
+};
+
+/* institutional table → labels: which Core-table word (in which cipher) lands
+   on each frozen table value. The table itself is the fixed INSTITUTIONAL list;
+   labels are a convenience so a match prints "= FREEMASON RR" not just a flag. */
+const INST_SET=new Set(INSTITUTIONAL);
+const INST_LABELS=(()=>{
+  const m=new Map();
+  CORE_WORDS_MLB.forEach(w=>{
+    const v=calcAll(w);
+    ALL_CIPHERS.forEach(c=>{
+      const n=v[c];
+      if(INST_SET.has(n)){
+        const label=`${w} ${c}`;
+        if(!m.has(n))m.set(n,[]);
+        if(!m.get(n).includes(label))m.get(n).push(label);
+      }
+    });
+  });
+  return m;
+})();
+
 export default function PlayerCardFullSheet({row,onClose}){
-  const {dayField,matchup,ciphers,game,side,dayState,addThread}=useApp();
+  const {dayField,matchup,ciphers,game,side,dayState,addThread,dn,date}=useApp();
   const [outcome,setOutcome]=useState('3B');
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
@@ -249,9 +285,27 @@ export default function PlayerCardFullSheet({row,onClose}){
     const seen=new Set();
     [...model.cells,...cascade.map(c=>({n:c.n,section:'CASCADE',item:`${c.stat} → projected`}))]
       .forEach(x=>{if(x.n===spot){const key=x.section+'|'+x.item;if(!seen.has(key)){seen.add(key);locs.push(x);}}});
-    return{n:spot,reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`
-      :'Not in today’s active set — cross-reference only.',locs};
-  },[spot,activeMap,model,cascade]);
+
+    /* ---- number properties (shown regardless of active state) ---- */
+    let classify;
+    if(spot===1)classify='one (unit)';
+    else if(isPrime(spot))classify=`PRIME · prime #${primeIndex(spot)}`;
+    else if(spot>=4)classify=`COMPOSITE · factors ${primeFactors(spot).join(' × ')}`;
+    else classify='—';
+    const inst=INST_SET.has(spot)?(INST_LABELS.get(spot)||['INSTITUTIONAL TABLE']):[];
+
+    /* ---- cross-refs against today's date spine + numerology, even when the
+       spotlighted number is "owned" by another active category ---- */
+    const spine=[];
+    (date?dateFigures(date):[]).forEach((f,i)=>{if(f.n===spot)spine.push(`DN spine row ${i+1} · ${f.calc}`);});
+    if(dn?.vals?.[spot])spine.push(`date-numerology · ${dn.vals[spot]}`);
+    if(dn?.rulerVals?.[spot])spine.push(`ruling planet · ${dn.rulerVals[spot]}`);
+
+    return{n:spot,
+      reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
+      props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
+      locs};
+  },[spot,activeMap,model,cascade,dn,date]);
 
   const Grid=g=>g&&(
     <div className="grp" key={g.title}>
@@ -398,7 +452,23 @@ export default function PlayerCardFullSheet({row,onClose}){
         <div className={`why${why?' show':''}`} onClick={e=>e.stopPropagation()}>
           <button className="why-close" onClick={()=>setSpot(null)}>✕</button>
           <div className="why-num">{why?why.n:'—'}</div>
-          <div className="why-reason">{why?why.reason:''}</div>
+          {why?.reason&&<div className="why-reason">{why.reason}</div>}
+          {why&&(
+            <div className="why-props">
+              <div className="why-prop"><span className="wp-k">TYPE</span>
+                <span className="wp-v">{why.props.classify}</span></div>
+              {why.props.inst.length>0&&(
+                <div className="why-prop"><span className="wp-k">TABLE</span>
+                  <span className="wp-v gold">{why.props.inst.map(l=>`= ${l}`).join('   ')}</span></div>
+              )}
+              <div className="why-prop"><span className="wp-k">DIGITS</span>
+                <span className="wp-v">digit sum {why.props.ds} · digital root {why.props.dr}</span></div>
+              {why.props.spine.length>0&&(
+                <div className="why-prop"><span className="wp-k">SPINE</span>
+                  <span className="wp-v teal">{why.props.spine.join('   ')}</span></div>
+              )}
+            </div>
+          )}
           <div className="why-locs">
             {why&&(
               <>

@@ -141,6 +141,12 @@
 .pcfs .why-num{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);}
 .pcfs .why-close{position:absolute;top:10px;right:13px;color:var(--faint);font-size:15px;padding:4px;border:none;background:none;cursor:pointer;}
 .pcfs .why-reason{font-size:11.5px;color:var(--text);margin-top:3px;line-height:1.45;}
+.pcfs .why-props{margin-top:9px;display:flex;flex-direction:column;gap:4px;}
+.pcfs .why-prop{display:flex;gap:9px;align-items:baseline;}
+.pcfs .wp-k{flex-shrink:0;width:46px;font-size:8px;font-weight:800;letter-spacing:0.7px;color:var(--faint);padding-top:1px;}
+.pcfs .wp-v{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.4;}
+.pcfs .wp-v.gold{color:var(--gold);font-weight:700;}
+.pcfs .wp-v.teal{color:var(--teal);}
 .pcfs .why-locs{margin-top:9px;border-top:1px solid var(--line);padding-top:8px;max-height:34vh;overflow-y:auto;}
 .pcfs .why-loc{font-size:10.5px;color:var(--dim);font-family:var(--mono);padding:2px 0;}
 .pcfs .why-loc b{color:var(--text);}
