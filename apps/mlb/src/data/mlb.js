@@ -114,6 +114,7 @@ export async function fetchSlate(dstr,onProgress){
         firstName:prefFirst,
         legalFirstName:legalFirst&&legalFirst!==prefFirst?legalFirst:null,
         legalLastName:legalLast&&legalLast!==prefLast?legalLast:null,
+        middleName:pp.middleName||null,
         jersey:pp.primaryNumber?+pp.primaryNumber:null,
         legalName:pp.fullFMLName&&pp.fullFMLName!==pp.fullName?pp.fullFMLName:null,
         school,jesuit:isJesuit(school),

@@ -925,33 +925,64 @@ export function AppStateProvider({children}){
           const nm=(p.fullName||'').trim();
           if(!nm)return;
           const toks=nm.split(/\s+/);
-          /* both preferred AND legal/government name variants (Tony 2026-07-22):
-             "Ben"→[Ben, Benjamin], last→[pref, legal], full→[pref full, legal
-             full, pref-first+legal-last, legal-first+pref-last]. legal* fields
-             are null when identical to display, so pref stays the default. Each
-             part deduped by its stripped letters so Ben==Ben collapses to one. */
+          /* Preferred + legal + middle + compound-token variants (Tony 2026-07-22).
+             Roster shows "Ben"/"Jung Hoo"; the sweep also tries the government
+             first ("Benjamin"), the middle ("Thomas"/"T"), each token of a
+             compound/hyphenated name alone (Jung Hoo → JUNG, HOO), and BOTH name
+             orders (given "JUNG HOO LEE" + family-first "LEE JUNG HOO"). legal*
+             fields are null when identical to display, so pref stays the default;
+             everything is deduped by stripped letters (JUNGHOO==JUNG HOO). */
+          /* trust the hydrated first/last fields over splitting fullName: a
+             compound FIRST name ("Jung Hoo Lee") makes toks.slice(1) grab part
+             of the first name as the last, so p.lastName wins when present. */
           const prefFirst=(p.firstName||toks[0]||'').trim();
-          const prefLast=(toks.slice(1).join(' ')||p.lastName||'').trim();
+          const prefLast=(p.lastName||toks.slice(1).join(' ')||'').trim();
           const legalFirst=(p.legalFirstName||prefFirst).trim();
           const legalLast=(p.legalLastName||p.lastName||prefLast).trim();
-          const legalFull=`${legalFirst} ${legalLast}`.trim();
-          const variantsOf=key=>{
-            let list;
-            if(key==='first')list=[{str:prefFirst},{str:legalFirst,legal:true}];
-            else if(key==='last')list=[{str:prefLast},{str:legalLast,legal:true}];
-            else list=[{str:nm},{str:legalFull,legal:true},
-              {str:`${prefFirst} ${legalLast}`.trim(),legal:true},
-              {str:`${legalFirst} ${prefLast}`.trim(),legal:true}];
+          const middle=(p.middleName||'').trim();
+          const midInitial=middle?middle[0]:'';
+          /* atomForms: a name-atom as-is PLUS each token of a space/hyphen
+             compound alone. The concat form (JUNGHOO) is letter-identical to the
+             as-is form, so it dedupes away — the as-is spacing stays for display. */
+          const atomForms=s=>{
+            s=(s||'').trim();if(!s)return[];
+            const tk=s.split(/[\s-]+/).map(x=>x.trim()).filter(Boolean);
+            return tk.length>1?[s,...tk]:[s];
+          };
+          /* dedupe a {str,legal} list by stripped letters; first form wins so a
+             non-legal display form is preferred over an identical legal one. */
+          const dedupe=list=>{
             const dd=new Set(),o=[];
             list.forEach(v=>{const s=(v.str||'').trim();if(!s)return;
               const dk=letters(s).join('').toUpperCase();if(!dk||dd.has(dk))return;
               dd.add(dk);o.push({str:s,legal:!!v.legal})});
             return o;
           };
+          const flatForms=srcs=>srcs.flatMap(v=>atomForms(v.str).map(s=>({str:s,legal:!!v.legal})));
+          // standalone-part variant sets (First / Middle / Last / Full chips)
+          const firstV=dedupe(flatForms([{str:prefFirst},{str:legalFirst,legal:true}]));
+          const lastV=dedupe(flatForms([{str:prefLast},{str:legalLast,legal:true}]));
+          const middleV=middle?dedupe(flatForms([{str:middle,legal:true}]).concat(
+            midInitial?[{str:midInitial,legal:true}]:[])):[];
+          /* full combos: both name orders × pref/legal first × optional middle
+             (full or initial) × whole last. Family-first pairs each first-token
+             with the last so LEE JUNG / LEE HOO surface alongside LEE JUNG HOO. */
+          const firstBlocks=firstV; // whole + compound tokens, legal-flagged
+          const lastWhole=dedupe([{str:prefLast},{str:legalLast,legal:true}]); // last stays whole in combos
+          const midOpts=middle?[{str:'',legal:false},{str:middle,legal:true},
+            ...(midInitial?[{str:midInitial,legal:true}]:[])]:[{str:'',legal:false}];
+          const combos=[];
+          firstBlocks.forEach(f=>lastWhole.forEach(l=>midOpts.forEach(m=>{
+            const lg=f.legal||l.legal||m.legal;
+            combos.push({str:[f.str,m.str,l.str].filter(Boolean).join(' '),legal:lg});   // given order
+            combos.push({str:[l.str,f.str,m.str].filter(Boolean).join(' '),legal:lg});   // family-first
+          })));
+          const fullV=dedupe(combos);
           const np=[];
-          ['first','last','full'].forEach(key=>{
+          const partMap={first:firstV,middle:middleV,last:lastV,full:fullV};
+          ['first','middle','last','full'].forEach(key=>{
             if(!parts.includes(key))return;
-            variantsOf(key).forEach(v=>np.push({key,str:v.str,legal:v.legal}));
+            (partMap[key]||[]).forEach(v=>np.push({key,str:v.str,legal:v.legal}));
           });
           np.forEach(part=>{
             cleanWords.forEach(word=>{

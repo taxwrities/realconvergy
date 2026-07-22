@@ -12,14 +12,14 @@ import {dateFigures} from '../engine/clocks.js';
    kept SINGULAR (HIT/RUN/RBI), the form Zach computes against. */
 const DEFAULT_WORDS=['SINGLE','DOUBLE','TRIPLE','HOMERUN','HR','STRIKEOUT','STRIKE OUT',
   'WALK','STOLEN BASE','HIT','RUN','RBI'];
-const NAME_PARTS=[['first','First'],['last','Last'],['full','Full']];
+const NAME_PARTS=[['first','First'],['middle','Middle'],['last','Last'],['full','Full']];
 
 export default function PhraseFinder(){
   const {findPhrases,ciphers,date,dn}=useApp();
   const [open,setOpen]=useState(false);
   const [words,setWords]=useState(()=>DEFAULT_WORDS.map(w=>({w,on:true})));
   const [custom,setCustom]=useState('');
-  const [parts,setParts]=useState({first:true,last:true,full:true});
+  const [parts,setParts]=useState({first:true,middle:true,last:true,full:true});
   const [cix,setCix]=useState(()=>Object.fromEntries(ALL_CIPHERS.map(c=>[c,!!ciphers[c]])));
   const [raw,setRaw]=useState('');
   const [tol,setTol]=useState(0);
