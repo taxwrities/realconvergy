@@ -73,6 +73,8 @@ Session command: `add founder <name> [founded <date>] [category <cat>]`.
 Compute ciphers, fetch date if not supplied, append. One-line confirmation.
 
 ### Job 4 — Decoder feed (ongoing)
+**Gate enforced at data layer:** the harvester emits `data/decoder-exports/founders-locked.json` — pre-filtered to `date_status === "locked"` with a `source`, each entry tagged `granularity: "day" | "year"`. The decoder imports ONLY this file, never `founders.json`. Year-granularity entries are excluded from day-span probes (year counts only) until Job 1 upgrades them.
+
 Expose to the Date Decoder duration engine, per game date:
 1. **Days-since-founding** for every `locked` entity → check landings against the day's thread numbers, ritual main numbers, and T-family values.
 2. **Birthday spans** (tribute figures + any player DOBs passed in): days before/after birthday vs main numbers — **322 check always runs** (most-used ritual).
