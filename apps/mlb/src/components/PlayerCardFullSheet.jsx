@@ -384,6 +384,21 @@ export default function PlayerCardFullSheet({row,onClose}){
     return s;
   },[matchup]);
 
+  /* prime-factor convergence pool (Tony 2026-07-23): the "relevant numbers" a
+     value's factorization is tested against — active-set numbers + raw cipher
+     values on the sheet. relevantPrimeFactors is every prime factor of that pool
+     so a PRIME value can check whether it divides one of them. */
+  const relevantVals=useMemo(()=>{
+    const s=new Set(cipherVals);
+    activeMap.forEach((_v,n)=>s.add(n));
+    return s;
+  },[cipherVals,activeMap]);
+  const relevantPrimeFactors=useMemo(()=>{
+    const s=new Set();
+    relevantVals.forEach(n=>{if(n>=2)primeFactors(n).forEach(pf=>s.add(pf));});
+    return s;
+  },[relevantVals]);
+
   /* externalConv(n,origin) — the non-tautological glow test for a projected stat
      rung / cascade cell (Tony 2026-07-23). A projection lights ONLY when its
      value ALSO converges with something OUTSIDE its own advancement:
@@ -391,7 +406,11 @@ export default function PlayerCardFullSheet({row,onClose}){
        2 name/team/opp/pitcher cipher     4 opponent-team cipher (raw)
        5 digit root ∈ today's date-roots
      plus a DIFFERENT stat's next-1 rung — `origin` drops the asking cell's own
-     lane inside statRungMatches so a rung matching itself no longer counts. */
+     lane inside statRungMatches so a rung matching itself no longer counts.
+     6 prime-factor cross-reference (Tony 2026-07-23):
+         composite n (≥4) → a prime factor is active / a cipher raw / date-root-relevant
+         prime n          → n is itself a prime factor of an active or cipher-raw value
+       the trivial 1×n factorization never counts. */
   const externalConv=(n,origin)=>{
     if(!(n>0))return false;
     if(isActive(n))return true;
@@ -400,7 +419,11 @@ export default function PlayerCardFullSheet({row,onClose}){
     if(dateRoots.has(digitalRoot(n)))return true;
     const cr=crossRefsForNumber({sr:srf,opp:oppVals},n,dateRoots,origin);
     if(cr.opponent.items.some(i=>i.rawMatch))return true;
-    return cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label));
+    if(cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label)))return true;
+    if(n>=4&&!isPrime(n))
+      return primeFactors(n).some(pf=>relevantVals.has(pf)||dateRoots.has(digitalRoot(pf)));
+    if(isPrime(n))return relevantPrimeFactors.has(n);
+    return false;
   };
 
   /* ---- bar groups derived from the (re-categorized) activeMap ---- */
