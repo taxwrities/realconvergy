@@ -13,6 +13,7 @@ export const COUNTERS=[
   {id:'rung:H',label:'H rung'},{id:'rung:1B',label:'1B rung'},{id:'rung:XBH',label:'XBH rung'},
   {id:'rung:RBI',label:'RBI rung'},{id:'rung:BB',label:'BB rung'},{id:'rung:2B',label:'2B rung'},
   {id:'rung:3B',label:'3B rung'},{id:'rung:AB',label:'AB rung'},{id:'rung:PA',label:'PA rung'},
+  {id:'rung:SB',label:'SB (steals) rung'},{id:'rung:R',label:'R (runs) rung'},
   {id:'rung:G',label:'G (games) rung',hint:'games played — month/day-of-week scopes emit BOTH season + career counts (DEEP)'},
   {id:'rung:*',label:'any stat rung'},
   {id:'teamGame',label:'team game #'},{id:'seasonGame',label:'season game #'},
@@ -69,10 +70,12 @@ export const NAME_CIPHERS=ALL_CIPHERS;
 
 const STAT_KEY={HR:'homeRuns',TB:'totalBases',SO:'strikeOuts',H:'hits','1B':'1B',XBH:'XBH',
   RBI:'rbi',BB:'baseOnBalls','2B':'doubles','3B':'triples',AB:'atBats',PA:'plateAppearances',
-  G:'gamesPlayed'};
-/* G stays out of the rung:* wildcard — NAME LOCK et al predate it and their
-   hit counts must not shift under an engine addition. */
-const WILDCARD_STATS=Object.keys(STAT_KEY).filter(s=>s!=='G');
+  G:'gamesPlayed',SB:'stolenBases',R:'runs'};
+/* G/SB/R stay out of the rung:* wildcard — NAME LOCK et al predate them and
+   their hit counts must not shift under an engine addition (SB/R added
+   2026-07-23; select them explicitly via rung:SB / rung:R). */
+const WILDCARD_EXCLUDE=new Set(['G','SB','R']);
+const WILDCARD_STATS=Object.keys(STAT_KEY).filter(s=>!WILDCARD_EXCLUDE.has(s));
 export const DATE_COUNTERS=new Set(['doy','dateFig','dn','dow','teamGame','seasonGame','age','oppPitcherClock',
   /* birthday/age figures recompute each day → forecast-eligible. Jersey # is
      static, so jerseyNum/jerseyPrime/jerseyComposite stay out. */
@@ -384,7 +387,7 @@ const counterPhrase=(counter,scope,off,arg)=>{
     const at=offset?` at ${offset>0?'+':''}${offset}`:win;
     const scopeTxt=scope==='both'?'career-or-season':(scope||'season');
     if(stat==='*')return offset?`any ${scopeTxt} stat milestone${at}`:`any next stat milestone${win}`;
-    const statName=stat==='G'?'games-played count':stat==='SO'?'K':stat;
+    const statName=stat==='G'?'games-played count':stat==='SO'?'K':stat==='SB'?'stolen base':stat==='R'?'run':stat;
     return offset?`the ${scopeTxt} ${statName}${at}`:`the next ${scopeTxt} ${statName}${win}`;
   }
   if(kind==='nameCipher'){

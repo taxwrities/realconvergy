@@ -19,7 +19,7 @@ const NUMBER_WORDS=new Set(['ZERO','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVE
   'NINETY','HUNDRED','THOUSAND']);
 const MONTHS='January|February|March|April|May|June|July|August|September|October|November|December';
 const DAYS='Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday';
-const STAT_RE='(?:home\\s?runs?|homeruns?|homers?|hrs?|hits?|strikeouts?|total\\s?bases|tbs?|rbis?|walks?|doubles?|triples?|singles?|ks?)';
+const STAT_RE='(?:home\\s?runs?|homeruns?|homers?|hrs?|hits?|strikeouts?|total\\s?bases|tbs?|rbis?|walks?|doubles?|triples?|singles?|ks?|stolen\\s?bases?|steals?|sbs?|runs?)';
 const statOf=s=>{
   s=(s||'').toLowerCase().replace(/\s+/g,' ');
   if(/^(k|strikeout)s?$/.test(s))return'SO';
@@ -30,6 +30,8 @@ const statOf=s=>{
   if(/^singles?$/.test(s))return'1B';
   if(/^rbis?$/.test(s))return'RBI';
   if(/^(tb|total bases)s?$/.test(s))return'TB';
+  if(/^(sb|stolen bases?|steals?)$/.test(s))return'SB';
+  if(/^runs?$/.test(s))return'R';
   return'HR';
 };
 

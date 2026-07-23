@@ -12,7 +12,7 @@ import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../en
    cipher engine strips spaces, so the space is cosmetic only. Outcome words are
    kept SINGULAR (HIT/RUN/RBI), the form Zach computes against. */
 const DEFAULT_WORDS=['SINGLE','DOUBLE','TRIPLE','HOMERUN','HR','STRIKEOUT','STRIKE OUT',
-  'WALK','STOLEN BASE','HIT','RUN','RBI'];
+  'WALK','STOLEN BASE','STEAL','SB','HIT','RUN','RBI'];
 const NAME_PARTS=[['first','First'],['middle','Middle'],['last','Last'],['full','Full']];
 /* how many matched phrases to show inline on the collapsed row before "+N more" */
 const PHRASE_CAP=4;

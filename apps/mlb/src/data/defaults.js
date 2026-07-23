@@ -25,6 +25,9 @@ export const OUTCOME_WORDS=[
   {word:'TOTAL BASES',stats:['TB']},
   {word:'RBI',stats:['RBI']},
   {word:'RUN BATTED IN',stats:['RBI']},
+  {word:'STOLEN BASE',stats:['SB']},
+  {word:'STEAL',stats:['SB']},
+  {word:'RUN',stats:['R']},
   {word:'BASEBALL',stats:null},
   {word:'MLB',stats:null},
 ];
@@ -32,13 +35,16 @@ export const OUTCOME_WORDS=[
 /* Tracked batter stats (§2): season AND career, staircases on all.
    AB/PA are green-light signals, never the bet.
    1B/XBH are derived at ingest (engine/rungs.js deriveStats):
-   1B = H−2B−3B−HR, XBH = 2B+3B+HR. Counting stats only (Tony). */
+   1B = H−2B−3B−HR, XBH = 2B+3B+HR. Counting stats only (Tony).
+   SB (stolen bases) + R (runs scored) added 2026-07-23 — pulled straight
+   off the statsapi hitting line (runs/stolenBases pass through deriveStats). */
 export const STATS=[
   ['SO','strikeOuts'],['H','hits'],['HR','homeRuns'],['2B','doubles'],['3B','triples'],
   ['1B','1B'],['XBH','XBH'],['RBI','rbi'],
   ['BB','baseOnBalls'],['TB','totalBases'],['AB','atBats'],['PA','plateAppearances'],
+  ['SB','stolenBases'],['R','runs'],
 ];
-export const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,'1B':3,HR:2,XBH:2,BB:2,'2B':2,'3B':1};
+export const STAT_DEPTH={TB:4,RBI:4,AB:5,PA:5,H:3,SO:3,'1B':3,HR:2,XBH:2,BB:2,'2B':2,'3B':1,SB:2,R:3};
 /* Refine-box lanes (§4.2). Default ON: HR + TB + 1B (Tony 2026-07-15);
    XBH ships as a chip but stays OFF until tapped. */
 export const LANES=['HR','TB','1B','XBH','RBI','K','H','BB','2B','3B'];

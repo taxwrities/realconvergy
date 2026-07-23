@@ -37,7 +37,7 @@ export function projectStats(p,gamesAhead){
   const proj=obj=>{
     if(!obj)return obj;
     const out={...obj};
-    for(const k of['strikeOuts','hits','homeRuns','doubles','triples','1B','XBH','rbi','baseOnBalls','totalBases','atBats','plateAppearances'])
+    for(const k of['strikeOuts','hits','homeRuns','doubles','triples','1B','XBH','rbi','baseOnBalls','totalBases','atBats','plateAppearances','stolenBases','runs'])
       if(obj[k]!=null)out[k]=+obj[k]+Math.floor((+obj[k]/g)*gamesAhead);
     return out;
   };

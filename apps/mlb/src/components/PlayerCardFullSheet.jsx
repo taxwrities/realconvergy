@@ -30,14 +30,20 @@ const CIPHER_COL=[
   ['RevSat','RSAT'],['Sept','SEP'],['Latin','JEW'],
 ];
 
-const SK={G:'gamesPlayed',PA:'plateAppearances',AB:'atBats',H:'hits','1B':'1B','2B':'doubles',
+const SK={G:'gamesPlayed',PA:'plateAppearances',AB:'atBats',R:'runs',H:'hits','1B':'1B','2B':'doubles',
   '3B':'triples',HR:'homeRuns',XBH:'XBH',RBI:'rbi',TB:'totalBases',
-  BB:'baseOnBalls',SO:'strikeOuts'};
+  BB:'baseOnBalls',SO:'strikeOuts',SB:'stolenBases'};
 /* G leads the STATS block: career games is the running total Tony reads first
-   (Tony 2026-07-23). Every other lane is unchanged. */
-const STAT_ROWS=['G','PA','AB','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO'];
+   (Tony 2026-07-23). R (runs scored) sits with the top-of-order counters after
+   AB; SB (stolen bases) rides at the tail beside the discipline lanes — both
+   added 2026-07-23, every other lane unchanged. */
+const STAT_ROWS=['G','PA','AB','R','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO','SB'];
 
-/* each outcome increments its full stat family (spec §4); base = career line */
+/* each outcome increments its full stat family (spec §4); base = career line.
+   SB is the lone non-plate-appearance outcome (Tony 2026-07-23): a stolen base
+   advances ONLY the SB lane — no AB, no PA, no hit family. R (runs scored) is a
+   byproduct of any outcome rather than a discrete plate result, so it stays a
+   STATS-block row and is intentionally NOT a TEST chip. */
 const CASCADE={
   'H':[['H',1],['AB',1],['PA',1]],   // any hit, type-agnostic: no 1B/2B/3B/HR/XBH/RBI/TB advance
   '1B':[['H',1],['1B',1],['TB',1],['AB',1],['PA',1]],
@@ -46,8 +52,9 @@ const CASCADE={
   'HR':[['H',1],['HR',1],['XBH',1],['RBI',1],['TB',4],['AB',1],['PA',1]],
   'BB':[['BB',1],['PA',1]],
   'SO':[['SO',1],['AB',1],['PA',1]],
+  'SB':[['SB',1]],                   // stolen base: SB only — not a plate appearance
 };
-const OUTCOMES=['none','H','1B','2B','3B','HR','BB','SO'];
+const OUTCOMES=['none','H','1B','2B','3B','HR','BB','SO','SB'];
 const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],['runs','R'],['hits','H']];
 const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
 const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
