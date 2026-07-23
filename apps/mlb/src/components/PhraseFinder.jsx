@@ -2,7 +2,7 @@ import {useState,useMemo,useEffect} from 'react';
 import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
-import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../engine/numerology.js';
+import {crossRefsForNumber,numerologyText,statRungText,opponentText,dateRootSet} from '../engine/numerology.js';
 
 /* Phrase Variation Finder (Tony 2026-07-22) — sibling to the Day-of-Life
    finder. Sweeps <name part> + <outcome word> across every enabled cipher for
@@ -63,6 +63,9 @@ export default function PhraseFinder(){
   },[hits]);
 
   const spine5=useMemo(()=>dateFigures(date).slice(0,5).map(f=>f.n),[date]);
+  /* today's date-root set — the digit roots of the five DN-spine values; gates
+     the digit-root SOFT matches in every row's cross-ref (Tony 2026-07-23). */
+  const dateRoots=useMemo(()=>dateRootSet(spine5),[spine5]);
   const fill=nums=>setRaw([...new Set(nums.filter(n=>n>0))].join(', '));
   const toggleWord=w=>setWords(ws=>ws.map(x=>x.w===w?{...x,on:!x.on}:x));
   const setAllWords=on=>setWords(ws=>ws.map(x=>({...x,on})));
@@ -161,7 +164,7 @@ export default function PhraseFinder(){
                 targets {[targets.join(', '),oppTeam&&'opp-team',oppPitcher&&'opp-pitcher'].filter(Boolean).join(' + ')||'—'} · ±{tol} · {hits.length} hit{hits.length===1?'':'s'} across {groups.length} player{groups.length===1?'':'s'}
               </div>
               {groups.map(g=>(
-                <ResultRow key={g.id} g={g} tol={tol} showSrc={showSrc} focusPlayer={focusPlayer}/>
+                <ResultRow key={g.id} g={g} tol={tol} showSrc={showSrc} focusPlayer={focusPlayer} dateRoots={dateRoots}/>
               ))}
               {!hits.length&&(
                 <div className="occ muted">No hits. Try more ciphers, more variations, or bumping tolerance to 1–2.</div>
@@ -194,12 +197,12 @@ function srcBadge(r){
   return ss.length?[...new Set(ss.map(srcOne))].join(' · '):'typed';
 }
 
-function ResultRow({g,tol,showSrc,focusPlayer}){
+function ResultRow({g,tol,showSrc,focusPlayer,dateRoots}){
   const [exp,setExp]=useState(false);
   const shown=g.rows.slice(0,PHRASE_CAP), extra=g.rows.length-shown.length;
   /* cascade = a RUNGS/OPP cross-ref lands on the same target as a phrase hit →
      stronger glow. Computed once here and reused by the expanded PlayerXref. */
-  const xref=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target)),[g]);
+  const xref=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target),dateRoots),[g,dateRoots]);
   /* multi-source convergence (Tony 2026-07-23): this player has BOTH a typed
      hit AND an opponent-derived (team/pitcher) hit → strong glow. */
   const kinds=new Set(g.rows.flatMap(r=>(r.sources||[]).map(s=>s.kind)));
@@ -249,13 +252,13 @@ function ResultRow({g,tol,showSrc,focusPlayer}){
    (opponent-team gematria). Raw equality = strong; a shared digit-root = soft.
    Deduped per group. Same crossRefsForNumber() helper the full-sheet WHY panel
    uses; drives the row's glow strength and the expanded PlayerXref. */
-function collectXref(row,targets){
+function collectXref(row,targets,dateRoots){
   const tgts=[...new Set(targets)].filter(n=>n>0);
   const player=[],rungs=[],opp=[];
   if(!row||!tgts.length)return{player,rungs,opp};
   const sN=new Set(),sR=new Set(),sO=new Set();
   tgts.forEach(tg=>{
-    const cr=crossRefsForNumber(row,tg);
+    const cr=crossRefsForNumber(row,tg,dateRoots);
     cr.numerology.items.forEach(it=>{
       if(!(it.rawMatch||it.softMatch))return;
       const k=`${it.key}|${tg}`;if(sN.has(k))return;sN.add(k);

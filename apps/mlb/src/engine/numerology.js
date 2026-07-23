@@ -19,6 +19,23 @@ import {STATS} from '../data/defaults.js';
 /* single-digit reduction: sum digits until <=9. 0 (or non-positive) → 0. */
 export const digitRoot=n=>{n=Math.abs(Math.floor(+n||0));return n>0?1+((n-1)%9):0;};
 
+/* dateRootSet(vals) — the day's date-root set (Tony 2026-07-23). Pass the five
+   date-numerology values (dateFigures(date).slice(0,5).map(f=>f.n)): M+DD+YY+cent,
+   M+DD+digitsum(YYYY), digitsum(M)+digitsum(DD)+digitsum(YYYY), M+DD+YY,
+   digitsum(M)+digitsum(DD)+digitsum(YY). Returns the Set of their digit roots.
+   A digit-root SOFT match only fires when the shared root is a member of this
+   set — restricting the soft-glow net to roots the day itself is emphasizing.
+   (e.g. 2026-07-23 → values 76,40,22,56,20 → roots {4,4,4,2,2} → set {2,4}.) */
+export const dateRootSet=vals=>new Set((vals||[]).map(digitRoot).filter(r=>r>0));
+
+/* softHit(dr, targetDr, dateRoots) — the gated soft-match test shared by every
+   matcher below. Both sides must reduce to the same root AND (when a dateRoots
+   Set is supplied) that root must be date-relevant. No Set → permissive
+   fallback (old behavior) so callers that don't yet thread the day's roots keep
+   working. */
+const softHit=(dr,targetDr,dateRoots)=>
+  dr===targetDr&&(!(dateRoots instanceof Set)||dateRoots.has(targetDr));
+
 /* the five player readings we cross-reference, in display order. Pass a
    flat fields object: {totalDays, since, until, years, jersey}. */
 const XKEYS=[
@@ -29,14 +46,15 @@ const XKEYS=[
   ['jersey #','jersey'],
 ];
 
-/* playerNumerologyMatches(fields, target)
+/* playerNumerologyMatches(fields, target, dateRoots)
    fields: {totalDays, since, until, years, jersey} — any may be null/absent.
    target: the hit's target number (or a spotlighted number).
+   dateRoots: today's date-root Set (from dateRootSet) gating soft matches.
    Returns {targetDr, items:[{key,value,dr,rawMatch,softMatch}], any}.
    • rawMatch  — value === target        (strong / gold)
-   • softMatch — digitRoot(value) === digitRoot(target), and not a rawMatch
-                 (soft / dim gold bonus). */
-export function playerNumerologyMatches(fields,target){
+   • softMatch — digitRoot(value) === digitRoot(target) === a day date-root, and
+                 not a rawMatch                        (soft / dim gold bonus). */
+export function playerNumerologyMatches(fields,target,dateRoots){
   const t=Math.floor(+target||0);
   const targetDr=digitRoot(t);
   const items=[];
@@ -45,7 +63,7 @@ export function playerNumerologyMatches(fields,target){
     if(value==null||!(value>0))return;
     const dr=digitRoot(value);
     const rawMatch=t>0&&value===t;
-    const softMatch=t>0&&!rawMatch&&dr===targetDr;
+    const softMatch=t>0&&!rawMatch&&softHit(dr,targetDr,dateRoots);
     items.push({key,value,dr,rawMatch,softMatch});
   });
   return{targetDr,items,any:items.some(i=>i.rawMatch||i.softMatch)};
@@ -60,8 +78,9 @@ export function playerNumerologyMatches(fields,target){
    its digit-root (soft) is reported. N kept small (default 10) so the
    block stays compact. This closes Tony's "next career HR is his 79th"
    loop when the opponent / phrase also lands on 79.
+   dateRoots: today's date-root Set (from dateRootSet) gating soft matches.
    Returns {targetDr, items:[{scope,label,base,off,n,dr,rawMatch,softMatch}], any}. */
-export function statRungMatches(stats,target,N=10){
+export function statRungMatches(stats,target,dateRoots,N=10){
   const t=Math.floor(+target||0);
   const targetDr=digitRoot(t);
   const items=[];
@@ -75,7 +94,7 @@ export function statRungMatches(stats,target,N=10){
         for(let off=1;off<=N;off++){
           const n=base+off;
           const rawMatch=n===t;
-          const softMatch=!rawMatch&&digitRoot(n)===targetDr;
+          const softMatch=!rawMatch&&softHit(digitRoot(n),targetDr,dateRoots);
           if(rawMatch||softMatch){
             items.push({scope,label,base,off,n,dr:digitRoot(n),rawMatch,softMatch});
             break;   // nearest landing per stat/scope only
@@ -94,8 +113,9 @@ export function statRungMatches(stats,target,N=10){
    pure. Flags which land on the target (raw) or share its digit-root
    (soft); deduped to one row per name+value so a value hit by several
    ciphers shows once.
+   dateRoots: today's date-root Set (from dateRootSet) gating soft matches.
    Returns {targetDr, items:[{name,cipher,value,dr,rawMatch,softMatch}], any}. */
-export function opponentMatches(oppVals,target){
+export function opponentMatches(oppVals,target,dateRoots){
   const t=Math.floor(+target||0);
   const targetDr=digitRoot(t);
   const items=[];
@@ -104,7 +124,7 @@ export function opponentMatches(oppVals,target){
     oppVals.forEach(({name,cipher,n})=>{
       if(!(n>0))return;
       const rawMatch=n===t;
-      const softMatch=!rawMatch&&digitRoot(n)===targetDr;
+      const softMatch=!rawMatch&&softHit(digitRoot(n),targetDr,dateRoots);
       if(!(rawMatch||softMatch))return;
       const k=`${name}|${n}`;
       if(seen.has(k))return;seen.add(k);
@@ -114,19 +134,22 @@ export function opponentMatches(oppVals,target){
   return{targetDr,items,any:items.length>0};
 }
 
-/* crossRefsForNumber(inputs, target) — the one entry point both surfaces
-   call so the Phrase Finder rows and the full-sheet WHY panel stay in sync.
+/* crossRefsForNumber(inputs, target, dateRoots) — the one entry point both
+   surfaces call so the Phrase Finder rows and the full-sheet WHY panel stay in
+   sync.
    inputs: {pn, sr, opp}
      pn  — flat life-clock/jersey fields   → playerNumerologyMatches
      sr  — {career, season} stat objects   → statRungMatches
      opp — precomputed opponent [{name,cipher,n}] → opponentMatches
-   Any input may be absent → that group comes back empty. */
-export function crossRefsForNumber(inputs,target){
+   dateRoots: today's date-root Set (dateRootSet) threaded to every matcher so a
+   digit-root soft match only fires on a day-relevant root. Any input may be
+   absent → that group comes back empty. */
+export function crossRefsForNumber(inputs,target,dateRoots){
   const {pn,sr,opp}=inputs||{};
   return{
-    numerology:playerNumerologyMatches(pn||{},target),
-    statRungs:statRungMatches(sr,target),
-    opponent:opponentMatches(opp,target),
+    numerology:playerNumerologyMatches(pn||{},target,dateRoots),
+    statRungs:statRungMatches(sr,target,dateRoots),
+    opponent:opponentMatches(opp,target,dateRoots),
   };
 }
 

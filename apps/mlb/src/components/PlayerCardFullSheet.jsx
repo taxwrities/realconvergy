@@ -3,7 +3,7 @@ import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
 import {isPrime,primeIndex} from '../engine/numbers.js';
 import {dateFigures} from '../engine/clocks.js';
-import {crossRefsForNumber,numerologyText,statRungText,opponentText} from '../engine/numerology.js';
+import {crossRefsForNumber,numerologyText,statRungText,opponentText,dateRootSet} from '../engine/numerology.js';
 import {draftFromCross} from '../engine/recipe.js';
 import {CORE_WORDS_MLB} from '../data/defaults.js';
 
@@ -55,6 +55,28 @@ const CASCADE={
   'SB':[['SB',1]],                   // stolen base: SB only — not a plate appearance
 };
 const OUTCOMES=['none','H','1B','2B','3B','HR','BB','SO','SB'];
+
+/* next-1 rung glow gate (Tony 2026-07-23): on a single plate appearance only ONE
+   outcome fires, so those next-rung milestones are mutually exclusive — lighting
+   every tracked stat's +1 floods the eye with hits that can't all happen. The
+   sheet's next-1 xhit glow is restricted to the stats CONSISTENT with the state:
+     • TEST = '—' (none) → only the stats that advance on EVERY event: AB & PA
+       (PA always; AB on every non-walk/HBP/SF).
+     • a specific TEST outcome → the stat family that outcome advances.
+   R has no TEST chip (byproduct stat) but is mapped for completeness. This gates
+   only the SHEET glow classes — the WHY panel still lists every projection. */
+const NEXT1_STATS={
+  none:['AB','PA'],
+  H:['H','AB','PA'],
+  '1B':['H','1B','TB','AB','PA'],
+  '2B':['H','2B','XBH','TB','AB','PA'],
+  '3B':['H','3B','XBH','TB','AB','PA'],
+  HR:['H','HR','XBH','RBI','TB','AB','PA'],
+  BB:['BB','PA'],
+  SO:['SO','AB','PA'],
+  SB:['SB'],
+  R:['R'],
+};
 const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],['runs','R'],['hits','H']];
 const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
 const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
@@ -142,6 +164,14 @@ export default function PlayerCardFullSheet({row,onClose}){
     });
     return ov;
   },[oppTeam,ciphers]);
+
+  /* today's date-root set (Tony 2026-07-23): digit roots of the five
+     date-numerology values (dateFigures rows 1–5). Threaded into every
+     crossRefsForNumber call so a digit-root SOFT match only fires on a root the
+     day itself is emphasizing — an 8-reducing stat no longer soft-glows unless 8
+     is one of today's date roots. */
+  const dateRoots=useMemo(
+    ()=>dateRootSet((date?dateFigures(date):[]).slice(0,5).map(f=>f.n)),[date]);
 
   /* ---- life-clock readings (each tappable + promotable) ---- */
   const bday=ev.bday,debut=ev.debut;
@@ -321,15 +351,20 @@ export default function PlayerCardFullSheet({row,onClose}){
     const bumpNonOpp=n=>nonOppCount.set(n,(nonOppCount.get(n)||0)+1);
     model.cells.forEach(x=>{if(!x.section.startsWith('OPPONENT'))bumpNonOpp(x.n);});
     cascade.forEach(x=>bumpNonOpp(x.n));
+    /* next-1 rung glow gated to the outcome-consistent stat family (Tony
+       2026-07-23): default (TEST '—') → AB & PA only; a selected outcome → the
+       family it advances. Keeps mutually-exclusive next milestones from all
+       lighting at once. */
+    const allowRung=new Set(NEXT1_STATS[outcome]||NEXT1_STATS.none);
     const distinct=new Set([...model.cells.map(x=>x.n),...cascade.map(x=>x.n)]);
     distinct.forEach(n=>{
-      const cr=crossRefsForNumber({sr:srf,opp:oppVals},n);
-      const nextRung=cr.statRungs.items.some(i=>i.rawMatch&&i.off===1);
+      const cr=crossRefsForNumber({sr:srf,opp:oppVals},n,dateRoots);
+      const nextRung=cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label));
       const oppEcho=cr.opponent.items.some(i=>i.rawMatch)&&(nonOppCount.get(n)||0)>0;
       if(nextRung||oppEcho)s.add(n);
     });
     return s;
-  },[model,cascade,oppVals,p]); // eslint-disable-line react-hooks/exhaustive-deps
+  },[model,cascade,oppVals,p,outcome,dateRoots]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---- bar groups derived from the (re-categorized) activeMap ---- */
   const barGroups=GROUP_ORDER.map(([cat,label])=>{
@@ -426,7 +461,7 @@ export default function PlayerCardFullSheet({row,onClose}){
         years:bday?.years??null,jersey:p.jersey??null},
       sr:{career:p.career||null,season:p.season||null},
       opp:oppVals,
-    },spot);
+    },spot,dateRoots);
     const xrefGroups=[
       ['PLAYER',cr.numerology,it=>numerologyText(it,spot,cr.numerology.targetDr)],
       ['RUNGS',cr.statRungs,it=>statRungText(it)],
@@ -441,7 +476,7 @@ export default function PlayerCardFullSheet({row,onClose}){
       reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
       props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
       xrefGroups,locs};
-  },[spot,activeMap,model,cascade,dn,date,bday,p,oppVals]);
+  },[spot,activeMap,model,cascade,dn,date,bday,p,oppVals,dateRoots]);
 
   const Grid=g=>g&&(
     <div className="grp" key={g.title}>
