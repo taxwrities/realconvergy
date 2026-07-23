@@ -1,0 +1,79 @@
+// harvest-founders.mjs — founders-historian data builder (specs/founders-historian.md)
+// Regenerates data/founders.json from the SEED below through gematria-core.
+// Job 1/2 (date verification + team founding harvest) appends sources here, then re-runs.
+// RULE: dates only reach date_status "locked" when confirmed against a fetched page (source URL required).
+import { calcAll, checksum } from "../packages/gematria-core/index.js";
+import { writeFileSync, renameSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const OUT = join(__dirname, "..", "data", "founders.json");
+
+// NFD-normalize + strip diacriticals BEFORE ciphering (core drops non a-z, so
+// "José" would lose the e without this — matches the Python-side convention).
+const norm = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const c = (s) => calcAll(norm(s));
+
+/* ---- regression anchor block: abort all writes on any failure ------------ */
+function anchors() {
+  const cs = checksum();
+  const t = [
+    ["core checksum (JESUIT ORDER)", cs.ok],
+    ["Atlanta Braves Ord 136", c("Atlanta Braves").Ord === 136],
+    ["Society of Jesus 191/Sat681", c("Society of Jesus").Ord === 191 && c("Society of Jesus").Sat === 681],
+    ["Freemasonry 139/58/Sat524", (() => { const v = c("Freemasonry"); return v.Ord === 139 && v.Red === 58 && v.Sat === 524; })()],
+    ["Church of Satan 137/56/Rev214", (() => { const v = c("Church of Satan"); return v.Ord === 137 && v.Red === 56 && v.Rev === 214; })()],
+    ["Skull and Bones 149/41/Rev202", (() => { const v = c("Skull and Bones"); return v.Ord === 149 && v.Red === 41 && v.Rev === 202; })()],
+    ["Scottish Rite Sat 585", c("Scottish Rite").Sat === 585],
+    ["WNBA Ord 40", c("WNBA").Ord === 40],
+    ["Kobe Bryant 113/41", c("Kobe Bryant").Ord === 113 && c("Kobe Bryant").Red === 41],
+    ["Kobe Bean Bryant 135/54", c("Kobe Bean Bryant").Ord === 135 && c("Kobe Bean Bryant").Red === 54],
+    ["Baltimore Orioles Jewish 601", c("Baltimore Orioles").Latin === 601],
+  ];
+  const bad = t.filter(([, ok]) => !ok);
+  if (bad.length) { console.error("ANCHOR FAIL:", bad.map(([n]) => n).join(", ")); process.exit(1); }
+  console.log(`anchors: ${t.length}/${t.length} pass`);
+}
+
+const SEED = JSON.parse(readFileSync(join(__dirname, "founders-seed.json"), "utf8"));
+
+function build() {
+  const out = {
+    _meta: {
+      version: 3,
+      generated_by: "scripts/harvest-founders.mjs",
+      cipher_order: ["Ord", "Red", "Rev", "RR", "Sat", "RevSat", "Chal", "Sept", "Latin"],
+      date_status_values: {
+        locked: "confirmed against a fetched page (source URL present) or Tony's rituals doc",
+        verify: "drafted from model knowledge — NOT decoder-usable until confirmed",
+        harvest: "no date yet — agent must fetch",
+        legendary: "no verifiable date exists",
+        "n/a": "no founding date applies",
+      },
+      rules: [
+        "Duration probes only consume date_status=locked entries with a source URL.",
+        "All cipher values regenerated through gematria-core — never hand-edited.",
+        "Rituals/founders layer is auxiliary narrative; never overrides skip-gate or Live AB Protocol.",
+        "Sport scope: MLB draws mlb_teams + shared layers; WNBA draws wnba_teams + shared layers. No cross-sport team tables.",
+      ],
+    },
+  };
+  for (const [cat, items] of Object.entries(SEED)) {
+    out[cat] = items.map((e) => {
+      const r = { ...e, ciphers: c(e.name) };
+      if (e.founder) r.founder_ciphers = c(e.founder);
+      if (e.city) { r.city_ciphers = c(e.city); }
+      if (e.nickname) { r.nickname_ciphers = c(e.nickname); }
+      return r;
+    });
+  }
+  const tmp = OUT + ".tmp";
+  writeFileSync(tmp, JSON.stringify(out, null, 2) + "\n");
+  renameSync(tmp, OUT);
+  const n = Object.entries(out).filter(([k]) => k !== "_meta").reduce((a, [, v]) => a + v.length, 0);
+  console.log(`wrote data/founders.json — ${n} entities`);
+}
+
+anchors();
+build();

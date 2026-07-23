@@ -1,0 +1,694 @@
+{
+  "rituals": [
+    {
+      "name": "Church of Satan",
+      "founded": "1966-04-30",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Anton LaVey",
+      "note": "Founded San Francisco. LaVey=129, died 10/29. 669 attribution unresolved \u2014 agent to trace cipher.",
+      "doc_main_numbers": [
+        137,
+        56,
+        214,
+        669
+      ]
+    },
+    {
+      "name": "Society of Jesus",
+      "founded": "1540-09-27",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Ignatius of Loyola",
+      "doc_main_numbers": [
+        191,
+        56,
+        187
+      ]
+    },
+    {
+      "name": "Freemasonry",
+      "founded": "1717-06-24",
+      "date_status": "locked",
+      "source": "",
+      "note": "Masonry=105/33. Key dates 3/3, 10/5, 5/8.",
+      "doc_main_numbers": [
+        105,
+        33,
+        139,
+        58,
+        158
+      ]
+    },
+    {
+      "name": "Skull and Bones",
+      "founded": "1832",
+      "date_status": "locked",
+      "source": "",
+      "founder": "William Huntington Russell",
+      "note": "Order 322 \u2014 most-used ritual. Yale=43/16, Skull and Crossbones=223/61. Founded at Yale 10/9. Exact 1832 date: harvest.",
+      "doc_main_numbers": [
+        149,
+        41,
+        202,
+        223,
+        61,
+        43,
+        16,
+        322
+      ]
+    },
+    {
+      "name": "Scottish Rite",
+      "founded": "1801-05-31",
+      "date_status": "verify",
+      "source": "",
+      "note": "Satanic=585 locked in regression table."
+    },
+    {
+      "name": "Kobe Bryant",
+      "founded": "1978-08-23",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Kobe Bean Bryant",
+      "note": "#8 #24 #41. Kobe Day 8/24. Died 2020-01-26.",
+      "doc_main_numbers": [
+        113,
+        41,
+        135,
+        54
+      ]
+    }
+  ],
+  "secret_societies": [
+    {
+      "name": "Illuminati",
+      "founded": "1776-05-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Adam Weishaupt"
+    },
+    {
+      "name": "Bavarian Illuminati",
+      "founded": "1776-05-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Adam Weishaupt"
+    },
+    {
+      "name": "Knights Templar",
+      "founded": "1119",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Hugues de Payens"
+    },
+    {
+      "name": "Bohemian Club",
+      "founded": "1872",
+      "date_status": "verify",
+      "source": "",
+      "note": "Ord=105 mirrors Masonry"
+    },
+    {
+      "name": "Bohemian Grove",
+      "founded": "1872",
+      "date_status": "verify",
+      "source": ""
+    },
+    {
+      "name": "Bilderberg Group",
+      "founded": "1954-05-29",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Prince Bernhard"
+    },
+    {
+      "name": "Council on Foreign Relations",
+      "founded": "1921-07-29",
+      "date_status": "verify",
+      "source": ""
+    },
+    {
+      "name": "Trilateral Commission",
+      "founded": "1973-07-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "David Rockefeller"
+    },
+    {
+      "name": "Ordo Templi Orientis",
+      "founded": "1904",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Aleister Crowley"
+    },
+    {
+      "name": "Rosicrucians",
+      "founded": "",
+      "date_status": "legendary",
+      "source": "",
+      "founder": "Christian Rosenkreuz"
+    }
+  ],
+  "institutional": [
+    {
+      "name": "Federal Reserve",
+      "founded": "1913-12-23",
+      "date_status": "verify",
+      "source": "",
+      "note": "Ord=143 sits on Wednesday regression lock"
+    },
+    {
+      "name": "Vatican City",
+      "founded": "1929-02-11",
+      "date_status": "verify",
+      "source": ""
+    },
+    {
+      "name": "United Nations",
+      "founded": "1945-10-24",
+      "date_status": "verify",
+      "source": "",
+      "note": "165/57 mirrors Scottish Rite"
+    },
+    {
+      "name": "Rothschild",
+      "founded": "",
+      "date_status": "n/a",
+      "source": "",
+      "founder": "Mayer Amschel Rothschild"
+    },
+    {
+      "name": "Rockefeller",
+      "founded": "",
+      "date_status": "n/a",
+      "source": "",
+      "founder": "John D Rockefeller"
+    }
+  ],
+  "sports_founders": [
+    {
+      "name": "Major League Baseball",
+      "founded": "1876-02-02",
+      "date_status": "verify",
+      "source": "",
+      "note": "NL founding date"
+    },
+    {
+      "name": "National League",
+      "founded": "1876-02-02",
+      "date_status": "verify",
+      "source": "",
+      "founder": "William Hulbert",
+      "note": "137/56 exact mirror of Church of Satan"
+    },
+    {
+      "name": "American League",
+      "founded": "1901-01-28",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Ban Johnson"
+    },
+    {
+      "name": "National Basketball Association",
+      "founded": "1946-06-06",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Maurice Podoloff",
+      "note": "Founded as BAA"
+    },
+    {
+      "name": "WNBA",
+      "founded": "1996-04-24",
+      "date_status": "verify",
+      "source": "",
+      "note": "Announced 4/24/1996; first game 6/21/1997"
+    },
+    {
+      "name": "Basketball",
+      "founded": "1891-12-21",
+      "date_status": "verify",
+      "source": "",
+      "founder": "James Naismith",
+      "note": "Invention date. Naismith=141/51=Adam Weishaupt"
+    },
+    {
+      "name": "Knickerbocker Rules",
+      "founded": "1845-09-23",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Alexander Cartwright",
+      "note": "Baseball codified"
+    }
+  ],
+  "tribute_figures": [
+    {
+      "name": "Jackie Robinson",
+      "founded": "1919-01-31",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Jack Roosevelt Robinson",
+      "note": "#42, Jackie Robinson Day 4/15"
+    },
+    {
+      "name": "Babe Ruth",
+      "founded": "1895-02-06",
+      "date_status": "verify",
+      "source": "",
+      "founder": "George Herman Ruth",
+      "note": "#3"
+    },
+    {
+      "name": "Lou Gehrig",
+      "founded": "1903-06-19",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Henry Louis Gehrig",
+      "note": "#4, Lou Gehrig Day 6/2"
+    },
+    {
+      "name": "Roberto Clemente",
+      "founded": "1934-08-18",
+      "date_status": "verify",
+      "source": "",
+      "note": "#21, died 12/31/1972"
+    },
+    {
+      "name": "Michael Jordan",
+      "founded": "1963-02-17",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Michael Jeffrey Jordan",
+      "note": "#23 #45. Ord=113=Kobe Bryant"
+    }
+  ],
+  "mlb_teams": [
+    {
+      "name": "Arizona Diamondbacks",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Arizona",
+      "nickname": "Diamondbacks"
+    },
+    {
+      "name": "Atlanta Braves",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Atlanta",
+      "nickname": "Braves"
+    },
+    {
+      "name": "Baltimore Orioles",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Baltimore",
+      "nickname": "Orioles"
+    },
+    {
+      "name": "Boston Red Sox",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Boston",
+      "nickname": "Red Sox"
+    },
+    {
+      "name": "Chicago Cubs",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "Cubs"
+    },
+    {
+      "name": "Chicago White Sox",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "White Sox"
+    },
+    {
+      "name": "Cincinnati Reds",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Cincinnati",
+      "nickname": "Reds"
+    },
+    {
+      "name": "Cleveland Guardians",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Cleveland",
+      "nickname": "Guardians"
+    },
+    {
+      "name": "Colorado Rockies",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Colorado",
+      "nickname": "Rockies"
+    },
+    {
+      "name": "Detroit Tigers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Detroit",
+      "nickname": "Tigers"
+    },
+    {
+      "name": "Houston Astros",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Houston",
+      "nickname": "Astros"
+    },
+    {
+      "name": "Kansas City Royals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Kansas City",
+      "nickname": "Royals"
+    },
+    {
+      "name": "Los Angeles Angels",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Angels"
+    },
+    {
+      "name": "Los Angeles Dodgers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Dodgers"
+    },
+    {
+      "name": "Miami Marlins",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Miami",
+      "nickname": "Marlins"
+    },
+    {
+      "name": "Milwaukee Brewers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Milwaukee",
+      "nickname": "Brewers"
+    },
+    {
+      "name": "Minnesota Twins",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Minnesota",
+      "nickname": "Twins"
+    },
+    {
+      "name": "New York Mets",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Mets"
+    },
+    {
+      "name": "New York Yankees",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Yankees"
+    },
+    {
+      "name": "Athletics",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Sacramento",
+      "nickname": "Athletics"
+    },
+    {
+      "name": "Philadelphia Phillies",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Philadelphia",
+      "nickname": "Phillies"
+    },
+    {
+      "name": "Pittsburgh Pirates",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Pittsburgh",
+      "nickname": "Pirates"
+    },
+    {
+      "name": "San Diego Padres",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "San Diego",
+      "nickname": "Padres"
+    },
+    {
+      "name": "San Francisco Giants",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "San Francisco",
+      "nickname": "Giants"
+    },
+    {
+      "name": "Seattle Mariners",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Seattle",
+      "nickname": "Mariners"
+    },
+    {
+      "name": "St Louis Cardinals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "St Louis",
+      "nickname": "Cardinals"
+    },
+    {
+      "name": "Tampa Bay Rays",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Tampa Bay",
+      "nickname": "Rays"
+    },
+    {
+      "name": "Texas Rangers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Texas",
+      "nickname": "Rangers"
+    },
+    {
+      "name": "Toronto Blue Jays",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Toronto",
+      "nickname": "Blue Jays"
+    },
+    {
+      "name": "Washington Nationals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Washington",
+      "nickname": "Nationals"
+    }
+  ],
+  "wnba_teams": [
+    {
+      "name": "Atlanta Dream",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Atlanta",
+      "nickname": "Dream"
+    },
+    {
+      "name": "Chicago Sky",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "Sky"
+    },
+    {
+      "name": "Connecticut Sun",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Connecticut",
+      "nickname": "Sun"
+    },
+    {
+      "name": "Dallas Wings",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Dallas",
+      "nickname": "Wings"
+    },
+    {
+      "name": "Golden State Valkyries",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Golden State",
+      "nickname": "Valkyries"
+    },
+    {
+      "name": "Indiana Fever",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Indiana",
+      "nickname": "Fever"
+    },
+    {
+      "name": "Las Vegas Aces",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Las Vegas",
+      "nickname": "Aces"
+    },
+    {
+      "name": "Los Angeles Sparks",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Sparks"
+    },
+    {
+      "name": "Minnesota Lynx",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Minnesota",
+      "nickname": "Lynx"
+    },
+    {
+      "name": "New York Liberty",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Liberty"
+    },
+    {
+      "name": "Phoenix Mercury",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Phoenix",
+      "nickname": "Mercury"
+    },
+    {
+      "name": "Portland Fire",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Portland",
+      "nickname": "Fire"
+    },
+    {
+      "name": "Seattle Storm",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Seattle",
+      "nickname": "Storm"
+    },
+    {
+      "name": "Toronto Tempo",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Toronto",
+      "nickname": "Tempo"
+    },
+    {
+      "name": "Washington Mystics",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Washington",
+      "nickname": "Mystics"
+    }
+  ]
+}

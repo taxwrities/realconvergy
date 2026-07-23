@@ -1,0 +1,2812 @@
+{
+  "_meta": {
+    "version": 3,
+    "generated_by": "scripts/harvest-founders.mjs",
+    "cipher_order": [
+      "Ord",
+      "Red",
+      "Rev",
+      "RR",
+      "Sat",
+      "RevSat",
+      "Chal",
+      "Sept",
+      "Latin"
+    ],
+    "date_status_values": {
+      "locked": "confirmed against a fetched page (source URL present) or Tony's rituals doc",
+      "verify": "drafted from model knowledge — NOT decoder-usable until confirmed",
+      "harvest": "no date yet — agent must fetch",
+      "legendary": "no verifiable date exists",
+      "n/a": "no founding date applies"
+    },
+    "rules": [
+      "Duration probes only consume date_status=locked entries with a source URL.",
+      "All cipher values regenerated through gematria-core — never hand-edited.",
+      "Rituals/founders layer is auxiliary narrative; never overrides skip-gate or Live AB Protocol.",
+      "Sport scope: MLB draws mlb_teams + shared layers; WNBA draws wnba_teams + shared layers. No cross-sport team tables."
+    ]
+  },
+  "rituals": [
+    {
+      "name": "Church of Satan",
+      "founded": "1966-04-30",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Anton LaVey",
+      "note": "Founded San Francisco. LaVey=129, died 10/29. 669 attribution unresolved — agent to trace cipher.",
+      "doc_main_numbers": [
+        137,
+        56,
+        214,
+        669
+      ],
+      "ciphers": {
+        "Ord": 137,
+        "Red": 56,
+        "Rev": 214,
+        "RR": 70,
+        "Sat": 592,
+        "RevSat": 669,
+        "Chal": 53,
+        "Sept": 53,
+        "Latin": 590
+      },
+      "founder_ciphers": {
+        "Ord": 129,
+        "Red": 39,
+        "Rev": 141,
+        "RR": 51,
+        "Sat": 479,
+        "RevSat": 491,
+        "Chal": 38,
+        "Sept": 27,
+        "Latin": 1357
+      }
+    },
+    {
+      "name": "Society of Jesus",
+      "founded": "1540-09-27",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Ignatius of Loyola",
+      "doc_main_numbers": [
+        191,
+        56,
+        187
+      ],
+      "ciphers": {
+        "Ord": 191,
+        "Red": 56,
+        "Rev": 187,
+        "RR": 79,
+        "Sat": 681,
+        "RevSat": 677,
+        "Chal": 57,
+        "Sept": 65,
+        "Latin": 1698
+      },
+      "founder_ciphers": {
+        "Ord": 201,
+        "Red": 75,
+        "Rev": 231,
+        "RR": 87,
+        "Sat": 761,
+        "RevSat": 791,
+        "Chal": 61,
+        "Sept": 57,
+        "Latin": 1053
+      }
+    },
+    {
+      "name": "Freemasonry",
+      "founded": "1717-06-24",
+      "date_status": "locked",
+      "source": "",
+      "note": "Masonry=105/33. Key dates 3/3, 10/5, 5/8.",
+      "doc_main_numbers": [
+        105,
+        33,
+        139,
+        58,
+        158
+      ],
+      "ciphers": {
+        "Ord": 139,
+        "Red": 58,
+        "Rev": 158,
+        "RR": 59,
+        "Sat": 524,
+        "RevSat": 543,
+        "Chal": 43,
+        "Sept": 39,
+        "Latin": 787
+      }
+    },
+    {
+      "name": "Skull and Bones",
+      "founded": "1832",
+      "date_status": "locked",
+      "source": "",
+      "founder": "William Huntington Russell",
+      "note": "Order 322 — most-used ritual. Yale=43/16, Skull and Crossbones=223/61. Founded at Yale 10/9. Exact 1832 date: harvest.",
+      "doc_main_numbers": [
+        149,
+        41,
+        202,
+        223,
+        61,
+        43,
+        16,
+        322
+      ],
+      "ciphers": {
+        "Ord": 149,
+        "Red": 41,
+        "Rev": 202,
+        "RR": 76,
+        "Sat": 604,
+        "RevSat": 657,
+        "Chal": 49,
+        "Sept": 41,
+        "Latin": 572
+      },
+      "founder_ciphers": {
+        "Ord": 327,
+        "Red": 111,
+        "Rev": 321,
+        "RR": 141,
+        "Sat": 1167,
+        "RevSat": 1161,
+        "Chal": 89,
+        "Sept": 95,
+        "Latin": 2088
+      }
+    },
+    {
+      "name": "Scottish Rite",
+      "founded": "1801-05-31",
+      "date_status": "verify",
+      "source": "",
+      "note": "Satanic=585 locked in regression table.",
+      "ciphers": {
+        "Ord": 165,
+        "Red": 57,
+        "Rev": 159,
+        "RR": 78,
+        "Sat": 585,
+        "RevSat": 579,
+        "Chal": 42,
+        "Sept": 64,
+        "Latin": 644
+      }
+    },
+    {
+      "name": "Kobe Bryant",
+      "founded": "1978-08-23",
+      "date_status": "locked",
+      "source": "",
+      "founder": "Kobe Bean Bryant",
+      "note": "#8 #24 #41. Kobe Day 8/24. Died 2020-01-26.",
+      "doc_main_numbers": [
+        113,
+        41,
+        135,
+        54
+      ],
+      "ciphers": {
+        "Ord": 113,
+        "Red": 41,
+        "Rev": 157,
+        "RR": 58,
+        "Sat": 463,
+        "RevSat": 507,
+        "Chal": 31,
+        "Sept": 30,
+        "Latin": 690
+      },
+      "founder_ciphers": {
+        "Ord": 135,
+        "Red": 54,
+        "Rev": 243,
+        "RR": 81,
+        "Sat": 625,
+        "RevSat": 733,
+        "Chal": 44,
+        "Sept": 39,
+        "Latin": 738
+      }
+    }
+  ],
+  "secret_societies": [
+    {
+      "name": "Illuminati",
+      "founded": "1776-05-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Adam Weishaupt",
+      "ciphers": {
+        "Ord": 120,
+        "Red": 48,
+        "Rev": 150,
+        "RR": 69,
+        "Sat": 470,
+        "RevSat": 500,
+        "Chal": 29,
+        "Sept": 35,
+        "Latin": 438
+      },
+      "founder_ciphers": {
+        "Ord": 141,
+        "Red": 51,
+        "Rev": 210,
+        "RR": 75,
+        "Sat": 596,
+        "RevSat": 665,
+        "Chal": 49,
+        "Sept": 50,
+        "Latin": 1409
+      }
+    },
+    {
+      "name": "Bavarian Illuminati",
+      "founded": "1776-05-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Adam Weishaupt",
+      "ciphers": {
+        "Ord": 188,
+        "Red": 80,
+        "Rev": 298,
+        "RR": 127,
+        "Sat": 818,
+        "RevSat": 928,
+        "Chal": 48,
+        "Sept": 56,
+        "Latin": 1272
+      },
+      "founder_ciphers": {
+        "Ord": 141,
+        "Red": 51,
+        "Rev": 210,
+        "RR": 75,
+        "Sat": 596,
+        "RevSat": 665,
+        "Chal": 49,
+        "Sept": 50,
+        "Latin": 1409
+      }
+    },
+    {
+      "name": "Knights Templar",
+      "founded": "1119",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Hugues de Payens",
+      "ciphers": {
+        "Ord": 173,
+        "Red": 65,
+        "Rev": 205,
+        "RR": 79,
+        "Sat": 663,
+        "RevSat": 695,
+        "Chal": 50,
+        "Sept": 59,
+        "Latin": 560
+      },
+      "founder_ciphers": {
+        "Ord": 170,
+        "Red": 62,
+        "Rev": 208,
+        "RR": 64,
+        "Sat": 660,
+        "RevSat": 698,
+        "Chal": 60,
+        "Sept": 63,
+        "Latin": 1115
+      }
+    },
+    {
+      "name": "Bohemian Club",
+      "founded": "1872",
+      "date_status": "verify",
+      "source": "",
+      "note": "Ord=105 mirrors Masonry",
+      "ciphers": {
+        "Ord": 105,
+        "Red": 51,
+        "Rev": 219,
+        "RR": 66,
+        "Sat": 525,
+        "RevSat": 639,
+        "Chal": 44,
+        "Sept": 36,
+        "Latin": 370
+      }
+    },
+    {
+      "name": "Bohemian Grove",
+      "founded": "1872",
+      "date_status": "verify",
+      "source": "",
+      "ciphers": {
+        "Ord": 134,
+        "Red": 71,
+        "Rev": 217,
+        "RR": 64,
+        "Sat": 589,
+        "RevSat": 672,
+        "Chal": 53,
+        "Sept": 47,
+        "Latin": 987
+      }
+    },
+    {
+      "name": "Bilderberg Group",
+      "founded": "1954-05-29",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Prince Bernhard",
+      "ciphers": {
+        "Ord": 159,
+        "Red": 87,
+        "Rev": 246,
+        "RR": 84,
+        "Sat": 684,
+        "RevSat": 771,
+        "Chal": 55,
+        "Sept": 65,
+        "Latin": 611
+      },
+      "founder_ciphers": {
+        "Ord": 135,
+        "Red": 81,
+        "Rev": 243,
+        "RR": 81,
+        "Sat": 625,
+        "RevSat": 733,
+        "Chal": 50,
+        "Sept": 51,
+        "Latin": 417
+      }
+    },
+    {
+      "name": "Council on Foreign Relations",
+      "founded": "1921-07-29",
+      "date_status": "verify",
+      "source": "",
+      "ciphers": {
+        "Ord": 293,
+        "Red": 131,
+        "Rev": 382,
+        "RR": 139,
+        "Sat": 1168,
+        "RevSat": 1257,
+        "Chal": 102,
+        "Sept": 90,
+        "Latin": 1007
+      }
+    },
+    {
+      "name": "Trilateral Commission",
+      "founded": "1973-07-01",
+      "date_status": "verify",
+      "source": "",
+      "founder": "David Rockefeller",
+      "ciphers": {
+        "Ord": 245,
+        "Red": 92,
+        "Rev": 295,
+        "RR": 133,
+        "Sat": 945,
+        "RevSat": 995,
+        "Chal": 64,
+        "Sept": 72,
+        "Latin": 817
+      },
+      "founder_ciphers": {
+        "Ord": 150,
+        "Red": 78,
+        "Rev": 282,
+        "RR": 93,
+        "Sat": 710,
+        "RevSat": 842,
+        "Chal": 61,
+        "Sept": 62,
+        "Latin": 1002
+      }
+    },
+    {
+      "name": "Ordo Templi Orientis",
+      "founded": "1904",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Aleister Crowley",
+      "ciphers": {
+        "Ord": 236,
+        "Red": 101,
+        "Rev": 250,
+        "RR": 106,
+        "Sat": 866,
+        "RevSat": 880,
+        "Chal": 73,
+        "Sept": 72,
+        "Latin": 791
+      },
+      "founder_ciphers": {
+        "Ord": 190,
+        "Red": 73,
+        "Rev": 215,
+        "RR": 89,
+        "Sat": 715,
+        "RevSat": 740,
+        "Chal": 51,
+        "Sept": 59,
+        "Latin": 1768
+      }
+    },
+    {
+      "name": "Rosicrucians",
+      "founded": "",
+      "date_status": "legendary",
+      "source": "",
+      "founder": "Christian Rosenkreuz",
+      "ciphers": {
+        "Ord": 149,
+        "Red": 59,
+        "Rev": 175,
+        "RR": 85,
+        "Sat": 569,
+        "RevSat": 595,
+        "Chal": 37,
+        "Sept": 48,
+        "Latin": 655
+      },
+      "founder_ciphers": {
+        "Ord": 253,
+        "Red": 100,
+        "Rev": 260,
+        "RR": 116,
+        "Sat": 918,
+        "RevSat": 925,
+        "Chal": 69,
+        "Sept": 78,
+        "Latin": 1400
+      }
+    }
+  ],
+  "institutional": [
+    {
+      "name": "Federal Reserve",
+      "founded": "1913-12-23",
+      "date_status": "verify",
+      "source": "",
+      "note": "Ord=143 sits on Wednesday regression lock",
+      "ciphers": {
+        "Ord": 143,
+        "Red": 71,
+        "Rev": 235,
+        "RR": 82,
+        "Sat": 633,
+        "RevSat": 725,
+        "Chal": 56,
+        "Sept": 64,
+        "Latin": 1086
+      }
+    },
+    {
+      "name": "Vatican City",
+      "founded": "1929-02-11",
+      "date_status": "verify",
+      "source": "",
+      "ciphers": {
+        "Ord": 127,
+        "Red": 46,
+        "Rev": 170,
+        "RR": 71,
+        "Sat": 512,
+        "RevSat": 555,
+        "Chal": 30,
+        "Sept": 40,
+        "Latin": 1366
+      }
+    },
+    {
+      "name": "United Nations",
+      "founded": "1945-10-24",
+      "date_status": "verify",
+      "source": "",
+      "note": "165/57 mirrors Scottish Rite",
+      "ciphers": {
+        "Ord": 165,
+        "Red": 57,
+        "Rev": 186,
+        "RR": 78,
+        "Sat": 620,
+        "RevSat": 641,
+        "Chal": 51,
+        "Sept": 51,
+        "Latin": 688
+      }
+    },
+    {
+      "name": "Rothschild",
+      "founded": "",
+      "date_status": "n/a",
+      "source": "",
+      "founder": "Mayer Amschel Rothschild",
+      "ciphers": {
+        "Ord": 116,
+        "Red": 53,
+        "Rev": 154,
+        "RR": 55,
+        "Sat": 466,
+        "RevSat": 504,
+        "Chal": 37,
+        "Sept": 46,
+        "Latin": 372
+      },
+      "founder_ciphers": {
+        "Ord": 239,
+        "Red": 104,
+        "Rev": 355,
+        "RR": 121,
+        "Sat": 1009,
+        "RevSat": 1125,
+        "Chal": 74,
+        "Sept": 84,
+        "Latin": 1045
+      }
+    },
+    {
+      "name": "Rockefeller",
+      "founded": "",
+      "date_status": "n/a",
+      "source": "",
+      "founder": "John D Rockefeller",
+      "ciphers": {
+        "Ord": 110,
+        "Red": 56,
+        "Rev": 187,
+        "RR": 61,
+        "Sat": 495,
+        "RevSat": 572,
+        "Chal": 45,
+        "Sept": 43,
+        "Latin": 284
+      },
+      "founder_ciphers": {
+        "Ord": 161,
+        "Red": 80,
+        "Rev": 271,
+        "RR": 82,
+        "Sat": 721,
+        "RevSat": 831,
+        "Chal": 67,
+        "Sept": 60,
+        "Latin": 986
+      }
+    }
+  ],
+  "sports_founders": [
+    {
+      "name": "Major League Baseball",
+      "founded": "1876-02-02",
+      "date_status": "verify",
+      "source": "",
+      "note": "NL founding date",
+      "ciphers": {
+        "Ord": 162,
+        "Red": 63,
+        "Rev": 351,
+        "RR": 117,
+        "Sat": 827,
+        "RevSat": 1016,
+        "Chal": 58,
+        "Sept": 60,
+        "Latin": 1140
+      }
+    },
+    {
+      "name": "National League",
+      "founded": "1876-02-02",
+      "date_status": "verify",
+      "source": "",
+      "founder": "William Hulbert",
+      "note": "137/56 exact mirror of Church of Satan",
+      "ciphers": {
+        "Ord": 137,
+        "Red": 56,
+        "Rev": 241,
+        "RR": 79,
+        "Sat": 627,
+        "RevSat": 731,
+        "Chal": 50,
+        "Sept": 46,
+        "Latin": 499
+      },
+      "founder_ciphers": {
+        "Ord": 165,
+        "Red": 66,
+        "Rev": 213,
+        "RR": 87,
+        "Sat": 655,
+        "RevSat": 703,
+        "Chal": 46,
+        "Sept": 53,
+        "Latin": 1404
+      }
+    },
+    {
+      "name": "American League",
+      "founded": "1901-01-28",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Ban Johnson",
+      "ciphers": {
+        "Ord": 115,
+        "Red": 61,
+        "Rev": 263,
+        "RR": 83,
+        "Sat": 605,
+        "RevSat": 753,
+        "Chal": 45,
+        "Sept": 48,
+        "Latin": 407
+      },
+      "founder_ciphers": {
+        "Ord": 112,
+        "Red": 40,
+        "Rev": 158,
+        "RR": 50,
+        "Sat": 462,
+        "RevSat": 508,
+        "Chal": 41,
+        "Sept": 26,
+        "Latin": 921
+      }
+    },
+    {
+      "name": "National Basketball Association",
+      "founded": "1946-06-06",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Maurice Podoloff",
+      "note": "Founded as BAA",
+      "ciphers": {
+        "Ord": 296,
+        "Red": 98,
+        "Rev": 487,
+        "RR": 190,
+        "Sat": 1311,
+        "RevSat": 1502,
+        "Chal": 89,
+        "Sept": 90,
+        "Latin": 955
+      },
+      "founder_ciphers": {
+        "Ord": 159,
+        "Red": 78,
+        "Rev": 246,
+        "RR": 75,
+        "Sat": 684,
+        "RevSat": 771,
+        "Chal": 74,
+        "Sept": 53,
+        "Latin": 574
+      }
+    },
+    {
+      "name": "WNBA",
+      "founded": "1996-04-24",
+      "date_status": "verify",
+      "source": "",
+      "note": "Announced 4/24/1996; first game 6/21/1997",
+      "ciphers": {
+        "Ord": 40,
+        "Red": 13,
+        "Rev": 68,
+        "RR": 23,
+        "Sat": 180,
+        "RevSat": 208,
+        "Chal": 14,
+        "Sept": 8,
+        "Latin": 943
+      }
+    },
+    {
+      "name": "Basketball",
+      "founded": "1891-12-21",
+      "date_status": "verify",
+      "source": "",
+      "founder": "James Naismith",
+      "note": "Invention date. Naismith=141/51=Adam Weishaupt",
+      "ciphers": {
+        "Ord": 85,
+        "Red": 22,
+        "Rev": 185,
+        "RR": 68,
+        "Sat": 435,
+        "RevSat": 535,
+        "Chal": 26,
+        "Sept": 31,
+        "Latin": 251
+      },
+      "founder_ciphers": {
+        "Ord": 141,
+        "Red": 51,
+        "Rev": 210,
+        "RR": 84,
+        "Sat": 596,
+        "RevSat": 665,
+        "Chal": 38,
+        "Sept": 49,
+        "Latin": 1013
+      }
+    },
+    {
+      "name": "Knickerbocker Rules",
+      "founded": "1845-09-23",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Alexander Cartwright",
+      "note": "Baseball codified",
+      "ciphers": {
+        "Ord": 200,
+        "Red": 83,
+        "Rev": 286,
+        "RR": 115,
+        "Sat": 830,
+        "RevSat": 916,
+        "Chal": 60,
+        "Sept": 69,
+        "Latin": 702
+      },
+      "founder_ciphers": {
+        "Ord": 211,
+        "Red": 94,
+        "Rev": 302,
+        "RR": 113,
+        "Sat": 876,
+        "RevSat": 967,
+        "Chal": 62,
+        "Sept": 77,
+        "Latin": 1744
+      }
+    }
+  ],
+  "tribute_figures": [
+    {
+      "name": "Jackie Robinson",
+      "founded": "1919-01-31",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Jack Roosevelt Robinson",
+      "note": "#42, Jackie Robinson Day 4/15",
+      "ciphers": {
+        "Ord": 145,
+        "Red": 64,
+        "Rev": 233,
+        "RR": 89,
+        "Sat": 635,
+        "RevSat": 723,
+        "Chal": 45,
+        "Sept": 45,
+        "Latin": 989
+      },
+      "founder_ciphers": {
+        "Ord": 262,
+        "Red": 91,
+        "Rev": 305,
+        "RR": 125,
+        "Sat": 997,
+        "RevSat": 1040,
+        "Chal": 81,
+        "Sept": 74,
+        "Latin": 2075
+      }
+    },
+    {
+      "name": "Babe Ruth",
+      "founded": "1895-02-06",
+      "date_status": "verify",
+      "source": "",
+      "founder": "George Herman Ruth",
+      "note": "#3",
+      "ciphers": {
+        "Ord": 77,
+        "Red": 32,
+        "Rev": 139,
+        "RR": 49,
+        "Sat": 357,
+        "RevSat": 419,
+        "Chal": 27,
+        "Sept": 34,
+        "Latin": 398
+      },
+      "founder_ciphers": {
+        "Ord": 183,
+        "Red": 93,
+        "Rev": 249,
+        "RR": 78,
+        "Sat": 743,
+        "RevSat": 809,
+        "Chal": 64,
+        "Sept": 74,
+        "Latin": 706
+      }
+    },
+    {
+      "name": "Lou Gehrig",
+      "founded": "1903-06-19",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Henry Louis Gehrig",
+      "note": "#4, Lou Gehrig Day 6/2",
+      "ciphers": {
+        "Ord": 102,
+        "Red": 57,
+        "Rev": 141,
+        "RR": 42,
+        "Sat": 417,
+        "RevSat": 456,
+        "Chal": 35,
+        "Sept": 45,
+        "Latin": 386
+      },
+      "founder_ciphers": {
+        "Ord": 200,
+        "Red": 101,
+        "Rev": 232,
+        "RR": 79,
+        "Sat": 760,
+        "RevSat": 792,
+        "Chal": 57,
+        "Sept": 75,
+        "Latin": 1018
+      }
+    },
+    {
+      "name": "Roberto Clemente",
+      "founded": "1934-08-18",
+      "date_status": "verify",
+      "source": "",
+      "note": "#21, died 12/31/1972",
+      "ciphers": {
+        "Ord": 170,
+        "Red": 71,
+        "Rev": 235,
+        "RR": 82,
+        "Sat": 695,
+        "RevSat": 760,
+        "Chal": 63,
+        "Sept": 57,
+        "Latin": 575
+      }
+    },
+    {
+      "name": "Michael Jordan",
+      "founded": "1963-02-17",
+      "date_status": "verify",
+      "source": "",
+      "founder": "Michael Jeffrey Jordan",
+      "note": "#23 #45. Ord=113=Kobe Bryant",
+      "ciphers": {
+        "Ord": 113,
+        "Red": 59,
+        "Rev": 238,
+        "RR": 76,
+        "Sat": 568,
+        "RevSat": 693,
+        "Chal": 42,
+        "Sept": 40,
+        "Latin": 851
+      },
+      "founder_ciphers": {
+        "Ord": 188,
+        "Red": 98,
+        "Rev": 352,
+        "RR": 109,
+        "Sat": 888,
+        "RevSat": 1052,
+        "Chal": 72,
+        "Sept": 73,
+        "Latin": 1953
+      }
+    }
+  ],
+  "mlb_teams": [
+    {
+      "name": "Arizona Diamondbacks",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Arizona",
+      "nickname": "Diamondbacks",
+      "ciphers": {
+        "Ord": 180,
+        "Red": 81,
+        "Rev": 333,
+        "RR": 117,
+        "Sat": 845,
+        "RevSat": 998,
+        "Chal": 61,
+        "Sept": 49,
+        "Latin": 925
+      },
+      "city_ciphers": {
+        "Ord": 84,
+        "Red": 39,
+        "Rev": 105,
+        "RR": 42,
+        "Sat": 329,
+        "RevSat": 350,
+        "Chal": 24,
+        "Sept": 16,
+        "Latin": 681
+      },
+      "nickname_ciphers": {
+        "Ord": 96,
+        "Red": 42,
+        "Rev": 228,
+        "RR": 75,
+        "Sat": 516,
+        "RevSat": 648,
+        "Chal": 37,
+        "Sept": 33,
+        "Latin": 244
+      }
+    },
+    {
+      "name": "Atlanta Braves",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Atlanta",
+      "nickname": "Braves",
+      "ciphers": {
+        "Ord": 136,
+        "Red": 37,
+        "Rev": 215,
+        "RR": 89,
+        "Sat": 591,
+        "RevSat": 670,
+        "Chal": 38,
+        "Sept": 44,
+        "Latin": 1141
+      },
+      "city_ciphers": {
+        "Ord": 69,
+        "Red": 15,
+        "Rev": 120,
+        "RR": 48,
+        "Sat": 314,
+        "RevSat": 365,
+        "Chal": 19,
+        "Sept": 20,
+        "Latin": 263
+      },
+      "nickname_ciphers": {
+        "Ord": 67,
+        "Red": 22,
+        "Rev": 95,
+        "RR": 41,
+        "Sat": 277,
+        "RevSat": 305,
+        "Chal": 19,
+        "Sept": 24,
+        "Latin": 878
+      }
+    },
+    {
+      "name": "Baltimore Orioles",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Baltimore",
+      "nickname": "Orioles",
+      "ciphers": {
+        "Ord": 188,
+        "Red": 80,
+        "Rev": 244,
+        "RR": 100,
+        "Sat": 748,
+        "RevSat": 804,
+        "Chal": 57,
+        "Sept": 57,
+        "Latin": 601
+      },
+      "city_ciphers": {
+        "Ord": 95,
+        "Red": 41,
+        "Rev": 148,
+        "RR": 58,
+        "Sat": 410,
+        "RevSat": 463,
+        "Chal": 29,
+        "Sept": 30,
+        "Latin": 297
+      },
+      "nickname_ciphers": {
+        "Ord": 93,
+        "Red": 39,
+        "Rev": 96,
+        "RR": 42,
+        "Sat": 338,
+        "RevSat": 341,
+        "Chal": 28,
+        "Sept": 27,
+        "Latin": 304
+      }
+    },
+    {
+      "name": "Boston Red Sox",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Boston",
+      "nickname": "Red Sox",
+      "ciphers": {
+        "Ord": 170,
+        "Red": 53,
+        "Rev": 154,
+        "RR": 64,
+        "Sat": 590,
+        "RevSat": 574,
+        "Chal": 54,
+        "Sept": 45,
+        "Latin": 861
+      },
+      "city_ciphers": {
+        "Ord": 85,
+        "Red": 22,
+        "Rev": 77,
+        "RR": 32,
+        "Sat": 295,
+        "RevSat": 287,
+        "Chal": 28,
+        "Sept": 20,
+        "Latin": 332
+      },
+      "nickname_ciphers": {
+        "Ord": 85,
+        "Red": 31,
+        "Rev": 77,
+        "RR": 32,
+        "Sat": 295,
+        "RevSat": 287,
+        "Chal": 26,
+        "Sept": 25,
+        "Latin": 529
+      }
+    },
+    {
+      "name": "Chicago Cubs",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "Cubs",
+      "ciphers": {
+        "Ord": 91,
+        "Red": 46,
+        "Rev": 206,
+        "RR": 62,
+        "Sat": 476,
+        "RevSat": 591,
+        "Chal": 37,
+        "Sept": 44,
+        "Latin": 376
+      },
+      "city_ciphers": {
+        "Ord": 46,
+        "Red": 37,
+        "Rev": 143,
+        "RR": 35,
+        "Sat": 291,
+        "RevSat": 388,
+        "Chal": 23,
+        "Sept": 27,
+        "Latin": 81
+      },
+      "nickname_ciphers": {
+        "Ord": 45,
+        "Red": 9,
+        "Rev": 63,
+        "RR": 27,
+        "Sat": 185,
+        "RevSat": 203,
+        "Chal": 14,
+        "Sept": 17,
+        "Latin": 295
+      }
+    },
+    {
+      "name": "Chicago White Sox",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "White Sox",
+      "ciphers": {
+        "Ord": 169,
+        "Red": 79,
+        "Rev": 236,
+        "RR": 74,
+        "Sat": 694,
+        "RevSat": 761,
+        "Chal": 59,
+        "Sept": 65,
+        "Latin": 1543
+      },
+      "city_ciphers": {
+        "Ord": 46,
+        "Red": 37,
+        "Rev": 143,
+        "RR": 35,
+        "Sat": 291,
+        "RevSat": 388,
+        "Chal": 23,
+        "Sept": 27,
+        "Latin": 81
+      },
+      "nickname_ciphers": {
+        "Ord": 123,
+        "Red": 42,
+        "Rev": 93,
+        "RR": 39,
+        "Sat": 403,
+        "RevSat": 373,
+        "Chal": 36,
+        "Sept": 38,
+        "Latin": 1462
+      }
+    },
+    {
+      "name": "Cincinnati Reds",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Cincinnati",
+      "nickname": "Reds",
+      "ciphers": {
+        "Ord": 142,
+        "Red": 70,
+        "Rev": 236,
+        "RR": 92,
+        "Sat": 632,
+        "RevSat": 726,
+        "Chal": 43,
+        "Sept": 52,
+        "Latin": 433
+      },
+      "city_ciphers": {
+        "Ord": 96,
+        "Red": 51,
+        "Rev": 174,
+        "RR": 66,
+        "Sat": 446,
+        "RevSat": 524,
+        "Chal": 29,
+        "Sept": 32,
+        "Latin": 254
+      },
+      "nickname_ciphers": {
+        "Ord": 46,
+        "Red": 19,
+        "Rev": 62,
+        "RR": 26,
+        "Sat": 186,
+        "RevSat": 202,
+        "Chal": 14,
+        "Sept": 20,
+        "Latin": 179
+      }
+    },
+    {
+      "name": "Cleveland Guardians",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Cleveland",
+      "nickname": "Guardians",
+      "ciphers": {
+        "Ord": 172,
+        "Red": 73,
+        "Rev": 314,
+        "RR": 107,
+        "Sat": 802,
+        "RevSat": 944,
+        "Chal": 61,
+        "Sept": 64,
+        "Latin": 1230
+      },
+      "city_ciphers": {
+        "Ord": 78,
+        "Red": 33,
+        "Rev": 165,
+        "RR": 48,
+        "Sat": 393,
+        "RevSat": 480,
+        "Chal": 35,
+        "Sept": 28,
+        "Latin": 798
+      },
+      "nickname_ciphers": {
+        "Ord": 94,
+        "Red": 40,
+        "Rev": 149,
+        "RR": 59,
+        "Sat": 409,
+        "RevSat": 464,
+        "Chal": 26,
+        "Sept": 36,
+        "Latin": 432
+      }
+    },
+    {
+      "name": "Colorado Rockies",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Colorado",
+      "nickname": "Rockies",
+      "ciphers": {
+        "Ord": 163,
+        "Red": 73,
+        "Rev": 242,
+        "RR": 89,
+        "Sat": 688,
+        "RevSat": 767,
+        "Chal": 57,
+        "Sept": 50,
+        "Latin": 505
+      },
+      "city_ciphers": {
+        "Ord": 83,
+        "Red": 38,
+        "Rev": 133,
+        "RR": 43,
+        "Sat": 363,
+        "RevSat": 413,
+        "Chal": 34,
+        "Sept": 21,
+        "Latin": 258
+      },
+      "nickname_ciphers": {
+        "Ord": 80,
+        "Red": 35,
+        "Rev": 109,
+        "RR": 46,
+        "Sat": 325,
+        "RevSat": 354,
+        "Chal": 23,
+        "Sept": 29,
+        "Latin": 247
+      }
+    },
+    {
+      "name": "Detroit Tigers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Detroit",
+      "nickname": "Tigers",
+      "ciphers": {
+        "Ord": 169,
+        "Red": 70,
+        "Rev": 182,
+        "RR": 83,
+        "Sat": 624,
+        "RevSat": 637,
+        "Chal": 45,
+        "Sept": 70,
+        "Latin": 639
+      },
+      "city_ciphers": {
+        "Ord": 91,
+        "Red": 37,
+        "Rev": 98,
+        "RR": 44,
+        "Sat": 336,
+        "RevSat": 343,
+        "Chal": 27,
+        "Sept": 35,
+        "Latin": 348
+      },
+      "nickname_ciphers": {
+        "Ord": 78,
+        "Red": 33,
+        "Rev": 84,
+        "RR": 39,
+        "Sat": 288,
+        "RevSat": 294,
+        "Chal": 18,
+        "Sept": 35,
+        "Latin": 291
+      }
+    },
+    {
+      "name": "Houston Astros",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Houston",
+      "nickname": "Astros",
+      "ciphers": {
+        "Ord": 204,
+        "Red": 51,
+        "Rev": 147,
+        "RR": 75,
+        "Sat": 659,
+        "RevSat": 602,
+        "Chal": 57,
+        "Sept": 57,
+        "Latin": 949
+      },
+      "city_ciphers": {
+        "Ord": 112,
+        "Red": 31,
+        "Rev": 77,
+        "RR": 32,
+        "Sat": 357,
+        "RevSat": 322,
+        "Chal": 37,
+        "Sept": 30,
+        "Latin": 538
+      },
+      "nickname_ciphers": {
+        "Ord": 92,
+        "Red": 20,
+        "Rev": 70,
+        "RR": 43,
+        "Sat": 302,
+        "RevSat": 280,
+        "Chal": 20,
+        "Sept": 27,
+        "Latin": 411
+      }
+    },
+    {
+      "name": "Kansas City Royals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Kansas City",
+      "nickname": "Royals",
+      "ciphers": {
+        "Ord": 212,
+        "Red": 59,
+        "Rev": 220,
+        "RR": 103,
+        "Sat": 772,
+        "RevSat": 780,
+        "Chal": 41,
+        "Sept": 53,
+        "Latin": 1385
+      },
+      "city_ciphers": {
+        "Ord": 122,
+        "Red": 32,
+        "Rev": 148,
+        "RR": 67,
+        "Sat": 472,
+        "RevSat": 498,
+        "Chal": 24,
+        "Sept": 35,
+        "Latin": 744
+      },
+      "nickname_ciphers": {
+        "Ord": 90,
+        "Red": 27,
+        "Rev": 72,
+        "RR": 36,
+        "Sat": 300,
+        "RevSat": 282,
+        "Chal": 17,
+        "Sept": 18,
+        "Latin": 641
+      }
+    },
+    {
+      "name": "Los Angeles Angels",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Angels",
+      "ciphers": {
+        "Ord": 167,
+        "Red": 59,
+        "Rev": 265,
+        "RR": 85,
+        "Sat": 727,
+        "RevSat": 825,
+        "Chal": 58,
+        "Sept": 59,
+        "Latin": 491
+      },
+      "city_ciphers": {
+        "Ord": 109,
+        "Red": 37,
+        "Rev": 161,
+        "RR": 53,
+        "Sat": 459,
+        "RevSat": 511,
+        "Chal": 38,
+        "Sept": 37,
+        "Latin": 328
+      },
+      "nickname_ciphers": {
+        "Ord": 58,
+        "Red": 22,
+        "Rev": 104,
+        "RR": 32,
+        "Sat": 268,
+        "RevSat": 314,
+        "Chal": 20,
+        "Sept": 22,
+        "Latin": 163
+      }
+    },
+    {
+      "name": "Los Angeles Dodgers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Dodgers",
+      "ciphers": {
+        "Ord": 181,
+        "Red": 73,
+        "Rev": 278,
+        "RR": 89,
+        "Sat": 776,
+        "RevSat": 873,
+        "Chal": 66,
+        "Sept": 70,
+        "Latin": 568
+      },
+      "city_ciphers": {
+        "Ord": 109,
+        "Red": 37,
+        "Rev": 161,
+        "RR": 53,
+        "Sat": 459,
+        "RevSat": 511,
+        "Chal": 38,
+        "Sept": 37,
+        "Latin": 328
+      },
+      "nickname_ciphers": {
+        "Ord": 72,
+        "Red": 36,
+        "Rev": 117,
+        "RR": 36,
+        "Sat": 317,
+        "RevSat": 362,
+        "Chal": 28,
+        "Sept": 33,
+        "Latin": 240
+      }
+    },
+    {
+      "name": "Miami Marlins",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Miami",
+      "nickname": "Marlins",
+      "ciphers": {
+        "Ord": 131,
+        "Red": 59,
+        "Rev": 193,
+        "RR": 85,
+        "Sat": 551,
+        "RevSat": 613,
+        "Chal": 30,
+        "Sept": 34,
+        "Latin": 349
+      },
+      "city_ciphers": {
+        "Ord": 45,
+        "Red": 27,
+        "Rev": 90,
+        "RR": 36,
+        "Sat": 220,
+        "RevSat": 265,
+        "Chal": 11,
+        "Sept": 13,
+        "Latin": 79
+      },
+      "nickname_ciphers": {
+        "Ord": 86,
+        "Red": 32,
+        "Rev": 103,
+        "RR": 49,
+        "Sat": 331,
+        "RevSat": 348,
+        "Chal": 19,
+        "Sept": 21,
+        "Latin": 270
+      }
+    },
+    {
+      "name": "Milwaukee Brewers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Milwaukee",
+      "nickname": "Brewers",
+      "ciphers": {
+        "Ord": 190,
+        "Red": 73,
+        "Rev": 242,
+        "RR": 98,
+        "Sat": 750,
+        "RevSat": 802,
+        "Chal": 58,
+        "Sept": 64,
+        "Latin": 2342
+      },
+      "city_ciphers": {
+        "Ord": 100,
+        "Red": 37,
+        "Rev": 143,
+        "RR": 53,
+        "Sat": 415,
+        "RevSat": 458,
+        "Chal": 33,
+        "Sept": 32,
+        "Latin": 1180
+      },
+      "nickname_ciphers": {
+        "Ord": 90,
+        "Red": 36,
+        "Rev": 99,
+        "RR": 45,
+        "Sat": 335,
+        "RevSat": 344,
+        "Chal": 25,
+        "Sept": 32,
+        "Latin": 1162
+      }
+    },
+    {
+      "name": "Minnesota Twins",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Minnesota",
+      "nickname": "Twins",
+      "ciphers": {
+        "Ord": 195,
+        "Red": 60,
+        "Rev": 183,
+        "RR": 84,
+        "Sat": 685,
+        "RevSat": 673,
+        "Chal": 54,
+        "Sept": 52,
+        "Latin": 1504
+      },
+      "city_ciphers": {
+        "Ord": 110,
+        "Red": 38,
+        "Rev": 133,
+        "RR": 52,
+        "Sat": 425,
+        "RevSat": 448,
+        "Chal": 35,
+        "Sept": 29,
+        "Latin": 365
+      },
+      "nickname_ciphers": {
+        "Ord": 85,
+        "Red": 22,
+        "Rev": 50,
+        "RR": 32,
+        "Sat": 260,
+        "RevSat": 225,
+        "Chal": 19,
+        "Sept": 23,
+        "Latin": 1139
+      }
+    },
+    {
+      "name": "New York Mets",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Mets",
+      "ciphers": {
+        "Ord": 168,
+        "Red": 51,
+        "Rev": 129,
+        "RR": 57,
+        "Sat": 553,
+        "RevSat": 514,
+        "Chal": 44,
+        "Sept": 41,
+        "Latin": 1710
+      },
+      "city_ciphers": {
+        "Ord": 111,
+        "Red": 39,
+        "Rev": 78,
+        "RR": 33,
+        "Sat": 356,
+        "RevSat": 323,
+        "Chal": 28,
+        "Sept": 22,
+        "Latin": 1485
+      },
+      "nickname_ciphers": {
+        "Ord": 57,
+        "Red": 12,
+        "Rev": 51,
+        "RR": 24,
+        "Sat": 197,
+        "RevSat": 191,
+        "Chal": 16,
+        "Sept": 19,
+        "Latin": 225
+      }
+    },
+    {
+      "name": "New York Yankees",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Yankees",
+      "ciphers": {
+        "Ord": 191,
+        "Red": 65,
+        "Rev": 187,
+        "RR": 70,
+        "Sat": 681,
+        "RevSat": 677,
+        "Chal": 50,
+        "Sept": 45,
+        "Latin": 2036
+      },
+      "city_ciphers": {
+        "Ord": 111,
+        "Red": 39,
+        "Rev": 78,
+        "RR": 33,
+        "Sat": 356,
+        "RevSat": 323,
+        "Chal": 28,
+        "Sept": 22,
+        "Latin": 1485
+      },
+      "nickname_ciphers": {
+        "Ord": 80,
+        "Red": 26,
+        "Rev": 109,
+        "RR": 37,
+        "Sat": 325,
+        "RevSat": 354,
+        "Chal": 22,
+        "Sept": 23,
+        "Latin": 551
+      }
+    },
+    {
+      "name": "Athletics",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Sacramento",
+      "nickname": "Athletics",
+      "ciphers": {
+        "Ord": 97,
+        "Red": 34,
+        "Rev": 146,
+        "RR": 56,
+        "Sat": 412,
+        "RevSat": 461,
+        "Chal": 29,
+        "Sept": 42,
+        "Latin": 336
+      },
+      "city_ciphers": {
+        "Ord": 109,
+        "Red": 37,
+        "Rev": 161,
+        "RR": 62,
+        "Sat": 459,
+        "RevSat": 511,
+        "Chal": 35,
+        "Sept": 32,
+        "Latin": 400
+      },
+      "nickname_ciphers": {
+        "Ord": 97,
+        "Red": 34,
+        "Rev": 146,
+        "RR": 56,
+        "Sat": 412,
+        "RevSat": 461,
+        "Chal": 29,
+        "Sept": 42,
+        "Latin": 336
+      }
+    },
+    {
+      "name": "Philadelphia Phillies",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Philadelphia",
+      "nickname": "Phillies",
+      "ciphers": {
+        "Ord": 191,
+        "Red": 110,
+        "Rev": 349,
+        "RR": 106,
+        "Sat": 891,
+        "RevSat": 1049,
+        "Chal": 74,
+        "Sept": 77,
+        "Latin": 426
+      },
+      "city_ciphers": {
+        "Ord": 101,
+        "Red": 65,
+        "Rev": 223,
+        "RR": 61,
+        "Sat": 521,
+        "RevSat": 643,
+        "Chal": 45,
+        "Sept": 43,
+        "Latin": 205
+      },
+      "nickname_ciphers": {
+        "Ord": 90,
+        "Red": 45,
+        "Rev": 126,
+        "RR": 45,
+        "Sat": 370,
+        "RevSat": 406,
+        "Chal": 29,
+        "Sept": 34,
+        "Latin": 221
+      }
+    },
+    {
+      "name": "Pittsburgh Pirates",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Pittsburgh",
+      "nickname": "Pirates",
+      "ciphers": {
+        "Ord": 228,
+        "Red": 84,
+        "Rev": 231,
+        "RR": 105,
+        "Sat": 823,
+        "RevSat": 826,
+        "Chal": 62,
+        "Sept": 86,
+        "Latin": 1001
+      },
+      "city_ciphers": {
+        "Ord": 140,
+        "Red": 50,
+        "Rev": 130,
+        "RR": 58,
+        "Sat": 490,
+        "RevSat": 480,
+        "Chal": 38,
+        "Sept": 54,
+        "Latin": 656
+      },
+      "nickname_ciphers": {
+        "Ord": 88,
+        "Red": 34,
+        "Rev": 101,
+        "RR": 47,
+        "Sat": 333,
+        "RevSat": 346,
+        "Chal": 24,
+        "Sept": 32,
+        "Latin": 345
+      }
+    },
+    {
+      "name": "San Diego Padres",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "San Diego",
+      "nickname": "Padres",
+      "ciphers": {
+        "Ord": 137,
+        "Red": 65,
+        "Rev": 241,
+        "RR": 79,
+        "Sat": 627,
+        "RevSat": 731,
+        "Chal": 52,
+        "Sept": 55,
+        "Latin": 446
+      },
+      "city_ciphers": {
+        "Ord": 74,
+        "Red": 38,
+        "Rev": 142,
+        "RR": 43,
+        "Sat": 354,
+        "RevSat": 422,
+        "Chal": 29,
+        "Sept": 31,
+        "Latin": 206
+      },
+      "nickname_ciphers": {
+        "Ord": 63,
+        "Red": 27,
+        "Rev": 99,
+        "RR": 36,
+        "Sat": 273,
+        "RevSat": 309,
+        "Chal": 23,
+        "Sept": 24,
+        "Latin": 240
+      }
+    },
+    {
+      "name": "San Francisco Giants",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "San Francisco",
+      "nickname": "Giants",
+      "ciphers": {
+        "Ord": 192,
+        "Red": 75,
+        "Rev": 294,
+        "RR": 114,
+        "Sat": 822,
+        "RevSat": 924,
+        "Chal": 59,
+        "Sept": 67,
+        "Latin": 660
+      },
+      "city_ciphers": {
+        "Ord": 122,
+        "Red": 50,
+        "Rev": 202,
+        "RR": 76,
+        "Sat": 542,
+        "RevSat": 622,
+        "Chal": 42,
+        "Sept": 40,
+        "Latin": 413
+      },
+      "nickname_ciphers": {
+        "Ord": 70,
+        "Red": 25,
+        "Rev": 92,
+        "RR": 38,
+        "Sat": 280,
+        "RevSat": 302,
+        "Chal": 17,
+        "Sept": 27,
+        "Latin": 247
+      }
+    },
+    {
+      "name": "Seattle Mariners",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Seattle",
+      "nickname": "Mariners",
+      "ciphers": {
+        "Ord": 179,
+        "Red": 62,
+        "Rev": 226,
+        "RR": 100,
+        "Sat": 704,
+        "RevSat": 751,
+        "Chal": 48,
+        "Sept": 62,
+        "Latin": 656
+      },
+      "city_ciphers": {
+        "Ord": 82,
+        "Red": 19,
+        "Rev": 107,
+        "RR": 44,
+        "Sat": 327,
+        "RevSat": 352,
+        "Chal": 25,
+        "Sept": 33,
+        "Latin": 321
+      },
+      "nickname_ciphers": {
+        "Ord": 97,
+        "Red": 43,
+        "Rev": 119,
+        "RR": 56,
+        "Sat": 377,
+        "RevSat": 399,
+        "Chal": 23,
+        "Sept": 29,
+        "Latin": 335
+      }
+    },
+    {
+      "name": "St Louis Cardinals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "St Louis",
+      "nickname": "Cardinals",
+      "ciphers": {
+        "Ord": 196,
+        "Red": 61,
+        "Rev": 236,
+        "RR": 110,
+        "Sat": 756,
+        "RevSat": 796,
+        "Chal": 50,
+        "Sept": 62,
+        "Latin": 807
+      },
+      "city_ciphers": {
+        "Ord": 115,
+        "Red": 25,
+        "Rev": 74,
+        "RR": 47,
+        "Sat": 360,
+        "RevSat": 319,
+        "Chal": 27,
+        "Sept": 34,
+        "Latin": 559
+      },
+      "nickname_ciphers": {
+        "Ord": 81,
+        "Red": 36,
+        "Rev": 162,
+        "RR": 63,
+        "Sat": 396,
+        "RevSat": 477,
+        "Chal": 23,
+        "Sept": 28,
+        "Latin": 248
+      }
+    },
+    {
+      "name": "Tampa Bay Rays",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Tampa Bay",
+      "nickname": "Rays",
+      "ciphers": {
+        "Ord": 142,
+        "Red": 43,
+        "Rev": 182,
+        "RR": 74,
+        "Sat": 562,
+        "RevSat": 602,
+        "Chal": 29,
+        "Sept": 32,
+        "Latin": 1166
+      },
+      "city_ciphers": {
+        "Ord": 79,
+        "Red": 25,
+        "Rev": 137,
+        "RR": 47,
+        "Sat": 359,
+        "RevSat": 417,
+        "Chal": 22,
+        "Sept": 18,
+        "Latin": 595
+      },
+      "nickname_ciphers": {
+        "Ord": 63,
+        "Red": 18,
+        "Rev": 45,
+        "RR": 27,
+        "Sat": 203,
+        "RevSat": 185,
+        "Chal": 7,
+        "Sept": 14,
+        "Latin": 571
+      }
+    },
+    {
+      "name": "Texas Rangers",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Texas",
+      "nickname": "Rangers",
+      "ciphers": {
+        "Ord": 151,
+        "Red": 52,
+        "Rev": 173,
+        "RR": 74,
+        "Sat": 571,
+        "RevSat": 593,
+        "Chal": 39,
+        "Sept": 52,
+        "Latin": 799
+      },
+      "city_ciphers": {
+        "Ord": 69,
+        "Red": 15,
+        "Rev": 66,
+        "RR": 30,
+        "Sat": 244,
+        "RevSat": 241,
+        "Chal": 18,
+        "Sept": 22,
+        "Latin": 496
+      },
+      "nickname_ciphers": {
+        "Ord": 82,
+        "Red": 37,
+        "Rev": 107,
+        "RR": 44,
+        "Sat": 327,
+        "RevSat": 352,
+        "Chal": 21,
+        "Sept": 30,
+        "Latin": 303
+      }
+    },
+    {
+      "name": "Toronto Blue Jays",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Toronto",
+      "nickname": "Blue Jays",
+      "ciphers": {
+        "Ord": 212,
+        "Red": 59,
+        "Rev": 193,
+        "RR": 85,
+        "Sat": 737,
+        "RevSat": 718,
+        "Chal": 58,
+        "Sept": 54,
+        "Latin": 1788
+      },
+      "city_ciphers": {
+        "Ord": 117,
+        "Red": 36,
+        "Rev": 72,
+        "RR": 36,
+        "Sat": 362,
+        "RevSat": 317,
+        "Chal": 36,
+        "Sept": 26,
+        "Latin": 470
+      },
+      "nickname_ciphers": {
+        "Ord": 95,
+        "Red": 23,
+        "Rev": 121,
+        "RR": 49,
+        "Sat": 375,
+        "RevSat": 401,
+        "Chal": 22,
+        "Sept": 28,
+        "Latin": 1318
+      }
+    },
+    {
+      "name": "Washington Nationals",
+      "sport": "mlb",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Washington",
+      "nickname": "Nationals",
+      "ciphers": {
+        "Ord": 235,
+        "Red": 82,
+        "Rev": 278,
+        "RR": 107,
+        "Sat": 900,
+        "RevSat": 943,
+        "Chal": 70,
+        "Sept": 66,
+        "Latin": 1596
+      },
+      "city_ciphers": {
+        "Ord": 130,
+        "Red": 49,
+        "Rev": 140,
+        "RR": 50,
+        "Sat": 480,
+        "RevSat": 490,
+        "Chal": 40,
+        "Sept": 40,
+        "Latin": 1245
+      },
+      "nickname_ciphers": {
+        "Ord": 105,
+        "Red": 33,
+        "Rev": 138,
+        "RR": 57,
+        "Sat": 420,
+        "RevSat": 453,
+        "Chal": 30,
+        "Sept": 26,
+        "Latin": 351
+      }
+    }
+  ],
+  "wnba_teams": [
+    {
+      "name": "Atlanta Dream",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Atlanta",
+      "nickname": "Dream",
+      "ciphers": {
+        "Ord": 110,
+        "Red": 38,
+        "Rev": 214,
+        "RR": 79,
+        "Sat": 530,
+        "RevSat": 634,
+        "Chal": 35,
+        "Sept": 36,
+        "Latin": 383
+      },
+      "city_ciphers": {
+        "Ord": 69,
+        "Red": 15,
+        "Rev": 120,
+        "RR": 48,
+        "Sat": 314,
+        "RevSat": 365,
+        "Chal": 19,
+        "Sept": 20,
+        "Latin": 263
+      },
+      "nickname_ciphers": {
+        "Ord": 41,
+        "Red": 23,
+        "Rev": 94,
+        "RR": 31,
+        "Sat": 216,
+        "RevSat": 269,
+        "Chal": 16,
+        "Sept": 16,
+        "Latin": 120
+      }
+    },
+    {
+      "name": "Chicago Sky",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Chicago",
+      "nickname": "Sky",
+      "ciphers": {
+        "Ord": 101,
+        "Red": 47,
+        "Rev": 169,
+        "RR": 52,
+        "Sat": 451,
+        "RevSat": 519,
+        "Chal": 29,
+        "Sept": 38,
+        "Latin": 581
+      },
+      "city_ciphers": {
+        "Ord": 46,
+        "Red": 37,
+        "Rev": 143,
+        "RR": 35,
+        "Sat": 291,
+        "RevSat": 388,
+        "Chal": 23,
+        "Sept": 27,
+        "Latin": 81
+      },
+      "nickname_ciphers": {
+        "Ord": 55,
+        "Red": 10,
+        "Rev": 26,
+        "RR": 17,
+        "Sat": 160,
+        "RevSat": 131,
+        "Chal": 6,
+        "Sept": 11,
+        "Latin": 500
+      }
+    },
+    {
+      "name": "Connecticut Sun",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Connecticut",
+      "nickname": "Sun",
+      "ciphers": {
+        "Ord": 181,
+        "Red": 55,
+        "Rev": 197,
+        "RR": 80,
+        "Sat": 671,
+        "RevSat": 687,
+        "Chal": 60,
+        "Sept": 56,
+        "Latin": 883
+      },
+      "city_ciphers": {
+        "Ord": 127,
+        "Red": 46,
+        "Rev": 170,
+        "RR": 62,
+        "Sat": 512,
+        "RevSat": 555,
+        "Chal": 46,
+        "Sept": 43,
+        "Latin": 553
+      },
+      "nickname_ciphers": {
+        "Ord": 54,
+        "Red": 9,
+        "Rev": 27,
+        "RR": 18,
+        "Sat": 159,
+        "RevSat": 132,
+        "Chal": 14,
+        "Sept": 13,
+        "Latin": 330
+      }
+    },
+    {
+      "name": "Dallas Wings",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Dallas",
+      "nickname": "Wings",
+      "ciphers": {
+        "Ord": 121,
+        "Red": 40,
+        "Rev": 176,
+        "RR": 68,
+        "Sat": 506,
+        "RevSat": 561,
+        "Chal": 33,
+        "Sept": 39,
+        "Latin": 1182
+      },
+      "city_ciphers": {
+        "Ord": 49,
+        "Red": 13,
+        "Rev": 113,
+        "RR": 41,
+        "Sat": 259,
+        "RevSat": 323,
+        "Chal": 15,
+        "Sept": 16,
+        "Latin": 136
+      },
+      "nickname_ciphers": {
+        "Ord": 72,
+        "Red": 27,
+        "Rev": 63,
+        "RR": 27,
+        "Sat": 247,
+        "RevSat": 238,
+        "Chal": 18,
+        "Sept": 23,
+        "Latin": 1046
+      }
+    },
+    {
+      "name": "Golden State Valkyries",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Golden State",
+      "nickname": "Valkyries",
+      "ciphers": {
+        "Ord": 244,
+        "Red": 82,
+        "Rev": 296,
+        "RR": 116,
+        "Sat": 944,
+        "RevSat": 996,
+        "Chal": 68,
+        "Sept": 81,
+        "Latin": 1737
+      },
+      "city_ciphers": {
+        "Ord": 122,
+        "Red": 41,
+        "Rev": 175,
+        "RR": 58,
+        "Sat": 507,
+        "RevSat": 560,
+        "Chal": 44,
+        "Sept": 47,
+        "Latin": 422
+      },
+      "nickname_ciphers": {
+        "Ord": 122,
+        "Red": 41,
+        "Rev": 121,
+        "RR": 58,
+        "Sat": 437,
+        "RevSat": 436,
+        "Chal": 24,
+        "Sept": 34,
+        "Latin": 1315
+      }
+    },
+    {
+      "name": "Indiana Fever",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Indiana",
+      "nickname": "Fever",
+      "ciphers": {
+        "Ord": 108,
+        "Red": 63,
+        "Rev": 216,
+        "RR": 72,
+        "Sat": 528,
+        "RevSat": 636,
+        "Chal": 44,
+        "Sept": 44,
+        "Latin": 900
+      },
+      "city_ciphers": {
+        "Ord": 52,
+        "Red": 34,
+        "Rev": 137,
+        "RR": 47,
+        "Sat": 297,
+        "RevSat": 382,
+        "Chal": 18,
+        "Sept": 18,
+        "Latin": 104
+      },
+      "nickname_ciphers": {
+        "Ord": 56,
+        "Red": 29,
+        "Rev": 79,
+        "RR": 25,
+        "Sat": 231,
+        "RevSat": 254,
+        "Chal": 26,
+        "Sept": 26,
+        "Latin": 796
+      }
+    },
+    {
+      "name": "Las Vegas Aces",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Las Vegas",
+      "nickname": "Aces",
+      "ciphers": {
+        "Ord": 114,
+        "Red": 33,
+        "Rev": 210,
+        "RR": 75,
+        "Sat": 534,
+        "RevSat": 630,
+        "Chal": 37,
+        "Sept": 48,
+        "Latin": 1013
+      },
+      "city_ciphers": {
+        "Ord": 86,
+        "Red": 23,
+        "Rev": 130,
+        "RR": 49,
+        "Sat": 366,
+        "RevSat": 410,
+        "Chal": 25,
+        "Sept": 33,
+        "Latin": 914
+      },
+      "nickname_ciphers": {
+        "Ord": 28,
+        "Red": 10,
+        "Rev": 80,
+        "RR": 26,
+        "Sat": 168,
+        "RevSat": 220,
+        "Chal": 12,
+        "Sept": 15,
+        "Latin": 99
+      }
+    },
+    {
+      "name": "Los Angeles Sparks",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Los Angeles",
+      "nickname": "Sparks",
+      "ciphers": {
+        "Ord": 193,
+        "Red": 58,
+        "Rev": 239,
+        "RR": 95,
+        "Sat": 753,
+        "RevSat": 799,
+        "Chal": 57,
+        "Sept": 61,
+        "Latin": 659
+      },
+      "city_ciphers": {
+        "Ord": 109,
+        "Red": 37,
+        "Rev": 161,
+        "RR": 53,
+        "Sat": 459,
+        "RevSat": 511,
+        "Chal": 38,
+        "Sept": 37,
+        "Latin": 328
+      },
+      "nickname_ciphers": {
+        "Ord": 84,
+        "Red": 21,
+        "Rev": 78,
+        "RR": 42,
+        "Sat": 294,
+        "RevSat": 288,
+        "Chal": 19,
+        "Sept": 24,
+        "Latin": 331
+      }
+    },
+    {
+      "name": "Minnesota Lynx",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Minnesota",
+      "nickname": "Lynx",
+      "ciphers": {
+        "Ord": 185,
+        "Red": 59,
+        "Rev": 166,
+        "RR": 67,
+        "Sat": 640,
+        "RevSat": 621,
+        "Chal": 49,
+        "Sept": 37,
+        "Latin": 1125
+      },
+      "city_ciphers": {
+        "Ord": 110,
+        "Red": 38,
+        "Rev": 133,
+        "RR": 52,
+        "Sat": 425,
+        "RevSat": 448,
+        "Chal": 35,
+        "Sept": 29,
+        "Latin": 365
+      },
+      "nickname_ciphers": {
+        "Ord": 75,
+        "Red": 21,
+        "Rev": 33,
+        "RR": 15,
+        "Sat": 215,
+        "RevSat": 173,
+        "Chal": 14,
+        "Sept": 8,
+        "Latin": 760
+      }
+    },
+    {
+      "name": "New York Liberty",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "New York",
+      "nickname": "Liberty",
+      "ciphers": {
+        "Ord": 202,
+        "Red": 76,
+        "Rev": 176,
+        "RR": 77,
+        "Sat": 692,
+        "RevSat": 666,
+        "Chal": 46,
+        "Sept": 50,
+        "Latin": 2101
+      },
+      "city_ciphers": {
+        "Ord": 111,
+        "Red": 39,
+        "Rev": 78,
+        "RR": 33,
+        "Sat": 356,
+        "RevSat": 323,
+        "Chal": 28,
+        "Sept": 22,
+        "Latin": 1485
+      },
+      "nickname_ciphers": {
+        "Ord": 91,
+        "Red": 37,
+        "Rev": 98,
+        "RR": 44,
+        "Sat": 336,
+        "RevSat": 343,
+        "Chal": 18,
+        "Sept": 28,
+        "Latin": 616
+      }
+    },
+    {
+      "name": "Phoenix Mercury",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Phoenix",
+      "nickname": "Mercury",
+      "ciphers": {
+        "Ord": 194,
+        "Red": 86,
+        "Rev": 184,
+        "RR": 67,
+        "Sat": 684,
+        "RevSat": 674,
+        "Chal": 59,
+        "Sept": 52,
+        "Latin": 1270
+      },
+      "city_ciphers": {
+        "Ord": 91,
+        "Red": 46,
+        "Rev": 98,
+        "RR": 26,
+        "Sat": 336,
+        "RevSat": 343,
+        "Chal": 36,
+        "Sept": 25,
+        "Latin": 472
+      },
+      "nickname_ciphers": {
+        "Ord": 103,
+        "Red": 40,
+        "Rev": 86,
+        "RR": 41,
+        "Sat": 348,
+        "RevSat": 331,
+        "Chal": 23,
+        "Sept": 27,
+        "Latin": 798
+      }
+    },
+    {
+      "name": "Portland Fire",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Portland",
+      "nickname": "Fire",
+      "ciphers": {
+        "Ord": 138,
+        "Red": 66,
+        "Rev": 186,
+        "RR": 69,
+        "Sat": 558,
+        "RevSat": 606,
+        "Chal": 50,
+        "Sept": 46,
+        "Latin": 455
+      },
+      "city_ciphers": {
+        "Ord": 100,
+        "Red": 37,
+        "Rev": 116,
+        "RR": 44,
+        "Sat": 380,
+        "RevSat": 396,
+        "Chal": 34,
+        "Sept": 25,
+        "Latin": 355
+      },
+      "nickname_ciphers": {
+        "Ord": 38,
+        "Red": 29,
+        "Rev": 70,
+        "RR": 25,
+        "Sat": 178,
+        "RevSat": 210,
+        "Chal": 16,
+        "Sept": 21,
+        "Latin": 100
+      }
+    },
+    {
+      "name": "Seattle Storm",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Seattle",
+      "nickname": "Storm",
+      "ciphers": {
+        "Ord": 167,
+        "Red": 41,
+        "Rev": 157,
+        "RR": 76,
+        "Sat": 587,
+        "RevSat": 577,
+        "Chal": 45,
+        "Sept": 54,
+        "Latin": 671
+      },
+      "city_ciphers": {
+        "Ord": 82,
+        "Red": 19,
+        "Rev": 107,
+        "RR": 44,
+        "Sat": 327,
+        "RevSat": 352,
+        "Chal": 25,
+        "Sept": 33,
+        "Latin": 321
+      },
+      "nickname_ciphers": {
+        "Ord": 85,
+        "Red": 22,
+        "Rev": 50,
+        "RR": 32,
+        "Sat": 260,
+        "RevSat": 225,
+        "Chal": 20,
+        "Sept": 21,
+        "Latin": 350
+      }
+    },
+    {
+      "name": "Toronto Tempo",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Toronto",
+      "nickname": "Tempo",
+      "ciphers": {
+        "Ord": 186,
+        "Red": 60,
+        "Rev": 138,
+        "RR": 57,
+        "Sat": 606,
+        "RevSat": 558,
+        "Chal": 64,
+        "Sept": 44,
+        "Latin": 715
+      },
+      "city_ciphers": {
+        "Ord": 117,
+        "Red": 36,
+        "Rev": 72,
+        "RR": 36,
+        "Sat": 362,
+        "RevSat": 317,
+        "Chal": 36,
+        "Sept": 26,
+        "Latin": 470
+      },
+      "nickname_ciphers": {
+        "Ord": 69,
+        "Red": 24,
+        "Rev": 66,
+        "RR": 21,
+        "Sat": 244,
+        "RevSat": 241,
+        "Chal": 28,
+        "Sept": 18,
+        "Latin": 245
+      }
+    },
+    {
+      "name": "Washington Mystics",
+      "sport": "wnba",
+      "founded": "",
+      "date_status": "harvest",
+      "source": "",
+      "city": "Washington",
+      "nickname": "Mystics",
+      "ciphers": {
+        "Ord": 238,
+        "Red": 76,
+        "Rev": 221,
+        "RR": 95,
+        "Sat": 833,
+        "RevSat": 816,
+        "Chal": 59,
+        "Sept": 70,
+        "Latin": 1967
+      },
+      "city_ciphers": {
+        "Ord": 130,
+        "Red": 49,
+        "Rev": 140,
+        "RR": 50,
+        "Sat": 480,
+        "RevSat": 490,
+        "Chal": 40,
+        "Sept": 40,
+        "Latin": 1245
+      },
+      "nickname_ciphers": {
+        "Ord": 108,
+        "Red": 27,
+        "Rev": 81,
+        "RR": 45,
+        "Sat": 353,
+        "RevSat": 326,
+        "Chal": 19,
+        "Sept": 30,
+        "Latin": 722
+      }
+    }
+  ]
+}
