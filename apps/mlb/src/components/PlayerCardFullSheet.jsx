@@ -1,7 +1,7 @@
 import {useState,useMemo,useEffect} from 'react';
 import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {calcAll,ALL_CIPHERS} from '../engine/gematria.js';
-import {isPrime,primeIndex} from '../engine/numbers.js';
+import {isPrime,primeIndex,nthPrime} from '../engine/numbers.js';
 import {dateFigures} from '../engine/clocks.js';
 import {crossRefsForNumber,numerologyText,statRungText,opponentText,dateRootSet} from '../engine/numerology.js';
 import {draftFromCross} from '../engine/recipe.js';
@@ -496,10 +496,15 @@ export default function PlayerCardFullSheet({row,onClose}){
       .forEach(x=>{if(x.n===spot){const key=x.section+'|'+x.item;if(!seen.has(key)){seen.add(key);locs.push(x);}}});
 
     /* ---- number properties (shown regardless of active state) ---- */
+    /* Tony 2026-07-23: TYPE line shows the value's prime-index relationship,
+       not its factorization. A PRIME reports its position in the prime
+       sequence; a COMPOSITE V is treated as an index into that sequence and
+       reports prime(V) — the V-th prime. 0/1 are UNIT/ZERO with no prime info. */
     let classify;
-    if(spot===1)classify='one (unit)';
-    else if(isPrime(spot))classify=`PRIME · prime #${primeIndex(spot)}`;
-    else if(spot>=4)classify=`COMPOSITE · factors ${primeFactors(spot).join(' × ')}`;
+    if(spot===0)classify='ZERO';
+    else if(spot===1)classify='UNIT';
+    else if(isPrime(spot))classify=`PRIME · position #${primeIndex(spot)}`;
+    else if(spot>=4)classify=`COMPOSITE · prime(${spot}) = ${nthPrime(spot)}`;
     else classify='—';
     const inst=INST_SET.has(spot)?(INST_LABELS.get(spot)||['INSTITUTIONAL TABLE']):[];
 
