@@ -119,6 +119,7 @@ export default function PlayerCardFullSheet({row,onClose}){
   const [outcome,setOutcome]=useState('3B');
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
+  const [spotOrigin,setSpotOrigin]=useState(null); // origin of the spotlighted cell (projection cells only)
   const [showAllXref,setShowAllXref]=useState(false); // convergence-bullet cap toggle
 
   /* dedicated-page navigation (Tony 2026-07-22): push one history entry on
@@ -172,6 +173,11 @@ export default function PlayerCardFullSheet({row,onClose}){
      is one of today's date roots. */
   const dateRoots=useMemo(
     ()=>dateRootSet((date?dateFigures(date):[]).slice(0,5).map(f=>f.n)),[date]);
+
+  /* shared cross-ref inputs (hoisted so the sheet glow + WHY panel + externalConv
+     all read the same career/season lines and outcome-consistent rung gate). */
+  const srf=useMemo(()=>({career:p.career||null,season:p.season||null}),[p]);
+  const allowRung=useMemo(()=>new Set(NEXT1_STATS[outcome]||NEXT1_STATS.none),[outcome]);
 
   /* ---- life-clock readings (each tappable + promotable) ---- */
   const bday=ev.bday,debut=ev.debut;
@@ -312,9 +318,10 @@ export default function PlayerCardFullSheet({row,onClose}){
   const cascade=useMemo(()=>{
     if(outcome==='none'||!CASCADE[outcome])return[];
     const base=p.career||p.season||{};
+    const scope=p.career?'career':'season';
     return CASCADE[outcome].map(([st,d])=>{
       const b=base[SK[st]];
-      return b==null?null:{stat:st,n:b+d};
+      return b==null?null:{stat:st,n:b+d,origin:{stat:st,scope,offset:d}};
     }).filter(Boolean);
   },[outcome,p]);
 
@@ -331,40 +338,70 @@ export default function PlayerCardFullSheet({row,onClose}){
     return c;
   },[model,cascade]);
 
-  /* cross-ref convergence set — numbers that echo an EXTERNAL reference even
-     when they aren't in today's active spine. Narrowed (Tony 2026-07-22, take
-     2): the raw-equality-on-anything net lit too much. A number now qualifies
-     only when it's telling Tony something he'd act on:
-       • it's a next-1 stat rung (current+1 on any tracked stat, raw match) —
-         i.e. the very next milestone, not a +2..+10 down the ladder; OR
-       • it lands on an opponent-team cipher AND also appears at least once on
-         the sheet OUTSIDE the opponent grid (a lone opp-cipher echo with no
-         other convergence is noise).
+  /* opp-echo convergence set — numbers that land on an opponent-team cipher AND
+     also appear at least once on the sheet OUTSIDE the opponent grid (a lone
+     opp-cipher echo with no other convergence is noise). Number-keyed: applies
+     to every cell showing that value.
+     The next-1 stat-rung glow is NOT here anymore (Tony 2026-07-23): a rung cell
+     matching its own next rung is tautological. That trigger moved to the
+     cell-aware `externalConv` below, which excludes the cell's own advancement
+     and only lights when the projected value cross-references something external.
      Feeds the dim additive glow (xhit) for single-occurrence convergences;
      3+ occurrences already go red via `counts`. */
   const xrefSet=useMemo(()=>{
     const s=new Set();
-    const srf={career:p.career||null,season:p.season||null};
     /* occurrences away from the opponent grid — used to qualify opp echoes.
        cascade values are never part of the opp grid, so they count too. */
     const nonOppCount=new Map();
     const bumpNonOpp=n=>nonOppCount.set(n,(nonOppCount.get(n)||0)+1);
     model.cells.forEach(x=>{if(!x.section.startsWith('OPPONENT'))bumpNonOpp(x.n);});
     cascade.forEach(x=>bumpNonOpp(x.n));
-    /* next-1 rung glow gated to the outcome-consistent stat family (Tony
-       2026-07-23): default (TEST '—') → AB & PA only; a selected outcome → the
-       family it advances. Keeps mutually-exclusive next milestones from all
-       lighting at once. */
-    const allowRung=new Set(NEXT1_STATS[outcome]||NEXT1_STATS.none);
     const distinct=new Set([...model.cells.map(x=>x.n),...cascade.map(x=>x.n)]);
     distinct.forEach(n=>{
       const cr=crossRefsForNumber({sr:srf,opp:oppVals},n,dateRoots);
-      const nextRung=cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label));
       const oppEcho=cr.opponent.items.some(i=>i.rawMatch)&&(nonOppCount.get(n)||0)>0;
-      if(nextRung||oppEcho)s.add(n);
+      if(oppEcho)s.add(n);
     });
     return s;
-  },[model,cascade,oppVals,p,outcome,dateRoots]); // eslint-disable-line react-hooks/exhaustive-deps
+  },[model,cascade,oppVals,srf,dateRoots]);
+
+  /* raw cipher footprint (Tony 2026-07-23): every value printed in the NAME /
+     TEAM / OPPONENT / OPP PITCHER cipher grids. A projected stat/cascade value
+     that lands on one of these is a genuine cross-reference (criterion 2). */
+  const cipherVals=useMemo(()=>{
+    const s=new Set();
+    [model.nameGrid,model.teamGrid,model.oppGrid,model.pitcherGrid].forEach(g=>{
+      g?.rows.forEach(r=>r.vals.forEach(v=>{if(v.n>0)s.add(v.n);}));
+    });
+    return s;
+  },[model]);
+  /* phrase-template footprint: the CONVERGENCES / TEAM STAIRCASE values sourced
+     from the store matchup (criterion 3). */
+  const phraseVals=useMemo(()=>{
+    const s=new Set();
+    (matchup?.cross||[]).forEach(c=>{if(c.n>0)s.add(c.n);});
+    (matchup?.stair||[]).forEach(x=>{if(x.n>0)s.add(x.n);});
+    return s;
+  },[matchup]);
+
+  /* externalConv(n,origin) — the non-tautological glow test for a projected stat
+     rung / cascade cell (Tony 2026-07-23). A projection lights ONLY when its
+     value ALSO converges with something OUTSIDE its own advancement:
+       1 active-set number                3 phrase-template value
+       2 name/team/opp/pitcher cipher     4 opponent-team cipher (raw)
+       5 digit root ∈ today's date-roots
+     plus a DIFFERENT stat's next-1 rung — `origin` drops the asking cell's own
+     lane inside statRungMatches so a rung matching itself no longer counts. */
+  const externalConv=(n,origin)=>{
+    if(!(n>0))return false;
+    if(isActive(n))return true;
+    if(cipherVals.has(n))return true;
+    if(phraseVals.has(n))return true;
+    if(dateRoots.has(digitalRoot(n)))return true;
+    const cr=crossRefsForNumber({sr:srf,opp:oppVals},n,dateRoots,origin);
+    if(cr.opponent.items.some(i=>i.rawMatch))return true;
+    return cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label));
+  };
 
   /* ---- bar groups derived from the (re-categorized) activeMap ---- */
   const barGroups=GROUP_ORDER.map(([cat,label])=>{
@@ -400,18 +437,18 @@ export default function PlayerCardFullSheet({row,onClose}){
        • active (in today's spine) → gold (hit).
        • not active but a narrowed cross-ref convergence (next-1 stat rung, or
          an opp cipher that also echoes elsewhere) → dim gold (xhit). */
-  const cls=n=>{
+  const cls=(n,origin)=>{
     let c='';
     const occ=counts.get(n)||0;
     const active=isActive(n);
     if(occ>=3)c+=active?' hit2 strong':' hit2';
     else if(active)c+=' hit';
-    else if(xrefSet.has(n))c+=' xhit';
+    else if(xrefSet.has(n)||(origin&&externalConv(n,origin)))c+=' xhit';
     if(lens&&lensMatch(n))c+=' lensmatch';
     if(spot===n)c+=' spot-match';
     return c;
   };
-  const toggleSpot=n=>{setSpot(s=>s===n?null:n);};
+  const toggleSpot=(n,origin=null)=>{const off=spot===n;setSpot(off?null:n);setSpotOrigin(off?null:origin);};
   const toggleLens=cat=>{setSpot(null);setLens(l=>l===cat?null:cat);};
   const goAll=()=>{setLens(null);setSpot(null);};
 
@@ -419,9 +456,9 @@ export default function PlayerCardFullSheet({row,onClose}){
 
   /* clickable number cell (spotlight on tap). Plain render fn, not a
      component, so leaf spans diff in place instead of remounting each render. */
-  const numCell=(n,key,nx=false)=>(
-    <span key={key} data-n={n} className={`${nx?'nx':''}${cls(n)}`}
-      onClick={e=>{e.stopPropagation();toggleSpot(n);}}>{n}</span>
+  const numCell=(n,key,nx=false,origin=null)=>(
+    <span key={key} data-n={n} className={`${nx?'nx':''}${cls(n,origin)}`}
+      onClick={e=>{e.stopPropagation();toggleSpot(n,origin);}}>{n}</span>
   );
 
   const promoted=new Set(dayState.adhocThread);
@@ -459,9 +496,9 @@ export default function PlayerCardFullSheet({row,onClose}){
     const cr=crossRefsForNumber({
       pn:{totalDays:bday?.totalDays??null,since:bday?.since??null,until:bday?.until??null,
         years:bday?.years??null,jersey:p.jersey??null},
-      sr:{career:p.career||null,season:p.season||null},
+      sr:srf,
       opp:oppVals,
-    },spot,dateRoots);
+    },spot,dateRoots,spotOrigin);
     const xrefGroups=[
       ['PLAYER',cr.numerology,it=>numerologyText(it,spot,cr.numerology.targetDr)],
       ['RUNGS',cr.statRungs,it=>statRungText(it)],
@@ -476,7 +513,7 @@ export default function PlayerCardFullSheet({row,onClose}){
       reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
       props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
       xrefGroups,locs};
-  },[spot,activeMap,model,cascade,dn,date,bday,p,oppVals,dateRoots]);
+  },[spot,spotOrigin,activeMap,model,cascade,dn,date,bday,p,oppVals,dateRoots,srf]);
 
   const Grid=g=>g&&(
     <div className="grp" key={g.title}>
@@ -531,8 +568,8 @@ export default function PlayerCardFullSheet({row,onClose}){
           <div className="cascpin">
             <div className="casc">
               {cascade.length?cascade.map((c,i)=>(
-                <button key={i} className={`cv${cls(c.n)}`} data-n={c.n}
-                  onClick={e=>{e.stopPropagation();toggleSpot(c.n);}}>
+                <button key={i} className={`cv${cls(c.n,c.origin)}`} data-n={c.n}
+                  onClick={e=>{e.stopPropagation();toggleSpot(c.n,c.origin);}}>
                   <span className="n">{c.n}</span><span className="k">{c.stat}</span>
                 </button>
               )):<span className="casc-empty">no outcome selected</span>}
@@ -640,7 +677,7 @@ export default function PlayerCardFullSheet({row,onClose}){
                 <div className="sv">
                   {r.car!=null?numCell(r.car,'c'):<span className="dash">–</span>}
                   {r.ssn!=null?numCell(r.ssn,'s'):<span className="dash">–</span>}
-                  {r.next!=null?numCell(r.next,'n',true):<span className="dash nx">–</span>}
+                  {r.next!=null?numCell(r.next,'n',true,{stat:r.stat,scope:r.car!=null?'career':'season',offset:1}):<span className="dash nx">–</span>}
                 </div>
               </div>
             ))}

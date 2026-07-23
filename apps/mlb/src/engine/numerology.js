@@ -79,8 +79,12 @@ export function playerNumerologyMatches(fields,target,dateRoots){
    block stays compact. This closes Tony's "next career HR is his 79th"
    loop when the opponent / phrase also lands on 79.
    dateRoots: today's date-root Set (from dateRootSet) gating soft matches.
+   origin: optional {stat,scope,offset} identifying the rung CELL asking for its
+     own cross-refs. A stat's next rung equalling itself is tautological — not a
+     convergence — so the lane that produced the asking cell is dropped from the
+     results (Tony 2026-07-23). scope omitted → the whole stat lane is dropped.
    Returns {targetDr, items:[{scope,label,base,off,n,dr,rawMatch,softMatch}], any}. */
-export function statRungMatches(stats,target,dateRoots,N=10){
+export function statRungMatches(stats,target,dateRoots,N=10,origin=null){
   const t=Math.floor(+target||0);
   const targetDr=digitRoot(t);
   const items=[];
@@ -88,6 +92,8 @@ export function statRungMatches(stats,target,dateRoots,N=10){
     [['career',stats.career],['season',stats.season]].forEach(([scope,src])=>{
       if(!src)return;
       STATS.forEach(([label,key])=>{
+        /* drop the asking cell's own advancement lane (self-match) */
+        if(origin&&origin.stat===label&&(origin.scope==null||origin.scope===scope))return;
         const cur=src[key];
         if(cur==null||!(cur>=0))return;
         const base=Math.floor(+cur);
@@ -143,12 +149,14 @@ export function opponentMatches(oppVals,target,dateRoots){
      opp — precomputed opponent [{name,cipher,n}] → opponentMatches
    dateRoots: today's date-root Set (dateRootSet) threaded to every matcher so a
    digit-root soft match only fires on a day-relevant root. Any input may be
-   absent → that group comes back empty. */
-export function crossRefsForNumber(inputs,target,dateRoots){
+   absent → that group comes back empty.
+   origin: optional {stat,scope,offset} passed through to statRungMatches so a
+   rung cell asking about itself excludes its own next-rung self-match. */
+export function crossRefsForNumber(inputs,target,dateRoots,origin=null){
   const {pn,sr,opp}=inputs||{};
   return{
     numerology:playerNumerologyMatches(pn||{},target,dateRoots),
-    statRungs:statRungMatches(sr,target,dateRoots),
+    statRungs:statRungMatches(sr,target,dateRoots,10,origin),
     opponent:opponentMatches(opp,target,dateRoots),
   };
 }
