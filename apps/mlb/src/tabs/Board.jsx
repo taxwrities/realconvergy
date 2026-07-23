@@ -284,6 +284,12 @@ function BatterZone(){
               <span className="go">›</span>
             </span>
             <span className="badges">
+              {r.ev.pitcherConvergences>=2&&(
+                <span className="badge gold conv"
+                  title={`${r.ev.pitcherConvergences} convergences with the opposing pitcher`}>
+                  ⚡{r.ev.pitcherConvergences}
+                </span>
+              )}
               {r.patternHits.map(({pattern})=>(
                 <span key={pattern.id} className="badge gold" title={pattern.name}>{pattern.lane}</span>
               ))}

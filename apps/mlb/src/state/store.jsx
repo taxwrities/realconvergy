@@ -424,11 +424,54 @@ export function AppStateProvider({children}){
   },[ciphers,date,loaded,dn,settings.lanesOn]);
 
   /* ---------- board: evaluated lineup for active game/side ---------- */
+  /* opposing-pitcher convergence count (Tony 2026-07-23): away batters face the
+     home SP, home batters face the away SP. Build the pitcher's cipher number
+     set once per side (name across first/last/full × enabled ciphers, same grid
+     the OPP cross-refs use), then count how many of the batter's OWN convergence
+     sources land on a pitcher value. Each category contributes at most one per
+     distinct number so first/full echoes of the same value don't inflate; the
+     categories sum. ≥2 → the ⚡ board badge. No probable posted ⇒ null (no badge).
+     Board-level so it can't read the full-sheet's per-card TEST outcome — the
+     next-1 rung leg uses the always-consistent AB/PA family (the '—' default). */
+  const pitcherConvSetFor=useCallback(s=>{
+    if(!game)return null;
+    const spId=s==='away'?game.homeSP:game.awaySP;
+    const sp=spId?slate?.people[spId]:null;
+    if(!sp)return null;
+    return new Set(nameRun(sp.fullName,ciphers).map(x=>x.n).filter(n=>n>0));
+  },[game,slate,ciphers]);
+  const batterTemplateVals=useCallback(p=>{
+    if(!templates?.length)return[];
+    const first=(p.firstName||p.fullName.split(' ')[0]||'').trim();
+    const ent={'{batter full}':p.fullName,'{batter last}':p.lastName,'{batter first}':first};
+    const out=[];
+    templates.forEach(t=>{
+      const base=ent[t.tokens?.[0]];
+      if(!base||!t.word)return;
+      const v=calcAll(`${base} ${t.word}`);
+      ALL_CIPHERS.filter(c=>ciphers[c]).forEach(c=>{const n=v[c];if(n>0)out.push(n)});
+    });
+    return out;
+  },[templates,ciphers]);
+  const countPitcherConv=useCallback((ev,p,pset)=>{
+    if(!pset||!ev)return 0;
+    let total=0;
+    const tally=nums=>{
+      const seen=new Set();
+      nums.forEach(n=>{if(n>0&&pset.has(n)&&!seen.has(n)){seen.add(n);total++}});
+    };
+    tally([...ev.nameNums]);                                              // batter name × cipher
+    tally(ev.rungs.filter(r=>r.off===1&&(r.stat==='AB'||r.stat==='PA')).map(r=>r.n)); // next-1 AB/PA
+    tally([...(ev.bdayNums||[]).map(x=>x.n),p.jersey].filter(Boolean));   // life-clock / age / jersey
+    tally(batterTemplateVals(p));                                         // {token}+word phrase templates
+    return total;
+  },[batterTemplateVals]);
   const board=useMemo(()=>{
     if(!slate||!game)return{away:[],home:[]};
     const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
     const out={};
     ['away','home'].forEach(s=>{
+      const pset=pitcherConvSetFor(s);
       out[s]=game[s+'Ids'].map((id,i)=>{
         const p=slate.people[id];
         if(!p)return null;
@@ -437,12 +480,14 @@ export function AppStateProvider({children}){
           .filter(x=>x.res.match);
         const upcoming=forecasts.filter(f=>f.playerId===id&&f.date>=date)
           .sort((a,b)=>a.date<b.date?-1:1);
-        return{order:i+1,ev:evalBatter({...p,_side:s}),id,patternHits,
+        const ev=evalBatter({...p,_side:s});
+        if(ev)ev.pitcherConvergences=pset?countPitcherConv(ev,p,pset):null;
+        return{order:i+1,ev,id,patternHits,
           forecast:upcoming[0]||null,maturing:upcoming.find(f=>f.date===date)||null};
       }).filter(Boolean);
     });
     return out;
-  },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
+  },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx,pitcherConvSetFor,countPitcherConv]);
 
   /* per-batter pattern preview for the editor (live, §5). overrideId
      (PATTERN-RECIPES §9) previews any slate batter — building from a blog

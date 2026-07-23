@@ -263,6 +263,9 @@ body {
 .badge.gold { color: var(--cvg-gold); } .badge.green { color: var(--cvg-green); }
 .badge.purple { color: var(--cvg-purple); } .badge.blue { color: var(--cvg-blue); }
 .badge.cyan { color: var(--cvg-cyan); }
+/* pitcher-convergence pill (Tony 2026-07-23): the gold ⚡N sits first in the
+   badge row; a heavier fill sets it apart from lane badges without adding size. */
+.badge.conv { background: color-mix(in srgb, currentColor 22%, transparent); }
 
 /* date picker in the DateStrip — inherits the h3 look; native picker on tap */
 .date-pick {
