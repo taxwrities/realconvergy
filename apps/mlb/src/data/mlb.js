@@ -316,9 +316,17 @@ export async function deepFetchGame(game,people,dstr,onProgress){
         if(!career&&st.type.displayName!=='statSplits')return;
         (st.splits||[]).forEach(sp=>{
           const code=sp.split?.code;
-          if(sit&&code===sit){
-            if(career)deep.leagueCareer=deriveStats(sp.stat);
-            else deep.leagueSeason=deriveStats(sp.stat);
+          if(code==='val'||code==='vnl'){
+            /* store BOTH league splits (val=AL, vnl=NL) regardless of tonight's
+               opponent, so the full-sheet can show career G vs AL and vs NL side
+               by side (Tony 2026-07-23). The opp-league convenience keys
+               (leagueCareer/leagueSeason/leagueTag) are still set below for the
+               batter-eval pattern bases in patterns.js. */
+            const stat=deriveStats(sp.stat),lg=code==='val'?'AL':'NL';
+            if(career)deep['league'+lg+'Career']=stat;else deep['league'+lg+'Season']=stat;
+            if(sit&&code===sit){
+              if(career)deep.leagueCareer=stat;else deep.leagueSeason=stat;
+            }
           }else if(code===monthCode&&career){
             deep.monthCareer=deriveStats(sp.stat);
             deep.monthCareerTag=`career·${MONTH_NAMES[gameMonth]}`;

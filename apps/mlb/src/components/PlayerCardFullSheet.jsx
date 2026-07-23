@@ -30,10 +30,12 @@ const CIPHER_COL=[
   ['RevSat','RSAT'],['Sept','SEP'],['Latin','JEW'],
 ];
 
-const SK={PA:'plateAppearances',AB:'atBats',H:'hits','1B':'1B','2B':'doubles',
+const SK={G:'gamesPlayed',PA:'plateAppearances',AB:'atBats',H:'hits','1B':'1B','2B':'doubles',
   '3B':'triples',HR:'homeRuns',XBH:'XBH',RBI:'rbi',TB:'totalBases',
   BB:'baseOnBalls',SO:'strikeOuts'};
-const STAT_ROWS=['PA','AB','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO'];
+/* G leads the STATS block: career games is the running total Tony reads first
+   (Tony 2026-07-23). Every other lane is unchanged. */
+const STAT_ROWS=['G','PA','AB','H','1B','2B','3B','HR','XBH','RBI','TB','BB','SO'];
 
 /* each outcome increments its full stat family (spec §4); base = career line */
 const CASCADE={
@@ -241,7 +243,32 @@ export default function PlayerCardFullSheet({row,onClose}){
     });
     const splitTitle=`SPLITS — vs ${sp?(sp.lastName||'pitcher'):'pitcher'}${spHand?` (${handLabel(spHand)})`:''}`;
 
-    return{cells,nameGrid,teamGrid,oppGrid,pitcherGrid,statsRows,splitRows,splitTitle};
+    /* career G by split (Tony 2026-07-23): Home / Away from the slate's
+       careerStatSplits (always present); vs AL / vs NL from the DEEP league pull
+       (leagueALCareer / leagueNLCareer — null until ⚡DEEP runs, and null for a
+       league a rookie hasn't faced → renders as —). The vs-AL/vs-NL row matching
+       TODAY's opponent league is highlighted gold + ● — same tonight treatment as
+       the pitcher-hand row above. */
+    const oppLeagueTag=p.deep?.leagueTag||null;   // 'AL' | 'NL' — tonight's opp
+    const careerSplitDefs=[
+      {label:'Home',line:SPd['career-home']},
+      {label:'Away',line:SPd['career-away']},
+      {label:'vs AL',line:p.deep?.leagueALCareer,league:'AL'},
+      {label:'vs NL',line:p.deep?.leagueNLCareer,league:'NL'},
+    ];
+    const careerSplitRows=careerSplitDefs.map(d=>{
+      const line=d.line||null;
+      const vals=SPLIT_COLS.map(([k,h])=>{
+        const v=line?line[k]:null;
+        if(v!=null)collect(v,'CAREER SPLITS',`${d.label} · ${h}`);
+        return v!=null?v:null;
+      });
+      const tonight=!!(d.league&&oppLeagueTag&&d.league===oppLeagueTag);
+      return{label:d.label,vals,tonight};
+    });
+
+    return{cells,nameGrid,teamGrid,oppGrid,pitcherGrid,statsRows,splitRows,splitTitle,
+      careerSplitRows,oppLeagueTag};
   },[p,cols,myTeam,oppTeam,sp,spHand]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* cascade depends on the selected outcome; its values glow too */
@@ -583,6 +610,20 @@ export default function PlayerCardFullSheet({row,onClose}){
               {SPLIT_COLS.map(([,h])=><span key={h}>{h}</span>)}</div></div>
             {model.splitRows.map((r,i)=>(
               <div className={`srow${r.tonight?' tonight':''}${r.offhand?' offhand':''}`} key={i}>
+                <span className="w">{r.label}</span>
+                <div className="sv">
+                  {r.vals.map((v,j)=>v!=null?numCell(v,j):<span key={j} className="dash">–</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grp">
+            <div className="grplabel">CAREER — by split{model.oppLeagueTag?` · vs ${model.oppLeagueTag} tonight`:''}<span className="grpcount"/></div>
+            <div className="shead"><span className="w"/><div className="sv">
+              {SPLIT_COLS.map(([,h])=><span key={h}>{h}</span>)}</div></div>
+            {model.careerSplitRows.map((r,i)=>(
+              <div className={`srow${r.tonight?' tonight':''}`} key={i}>
                 <span className="w">{r.label}</span>
                 <div className="sv">
                   {r.vals.map((v,j)=>v!=null?numCell(v,j):<span key={j} className="dash">–</span>)}
