@@ -924,8 +924,12 @@ export function AppStateProvider({children}){
      no separate space/no-space variant, and letter-identical words (STRIKEOUT vs
      STRIKE OUT) collapse to one row via the seen-key. Rows carry DN-spine /
      institutional badges. words are strings; parts/cipherKeys are key arrays. */
-  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0})=>{
-    if(!slate?.games?.length||!targets?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0,oppTeam=false,oppPitcher=false})=>{
+    if(!slate?.games?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+    /* per-player target toggles (Tony 2026-07-23): a run needs at least one
+       target source — the typed list OR opponent-team / opponent-pitcher ciphers.
+       Without any, "run empty" would sweep against nothing. */
+    if(!(targets?.length||oppTeam||oppPitcher))return[];
     const t=Math.max(0,Math.min(5,Math.floor(+tol||0)));
     const spine=new Set(dateFigures(date).map(f=>f.n));
     const inst=new Set(INSTITUTIONAL);
@@ -951,6 +955,39 @@ export function AppStateProvider({children}){
             if(dd.has(k))return;dd.add(k);ov.push({name:tn,cipher:c,n})});
         });
         oppValsFor[s]=ov;
+      });
+      /* per-player effective targets (Tony 2026-07-23): the typed list is shared
+         by every player, but the Opponent-team / Opponent-pitcher toggles add
+         PER-SIDE targets — the batter's own game's opposing team + starter. Built
+         per side, keyed by number with sources merged, so a value that lands on a
+         number carries every source that produced it (typed + Rays Ord + …) →
+         one chip, multi-source glow. Deduped by number within a side. */
+      const srcKey=x=>`${x.kind}|${x.tag||''}|${x.cipher||''}`;
+      const typedList=(targets||[]).filter(n=>n>0);
+      const effFor={};
+      ['away','home'].forEach(s=>{
+        const m=new Map();
+        const addT=(n,src)=>{if(!(n>0))return;let e=m.get(n);
+          if(!e){e={n,sources:[]};m.set(n,e)}
+          const kk=srcKey(src);if(!e.sources.some(x=>srcKey(x)===kk))e.sources.push(src)};
+        typedList.forEach(n=>addT(n,{kind:'typed'}));
+        if(oppTeam)oppValsFor[s].forEach(o=>addT(o.n,{kind:'oppTeam',tag:o.name,cipher:o.cipher}));
+        if(oppPitcher){
+          const spId=s==='away'?g.homeSP:g.awaySP; // away batters face the home SP
+          const sp=spId?slate.people[spId]:null;
+          if(sp){
+            const spFull=(sp.fullName||'').trim();
+            const spFirst=(sp.firstName||spFull.split(/\s+/)[0]||'').trim();
+            const spLast=(sp.lastName||spFull.split(/\s+/).slice(1).join(' ')||'').trim();
+            const spTag=spFirst?`${spFirst[0]}. ${spLast}`.trim():spLast||spFull; // "B. Ober"
+            [...new Set([spFull,spFirst,spLast].filter(Boolean))].forEach(str=>{
+              const cv=calcAll(str);
+              cix.forEach(c=>{const n=cv[c];if(!(n>0))return;
+                addT(n,{kind:'oppPitcher',tag:spTag,cipher:c})});
+            });
+          }
+        }
+        effFor[s]=[...m.values()];
       });
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
@@ -1035,17 +1072,17 @@ export function AppStateProvider({children}){
               cix.forEach(c=>{
                 const value=v[c];
                 if(!(value>0))return;
-                targets.forEach(target=>{
-                  const off=value-target;
+                effFor[s].forEach(et=>{
+                  const off=value-et.n;
                   if(Math.abs(off)>t)return;
-                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${target}`;
+                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${et.n}`;
                   if(seen.has(k))return;
                   seen.add(k);
                   out.push({id,pk:g.pk,side:s,name:p.fullName,
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
                     legal:!!part.legal,
-                    cipher:c,value,target,off,pn,sr,opp:oppValsFor[s],
+                    cipher:c,value,target:et.n,off,sources:et.sources,pn,sr,opp:oppValsFor[s],
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });
               });

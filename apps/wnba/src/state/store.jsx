@@ -649,8 +649,12 @@ export function AppStateProvider({children}){
      no separate space/no-space variant, and letter-identical words collapse to
      one row via the seen-key. Rows carry DN-spine / institutional badges. words
      are strings; parts/cipherKeys are key arrays. */
-  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0})=>{
-    if(!slate?.games?.length||!targets?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+  const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0,oppTeam=false})=>{
+    if(!slate?.games?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+    /* per-player target toggle (Tony 2026-07-23): a run needs at least one target
+       source — the typed list OR the opponent-team ciphers. WNBA wires only the
+       opponent-team variant (no "opposing pitcher" analogue). */
+    if(!(targets?.length||oppTeam))return[];
     const t=Math.max(0,Math.min(5,Math.floor(+tol||0)));
     const spine=new Set(dateFigures(date).map(f=>f.n));
     const inst=new Set(INSTITUTIONAL);
@@ -676,6 +680,22 @@ export function AppStateProvider({children}){
             if(dd.has(k))return;dd.add(k);ov.push({name:tn,cipher:c,n})});
         });
         oppValsFor[s]=ov;
+      });
+      /* per-player effective targets (Tony 2026-07-23): typed list (shared) +
+         the Opponent-team toggle's PER-SIDE targets (the batter's own game's
+         opposing team ciphers). Keyed by number, sources merged → one chip,
+         multi-source glow. Deduped by number within a side. */
+      const srcKey=x=>`${x.kind}|${x.tag||''}|${x.cipher||''}`;
+      const typedList=(targets||[]).filter(n=>n>0);
+      const effFor={};
+      ['away','home'].forEach(s=>{
+        const m=new Map();
+        const addT=(n,src)=>{if(!(n>0))return;let e=m.get(n);
+          if(!e){e={n,sources:[]};m.set(n,e)}
+          const kk=srcKey(src);if(!e.sources.some(x=>srcKey(x)===kk))e.sources.push(src)};
+        typedList.forEach(n=>addT(n,{kind:'typed'}));
+        if(oppTeam)oppValsFor[s].forEach(o=>addT(o.n,{kind:'oppTeam',tag:o.name,cipher:o.cipher}));
+        effFor[s]=[...m.values()];
       });
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
@@ -706,16 +726,16 @@ export function AppStateProvider({children}){
               cix.forEach(c=>{
                 const value=v[c];
                 if(!(value>0))return;
-                targets.forEach(target=>{
-                  const off=value-target;
+                effFor[s].forEach(et=>{
+                  const off=value-et.n;
                   if(Math.abs(off)>t)return;
-                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${target}`;
+                  const k=`${id}|${part.key}|${letters(phrase).join('')}|${c}|${et.n}`;
                   if(seen.has(k))return;
                   seen.add(k);
                   out.push({id,pk:g.pk,side:s,name:p.fullName,
                     team:g[s].abbrev||g[s].teamName,gameLabel,
                     namePart:part.key,word,phrase:`${part.str.toUpperCase()} ${word}`,
-                    cipher:c,value,target,off,pn,sr,opp:oppValsFor[s],
+                    cipher:c,value,target:et.n,off,sources:et.sources,pn,sr,opp:oppValsFor[s],
                     onSpine:spine.has(value),onInst:inst.has(value)});
                 });
               });

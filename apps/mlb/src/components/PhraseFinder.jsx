@@ -26,6 +26,10 @@ export default function PhraseFinder(){
   const [cix,setCix]=useState(()=>Object.fromEntries(ALL_CIPHERS.map(c=>[c,!!ciphers[c]])));
   const [raw,setRaw]=useState('');
   const [tol,setTol]=useState(0);
+  /* per-player target toggles (Tony 2026-07-23) — opt-in, default OFF so a
+     no-typed-target run stays empty rather than sweeping noise. */
+  const [oppTeam,setOppTeam]=useState(false);
+  const [oppPitcher,setOppPitcher]=useState(false);
 
   /* debounce the target field so typing stays smooth */
   const [debRaw,setDebRaw]=useState('');
@@ -37,12 +41,17 @@ export default function PhraseFinder(){
   const selWords=useMemo(()=>words.filter(x=>x.on).map(x=>x.w),[words]);
   const selParts=useMemo(()=>NAME_PARTS.map(([k])=>k).filter(k=>parts[k]),[parts]);
   const selCix=useMemo(()=>ALL_CIPHERS.filter(c=>cix[c]),[cix]);
+  /* a run is live when there's at least one target source: typed OR a toggle */
+  const hasTargets=targets.length>0||oppTeam||oppPitcher;
+  /* show the per-hit source badge only once opp targets are in play — a pure
+     typed run is trivially all-"typed", so the badge would be redundant noise. */
+  const showSrc=oppTeam||oppPitcher;
 
   const hits=useMemo(()=>
-    (open&&targets.length&&selWords.length&&selParts.length&&selCix.length)
-      ?findPhrases({words:selWords,parts:selParts,cipherKeys:selCix,targets,tol})
+    (open&&hasTargets&&selWords.length&&selParts.length&&selCix.length)
+      ?findPhrases({words:selWords,parts:selParts,cipherKeys:selCix,targets,tol,oppTeam,oppPitcher})
       :[],
-    [open,targets,selWords,selParts,selCix,tol,findPhrases]);
+    [open,hasTargets,targets,selWords,selParts,selCix,tol,oppTeam,oppPitcher,findPhrases]);
 
   const groups=useMemo(()=>{
     const m=new Map();
@@ -134,17 +143,25 @@ export default function PhraseFinder(){
             <span className="muted" style={{fontSize:12}}>tolerance (0 = exact)</span>
           </div>
 
+          {/* per-player target toggles (Tony 2026-07-23) — union with the typed
+             list above; each sweeps every player against THEIR matchup's ciphers. */}
+          <div className="sheet-row" style={{gap:6,flexWrap:'wrap',marginTop:2}}>
+            <button className={`chip${oppTeam?' on':''}`} onClick={()=>setOppTeam(v=>!v)}>Opponent team</button>
+            <button className={`chip${oppPitcher?' on':''}`} onClick={()=>setOppPitcher(v=>!v)}>Opponent pitcher</button>
+          </div>
+          <div className="muted" style={{fontSize:11,marginTop:2}}>adds this matchup's ciphers as per-player targets</div>
+
           {/* results — one scannable summary row per player (ResultRow, below).
              The phrase-hit list + PLAYER/RUNGS/OPP cross-refs are computed but
              hidden by default; the ↗ jumps to the full-sheet (where the WHY
              panel surfaces the detail) and the ▸ caret expands them in place. */}
-          {targets.length>0&&(
+          {hasTargets&&(
             <div className="id-card" style={{marginTop:6}}>
               <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
-                targets {targets.join(', ')} · ±{tol} · {hits.length} hit{hits.length===1?'':'s'} across {groups.length} player{groups.length===1?'':'s'}
+                targets {[targets.join(', '),oppTeam&&'opp-team',oppPitcher&&'opp-pitcher'].filter(Boolean).join(' + ')||'—'} · ±{tol} · {hits.length} hit{hits.length===1?'':'s'} across {groups.length} player{groups.length===1?'':'s'}
               </div>
               {groups.map(g=>(
-                <ResultRow key={g.id} g={g} tol={tol} focusPlayer={focusPlayer}/>
+                <ResultRow key={g.id} g={g} tol={tol} showSrc={showSrc} focusPlayer={focusPlayer}/>
               ))}
               {!hits.length&&(
                 <div className="occ muted">No hits. Try more ciphers, more variations, or bumping tolerance to 1–2.</div>
@@ -163,13 +180,31 @@ export default function PhraseFinder(){
    jump, and a ▸ caret. The PLAYER/RUNGS/OPP cross-ref pile stays hidden — it's
    still computed but only renders on caret-expand; its real home is the
    full-sheet WHY panel behind the ↗. */
-function ResultRow({g,tol,focusPlayer}){
+/* target-source badge (Tony 2026-07-23) — credits which target a phrase landed
+   on: "typed" for the static list, "<Team> <Cipher>" for an opponent-team value
+   (e.g. "Rays Ord"), "<F. Last> <Cipher>" for an opponent-pitcher value (e.g.
+   "B. Ober Sat"). A number produced by several sources shows them "·"-joined. */
+function srcOne(s){
+  if(s.kind==='typed')return'typed';
+  if(s.kind==='oppTeam'||s.kind==='oppPitcher')return`${s.tag} ${s.cipher}`;
+  return s.kind||'';
+}
+function srcBadge(r){
+  const ss=r.sources||[];
+  return ss.length?[...new Set(ss.map(srcOne))].join(' · '):'typed';
+}
+
+function ResultRow({g,tol,showSrc,focusPlayer}){
   const [exp,setExp]=useState(false);
   const shown=g.rows.slice(0,PHRASE_CAP), extra=g.rows.length-shown.length;
   /* cascade = a RUNGS/OPP cross-ref lands on the same target as a phrase hit →
      stronger glow. Computed once here and reused by the expanded PlayerXref. */
   const xref=useMemo(()=>collectXref(g.rows[0],g.rows.map(r=>r.target)),[g]);
-  const strong=xref.rungs.length>0||xref.opp.length>0;
+  /* multi-source convergence (Tony 2026-07-23): this player has BOTH a typed
+     hit AND an opponent-derived (team/pitcher) hit → strong glow. */
+  const kinds=new Set(g.rows.flatMap(r=>(r.sources||[]).map(s=>s.kind)));
+  const multiSrc=kinds.has('typed')&&(kinds.has('oppTeam')||kinds.has('oppPitcher'));
+  const strong=xref.rungs.length>0||xref.opp.length>0||multiSrc;
   return(
     <div className={`finder-row${strong?' glow-strong':''}`}>
       <div className="fr-top">
@@ -179,7 +214,7 @@ function ResultRow({g,tol,focusPlayer}){
         <span className="pf-phrases mono">
           {' · '}
           {shown.map((r,i)=>(
-            <span key={i}>{i>0?', ':''}{r.phrase} <span className="muted">({cl(r.cipher)}={r.value})</span></span>
+            <span key={i}>{i>0?', ':''}{r.phrase} <span className="muted">({cl(r.cipher)}={r.value}{showSrc?` · ${srcBadge(r)}`:''})</span></span>
           ))}
           {extra>0&&<span className="muted"> · +{extra} more</span>}
         </span>
@@ -197,7 +232,7 @@ function ResultRow({g,tol,focusPlayer}){
             {r.legal&&<span className="badge blue" title="legal/government name variant">LEGAL</span>}
             <span className="muted">· {cl(r.cipher)} =</span>
             <b className="v-green">{r.value}</b>
-            <span className="muted">· target {r.target}{tol>0?` (${r.off>0?'+':''}${r.off})`:''}</span>
+            <span className="muted">· target {r.target}{tol>0?` (${r.off>0?'+':''}${r.off})`:''} ({srcBadge(r)})</span>
             {r.onSpine&&<span className="badge gold">DN</span>}
             {r.onInst&&<span className="badge green">INST</span>}
           </div>
