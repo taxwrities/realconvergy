@@ -165,10 +165,10 @@
     },
     {
       "name": "Scottish Rite",
-      "founded": "1801-05-31",
-      "date_status": "verify",
-      "source": "",
-      "note": "Satanic=585 locked in regression table.",
+      "founded": "1801",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Scottish_Rite",
+      "note": "Satanic=585 locked in regression table. Mother Supreme Council formed Charleston May 1801 (month+year only).",
       "ciphers": {
         "Ord": 165,
         "Red": 57,
@@ -222,8 +222,8 @@
     {
       "name": "Illuminati",
       "founded": "1776-05-01",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Illuminati",
       "founder": "Adam Weishaupt",
       "ciphers": {
         "Ord": 120,
@@ -251,8 +251,8 @@
     {
       "name": "Bavarian Illuminati",
       "founded": "1776-05-01",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Illuminati",
       "founder": "Adam Weishaupt",
       "ciphers": {
         "Ord": 188,
@@ -279,10 +279,11 @@
     },
     {
       "name": "Knights Templar",
-      "founded": "1119",
-      "date_status": "verify",
-      "source": "",
+      "founded": "1118",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Knights_Templar",
       "founder": "Hugues de Payens",
+      "note": "Ruling: 1118 (page's explicit founding statement). Some accounts date the Hugues de Payens approach to Baldwin II at 1119.",
       "ciphers": {
         "Ord": 173,
         "Red": 65,
@@ -309,9 +310,9 @@
     {
       "name": "Bohemian Club",
       "founded": "1872",
-      "date_status": "verify",
-      "source": "",
-      "note": "Ord=105 mirrors Masonry",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Bohemian_Club",
+      "note": "Ord=105 mirrors Masonry. Formed April 1872 (month+year only).",
       "ciphers": {
         "Ord": 105,
         "Red": 51,
@@ -326,9 +327,10 @@
     },
     {
       "name": "Bohemian Grove",
-      "founded": "1872",
-      "date_status": "verify",
-      "source": "",
+      "founded": "1878",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Bohemian_Grove",
+      "note": "CORRECTED from 1872: Grove encampment tradition began 1878 (six years after the Club's 1872 founding).",
       "ciphers": {
         "Ord": 134,
         "Red": 71,
@@ -344,8 +346,8 @@
     {
       "name": "Bilderberg Group",
       "founded": "1954-05-29",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Bilderberg_meeting",
       "founder": "Prince Bernhard",
       "ciphers": {
         "Ord": 159,
@@ -373,8 +375,8 @@
     {
       "name": "Council on Foreign Relations",
       "founded": "1921-07-29",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Council_on_Foreign_Relations",
       "ciphers": {
         "Ord": 293,
         "Red": 131,
@@ -389,10 +391,11 @@
     },
     {
       "name": "Trilateral Commission",
-      "founded": "1973-07-01",
-      "date_status": "verify",
-      "source": "",
+      "founded": "1973",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Trilateral_Commission",
       "founder": "David Rockefeller",
+      "note": "CORRECTED from 1973-07-01: page gives July 1973 (month+year only), no day.",
       "ciphers": {
         "Ord": 245,
         "Red": 92,
@@ -419,9 +422,10 @@
     {
       "name": "Ordo Templi Orientis",
       "founded": "1904",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Ordo_Templi_Orientis",
       "founder": "Aleister Crowley",
+      "note": "Ruling: anchor 1904 (first verifiable emergence per page: 'nothing verifiable is known of the Order until 1904'); apparent founder Carl Kellner claimed 1895.",
       "ciphers": {
         "Ord": 236,
         "Red": 101,
@@ -479,9 +483,9 @@
     {
       "name": "Federal Reserve",
       "founded": "1913-12-23",
-      "date_status": "verify",
-      "source": "",
-      "note": "Ord=143 sits on Wednesday regression lock",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Federal_Reserve",
+      "note": "Ord=143 sits on Wednesday regression lock. Federal Reserve Act enacted 1913-12-23.",
       "ciphers": {
         "Ord": 143,
         "Red": 71,
@@ -497,8 +501,9 @@
     {
       "name": "Vatican City",
       "founded": "1929-02-11",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Vatican_City",
+      "note": "Lateran Treaty signed 11 Feb 1929 (took effect 7 June 1929).",
       "ciphers": {
         "Ord": 127,
         "Red": 46,
@@ -514,9 +519,9 @@
     {
       "name": "United Nations",
       "founded": "1945-10-24",
-      "date_status": "verify",
-      "source": "",
-      "note": "165/57 mirrors Scottish Rite",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/United_Nations",
+      "note": "165/57 mirrors Scottish Rite. UN came into existence 24 Oct 1945 on Charter ratification.",
       "ciphers": {
         "Ord": 165,
         "Red": 57,
@@ -591,10 +596,10 @@
   "sports_founders": [
     {
       "name": "Major League Baseball",
-      "founded": "1876-02-02",
-      "date_status": "verify",
-      "source": "",
-      "note": "NL founding date",
+      "founded": "1876",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Major_League_Baseball",
+      "note": "No single founding date. Infobox lists NL 1876 / AL 1901 / National Agreement 1903 / merged 2000. Anchored to earliest (NL 1876); seed's -02-02 was actually the NL date.",
       "ciphers": {
         "Ord": 162,
         "Red": 63,
@@ -610,10 +615,10 @@
     {
       "name": "National League",
       "founded": "1876-02-02",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/National_League_(baseball)",
       "founder": "William Hulbert",
-      "note": "137/56 exact mirror of Church of Satan",
+      "note": "137/56 exact mirror of Church of Satan. Founded 2 Feb 1876, New York City.",
       "ciphers": {
         "Ord": 137,
         "Red": 56,
@@ -640,8 +645,8 @@
     {
       "name": "American League",
       "founded": "1901-01-28",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/American_League",
       "founder": "Ban Johnson",
       "ciphers": {
         "Ord": 115,
@@ -669,10 +674,10 @@
     {
       "name": "National Basketball Association",
       "founded": "1946-06-06",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/National_Basketball_Association",
       "founder": "Maurice Podoloff",
-      "note": "Founded as BAA",
+      "note": "Founded as BAA 6 June 1946; merged with NBL 1949 to form NBA.",
       "ciphers": {
         "Ord": 296,
         "Red": 98,
@@ -699,9 +704,9 @@
     {
       "name": "WNBA",
       "founded": "1996-04-24",
-      "date_status": "verify",
-      "source": "",
-      "note": "Announced 4/24/1996; first game 6/21/1997",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Women%27s_National_Basketball_Association",
+      "note": "Approved by NBA Board of Governors 24 Apr 1996; first game 21 June 1997.",
       "ciphers": {
         "Ord": 40,
         "Red": 13,
@@ -716,11 +721,11 @@
     },
     {
       "name": "Basketball",
-      "founded": "1891-12-21",
-      "date_status": "verify",
-      "source": "",
+      "founded": "1891",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Basketball",
       "founder": "James Naismith",
-      "note": "Invention date. Naismith=141/51=Adam Weishaupt",
+      "note": "CORRECTED from 1891-12-21: page gives 'December 1891' (no day). Naismith=141/51=Adam Weishaupt. First official game 20 Jan 1892.",
       "ciphers": {
         "Ord": 85,
         "Red": 22,
@@ -746,11 +751,11 @@
     },
     {
       "name": "Knickerbocker Rules",
-      "founded": "1845-09-23",
-      "date_status": "verify",
-      "source": "",
+      "founded": "1845",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Knickerbocker_Rules",
       "founder": "Alexander Cartwright",
-      "note": "Baseball codified",
+      "note": "CORRECTED from 1845-09-23: page gives only the year 1845. Baseball codified by Wheaton & Tucker.",
       "ciphers": {
         "Ord": 200,
         "Red": 83,
@@ -779,10 +784,10 @@
     {
       "name": "Jackie Robinson",
       "founded": "1919-01-31",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Jackie_Robinson",
       "founder": "Jack Roosevelt Robinson",
-      "note": "#42, Jackie Robinson Day 4/15",
+      "note": "#42, Jackie Robinson Day 4/15. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
       "ciphers": {
         "Ord": 145,
         "Red": 64,
@@ -809,10 +814,10 @@
     {
       "name": "Babe Ruth",
       "founded": "1895-02-06",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Babe_Ruth",
       "founder": "George Herman Ruth",
-      "note": "#3",
+      "note": "#3. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
       "ciphers": {
         "Ord": 77,
         "Red": 32,
@@ -839,10 +844,10 @@
     {
       "name": "Lou Gehrig",
       "founded": "1903-06-19",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Lou_Gehrig",
       "founder": "Henry Louis Gehrig",
-      "note": "#4, Lou Gehrig Day 6/2",
+      "note": "#4, Lou Gehrig Day 6/2. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
       "ciphers": {
         "Ord": 102,
         "Red": 57,
@@ -869,9 +874,9 @@
     {
       "name": "Roberto Clemente",
       "founded": "1934-08-18",
-      "date_status": "verify",
-      "source": "",
-      "note": "#21, died 12/31/1972",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Roberto_Clemente",
+      "note": "#21, died 12/31/1972. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
       "ciphers": {
         "Ord": 170,
         "Red": 71,
@@ -887,10 +892,10 @@
     {
       "name": "Michael Jordan",
       "founded": "1963-02-17",
-      "date_status": "verify",
-      "source": "",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Michael_Jordan",
       "founder": "Michael Jeffrey Jordan",
-      "note": "#23 #45. Ord=113=Kobe Bryant",
+      "note": "#23 #45. Ord=113=Kobe Bryant. DOB confirmed via Wikipedia (Basketball-Reference returned 403).",
       "ciphers": {
         "Ord": 113,
         "Red": 59,
@@ -919,11 +924,12 @@
     {
       "name": "Arizona Diamondbacks",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1998",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Arizona_Diamondbacks",
       "city": "Arizona",
       "nickname": "Diamondbacks",
+      "note": "Expansion team, never moved/renamed. Awarded to Phoenix 9 Mar 1995; first season 1998.",
       "ciphers": {
         "Ord": 180,
         "Red": 81,
@@ -961,11 +967,12 @@
     {
       "name": "Atlanta Braves",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1966",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Atlanta_Braves",
       "city": "Atlanta",
       "nickname": "Braves",
+      "note": "Franchise 1871 Boston Red Stockings -> Milwaukee 1953 -> Atlanta 1966 (current identity; year only).",
       "ciphers": {
         "Ord": 136,
         "Red": 37,
@@ -1003,11 +1010,12 @@
     {
       "name": "Baltimore Orioles",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1954",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Baltimore_Orioles",
       "city": "Baltimore",
       "nickname": "Orioles",
+      "note": "Franchise 1894 Milwaukee (Western League) -> St. Louis Browns 1902 -> Baltimore Orioles 1954 (current identity; year only).",
       "ciphers": {
         "Ord": 188,
         "Red": 80,
@@ -1045,11 +1053,12 @@
     {
       "name": "Boston Red Sox",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1901",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Boston_Red_Sox",
       "city": "Boston",
       "nickname": "Red Sox",
+      "note": "Never moved. AL charter 1901 as Boston Americans; 'Red Sox' name from 1908.",
       "ciphers": {
         "Ord": 170,
         "Red": 53,
@@ -1087,11 +1096,12 @@
     {
       "name": "Chicago Cubs",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1870",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Chicago_Cubs",
       "city": "Chicago",
       "nickname": "Cubs",
+      "note": "Never moved. Est. 1870 as Chicago White Stockings; 'Cubs' name officially 1907.",
       "ciphers": {
         "Ord": 91,
         "Red": 46,
@@ -1129,11 +1139,12 @@
     {
       "name": "Chicago White Sox",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1900",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Chicago_White_Sox",
       "city": "Chicago",
       "nickname": "White Sox",
+      "note": "Franchise 1894 Sioux City -> St. Paul Saints -> Chicago 1900; 'White Sox' shortened 1904.",
       "ciphers": {
         "Ord": 169,
         "Red": 79,
@@ -1171,11 +1182,12 @@
     {
       "name": "Cincinnati Reds",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1881",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Cincinnati_Reds",
       "city": "Cincinnati",
       "nickname": "Reds",
+      "note": "Never moved. Modern franchise est. 1881 as Red Stockings; Redlegs 1953-58; Reds since 1959.",
       "ciphers": {
         "Ord": 142,
         "Red": 70,
@@ -1213,11 +1225,12 @@
     {
       "name": "Cleveland Guardians",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1901-04-24",
+      "date_status": "locked",
+      "source": "tony-date-decoder-2026-07",
       "city": "Cleveland",
       "nickname": "Guardians",
+      "note": "Ruling (Tony): anchor to franchise origin from the Date Decoder — Cleveland Blues, AL charter, never relocated, 1901-04-24. Lineage: Blues 1901 -> Naps -> Indians 1915-2021 -> Guardians 2022. (Wikipedia lists franchise origins 1896 Western League / first AL season 1901.) Entry name kept 'Cleveland Guardians' for live-club + gematria match.",
       "ciphers": {
         "Ord": 172,
         "Red": 73,
@@ -1255,11 +1268,12 @@
     {
       "name": "Colorado Rockies",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1993",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Colorado_Rockies",
       "city": "Colorado",
       "nickname": "Rockies",
+      "note": "Expansion team, never moved/renamed. First season 1993.",
       "ciphers": {
         "Ord": 163,
         "Red": 73,
@@ -1297,11 +1311,12 @@
     {
       "name": "Detroit Tigers",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1894",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Detroit_Tigers",
       "city": "Detroit",
       "nickname": "Tigers",
+      "note": "Never moved. Founded 1894 (Western League); 'Tigers' AL charter 1901.",
       "ciphers": {
         "Ord": 169,
         "Red": 70,
@@ -1339,11 +1354,12 @@
     {
       "name": "Houston Astros",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1965",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Houston_Astros",
       "city": "Houston",
       "nickname": "Astros",
+      "note": "Never moved. NL expansion 1962 as Colt .45s -> Astros 1965 (current-identity name date).",
       "ciphers": {
         "Ord": 204,
         "Red": 51,
@@ -1381,11 +1397,12 @@
     {
       "name": "Kansas City Royals",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1969",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Kansas_City_Royals",
       "city": "Kansas City",
       "nickname": "Royals",
+      "note": "Expansion team, never moved/renamed. Entered AL 1969.",
       "ciphers": {
         "Ord": 212,
         "Red": 59,
@@ -1423,11 +1440,12 @@
     {
       "name": "Los Angeles Angels",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1961",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Los_Angeles_Angels",
       "city": "Los Angeles",
       "nickname": "Angels",
+      "note": "Expansion 1961 as LA Angels; California/Anaheim/LAA of Anaheim; 'Los Angeles Angels' restored 2016. Original founding 1961 used.",
       "ciphers": {
         "Ord": 167,
         "Red": 59,
@@ -1465,11 +1483,12 @@
     {
       "name": "Los Angeles Dodgers",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1958",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Los_Angeles_Dodgers",
       "city": "Los Angeles",
       "nickname": "Dodgers",
+      "note": "Franchise 1883 Brooklyn -> Los Angeles 1958 (current identity; year only).",
       "ciphers": {
         "Ord": 181,
         "Red": 73,
@@ -1507,11 +1526,12 @@
     {
       "name": "Miami Marlins",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2012",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Miami_Marlins",
       "city": "Miami",
       "nickname": "Marlins",
+      "note": "Expansion 1993 as Florida Marlins (Miami metro throughout) -> Miami Marlins 2012 (current-identity name date).",
       "ciphers": {
         "Ord": 131,
         "Red": 59,
@@ -1549,11 +1569,12 @@
     {
       "name": "Milwaukee Brewers",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1970",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Milwaukee_Brewers",
       "city": "Milwaukee",
       "nickname": "Brewers",
+      "note": "Franchise 1969 Seattle Pilots -> Milwaukee Brewers 1970 (current identity; year only).",
       "ciphers": {
         "Ord": 190,
         "Red": 73,
@@ -1591,11 +1612,12 @@
     {
       "name": "Minnesota Twins",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1961",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Minnesota_Twins",
       "city": "Minnesota",
       "nickname": "Twins",
+      "note": "Franchise 1901 Washington Senators -> Minnesota Twins 1961 (current identity; year only).",
       "ciphers": {
         "Ord": 195,
         "Red": 60,
@@ -1633,11 +1655,12 @@
     {
       "name": "New York Mets",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1962",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/New_York_Mets",
       "city": "New York",
       "nickname": "Mets",
+      "note": "NL expansion team, never moved. First season 1962.",
       "ciphers": {
         "Ord": 168,
         "Red": 51,
@@ -1675,11 +1698,12 @@
     {
       "name": "New York Yankees",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1913",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/New_York_Yankees",
       "city": "New York",
       "nickname": "Yankees",
+      "note": "Ruling: current-identity 1913 (year the 'New York Yankees' name became official). Franchise 1901 Baltimore Orioles -> NY Highlanders 1903 -> Yankees 1913.",
       "ciphers": {
         "Ord": 191,
         "Red": 65,
@@ -1717,11 +1741,12 @@
     {
       "name": "Athletics",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2025",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Athletics_(baseball)",
       "city": "Sacramento",
       "nickname": "Athletics",
+      "note": "Franchise 1901 Philadelphia A's -> Kansas City 1955 -> Oakland 1968 -> West Sacramento 2025 (current identity; Las Vegas move planned 2028).",
       "ciphers": {
         "Ord": 97,
         "Red": 34,
@@ -1759,11 +1784,12 @@
     {
       "name": "Philadelphia Phillies",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1883",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Philadelphia_Phillies",
       "city": "Philadelphia",
       "nickname": "Phillies",
+      "note": "Never moved. NL franchise, first season 1883.",
       "ciphers": {
         "Ord": 191,
         "Red": 110,
@@ -1801,11 +1827,12 @@
     {
       "name": "Pittsburgh Pirates",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1882",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Pittsburgh_Pirates",
       "city": "Pittsburgh",
       "nickname": "Pirates",
+      "note": "Never moved. AA club first played 1882; joined NL 1887; 'Pirates' name 1891.",
       "ciphers": {
         "Ord": 228,
         "Red": 84,
@@ -1843,11 +1870,12 @@
     {
       "name": "San Diego Padres",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1969",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/San_Diego_Padres",
       "city": "San Diego",
       "nickname": "Padres",
+      "note": "NL expansion team, never moved. First season 1969.",
       "ciphers": {
         "Ord": 137,
         "Red": 65,
@@ -1885,11 +1913,12 @@
     {
       "name": "San Francisco Giants",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1958",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/San_Francisco_Giants",
       "city": "San Francisco",
       "nickname": "Giants",
+      "note": "Franchise 1883 New York Gothams/Giants -> San Francisco 1958 (current identity; year only).",
       "ciphers": {
         "Ord": 192,
         "Red": 75,
@@ -1927,11 +1956,12 @@
     {
       "name": "Seattle Mariners",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1977",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Seattle_Mariners",
       "city": "Seattle",
       "nickname": "Mariners",
+      "note": "AL expansion team, never moved. First season 1977.",
       "ciphers": {
         "Ord": 179,
         "Red": 62,
@@ -1969,11 +1999,12 @@
     {
       "name": "St Louis Cardinals",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1882",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/St._Louis_Cardinals",
       "city": "St Louis",
       "nickname": "Cardinals",
+      "note": "Never moved. Franchise first season 1882 (originally American Association).",
       "ciphers": {
         "Ord": 196,
         "Red": 61,
@@ -2011,11 +2042,12 @@
     {
       "name": "Tampa Bay Rays",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1998",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Tampa_Bay_Rays",
       "city": "Tampa Bay",
       "nickname": "Rays",
+      "note": "AL expansion, never moved. 1998 as Tampa Bay Devil Rays -> Rays 2008.",
       "ciphers": {
         "Ord": 142,
         "Red": 43,
@@ -2053,11 +2085,12 @@
     {
       "name": "Texas Rangers",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1972",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Texas_Rangers_(baseball)",
       "city": "Texas",
       "nickname": "Rangers",
+      "note": "Franchise 1961 (2nd) Washington Senators -> Arlington/Texas Rangers 1972 (current identity; year only).",
       "ciphers": {
         "Ord": 151,
         "Red": 52,
@@ -2095,11 +2128,12 @@
     {
       "name": "Toronto Blue Jays",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1977",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Toronto_Blue_Jays",
       "city": "Toronto",
       "nickname": "Blue Jays",
+      "note": "AL expansion team, never moved. First season 1977.",
       "ciphers": {
         "Ord": 212,
         "Red": 59,
@@ -2137,11 +2171,12 @@
     {
       "name": "Washington Nationals",
       "sport": "mlb",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2005",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Washington_Nationals",
       "city": "Washington",
       "nickname": "Nationals",
+      "note": "Franchise 1969 Montreal Expos -> Washington Nationals 2005 (move announced 29 Sep 2004; year only).",
       "ciphers": {
         "Ord": 235,
         "Red": 82,
@@ -2181,11 +2216,12 @@
     {
       "name": "Atlanta Dream",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2008",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Atlanta_Dream",
       "city": "Atlanta",
       "nickname": "Dream",
+      "note": "Expansion team, never moved. Founded for 2008 season; 'Dream' announced 23 Jan 2008.",
       "ciphers": {
         "Ord": 110,
         "Red": 38,
@@ -2223,11 +2259,12 @@
     {
       "name": "Chicago Sky",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2005",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Chicago_Sky",
       "city": "Chicago",
       "nickname": "Sky",
+      "note": "Expansion team, never moved. Awarded Feb 2005; began play 2006.",
       "ciphers": {
         "Ord": 101,
         "Red": 47,
@@ -2265,11 +2302,12 @@
     {
       "name": "Connecticut Sun",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2003",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Connecticut_Sun",
       "city": "Connecticut",
       "nickname": "Sun",
+      "note": "Franchise 1999 Orlando Miracle -> Connecticut Sun 2003 (relocation/rename announced 28 Jan 2003; current identity).",
       "ciphers": {
         "Ord": 181,
         "Red": 55,
@@ -2307,11 +2345,12 @@
     {
       "name": "Dallas Wings",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2016",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Dallas_Wings",
       "city": "Dallas",
       "nickname": "Wings",
+      "note": "Franchise 1998 Detroit Shock -> Tulsa Shock 2010 -> Dallas Wings 2016 (current identity; first game 14 May 2016).",
       "ciphers": {
         "Ord": 121,
         "Red": 40,
@@ -2349,11 +2388,12 @@
     {
       "name": "Golden State Valkyries",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2025",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Golden_State_Valkyries",
       "city": "Golden State",
       "nickname": "Valkyries",
+      "note": "New expansion team, never moved. Awarded 5 Oct 2023; WNBA debut 16 May 2025 (first season).",
       "ciphers": {
         "Ord": 244,
         "Red": 82,
@@ -2391,11 +2431,12 @@
     {
       "name": "Indiana Fever",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2000",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Indiana_Fever",
       "city": "Indiana",
       "nickname": "Fever",
+      "note": "Expansion team, never moved. Founded for 2000 season.",
       "ciphers": {
         "Ord": 108,
         "Red": 63,
@@ -2433,11 +2474,12 @@
     {
       "name": "Las Vegas Aces",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2018",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Las_Vegas_Aces",
       "city": "Las Vegas",
       "nickname": "Aces",
+      "note": "Franchise 1997 Utah Starzz -> San Antonio Silver Stars/Stars 2003 -> Las Vegas Aces 2018 (current identity).",
       "ciphers": {
         "Ord": 114,
         "Red": 33,
@@ -2475,11 +2517,12 @@
     {
       "name": "Los Angeles Sparks",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1997",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Los_Angeles_Sparks",
       "city": "Los Angeles",
       "nickname": "Sparks",
+      "note": "One of eight original WNBA franchises, never moved. First season 1997.",
       "ciphers": {
         "Ord": 193,
         "Red": 58,
@@ -2517,11 +2560,12 @@
     {
       "name": "Minnesota Lynx",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1999",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Minnesota_Lynx",
       "city": "Minnesota",
       "nickname": "Lynx",
+      "note": "Expansion team, never moved. Named 5 Dec 1998; began play 1999.",
       "ciphers": {
         "Ord": 185,
         "Red": 59,
@@ -2559,11 +2603,12 @@
     {
       "name": "New York Liberty",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1997",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/New_York_Liberty",
       "city": "New York",
       "nickname": "Liberty",
+      "note": "One of eight original WNBA franchises, never moved. First season 1997.",
       "ciphers": {
         "Ord": 202,
         "Red": 76,
@@ -2601,11 +2646,12 @@
     {
       "name": "Phoenix Mercury",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1997",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Phoenix_Mercury",
       "city": "Phoenix",
       "nickname": "Mercury",
+      "note": "One of eight original WNBA franchises, never moved. First season 1997.",
       "ciphers": {
         "Ord": 194,
         "Red": 86,
@@ -2643,11 +2689,12 @@
     {
       "name": "Portland Fire",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2026",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Portland_Fire",
       "city": "Portland",
       "nickname": "Fire",
+      "note": "Ruling: 2026 (new-expansion first season; infobox award date 2024-09-18). Distinct from the folded original Portland Fire (2000-2002).",
       "ciphers": {
         "Ord": 138,
         "Red": 66,
@@ -2685,11 +2732,12 @@
     {
       "name": "Seattle Storm",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2000",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Seattle_Storm",
       "city": "Seattle",
       "nickname": "Storm",
+      "note": "Expansion team, never moved. First season 2000.",
       "ciphers": {
         "Ord": 167,
         "Red": 41,
@@ -2727,11 +2775,12 @@
     {
       "name": "Toronto Tempo",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "2026",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Toronto_Tempo",
       "city": "Toronto",
       "nickname": "Tempo",
+      "note": "New expansion team, never moved. Announced 23 May 2024; begins play May 2026. First WNBA team outside the US.",
       "ciphers": {
         "Ord": 186,
         "Red": 60,
@@ -2769,11 +2818,12 @@
     {
       "name": "Washington Mystics",
       "sport": "wnba",
-      "founded": "",
-      "date_status": "harvest",
-      "source": "",
+      "founded": "1998",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Washington_Mystics",
       "city": "Washington",
       "nickname": "Mystics",
+      "note": "Expansion team, never moved. Made official Nov 1997; began play 1998.",
       "ciphers": {
         "Ord": 238,
         "Red": 76,
@@ -2806,6 +2856,946 @@
         "Chal": 19,
         "Sept": 30,
         "Latin": 722
+      }
+    }
+  ],
+  "states": [
+    {
+      "name": "Delaware",
+      "founded": "1787-12-07",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 1,
+      "ciphers": {
+        "Ord": 69,
+        "Red": 33,
+        "Rev": 147,
+        "RR": 48,
+        "Sat": 349,
+        "RevSat": 427,
+        "Chal": 27,
+        "Sept": 27,
+        "Latin": 1016
+      }
+    },
+    {
+      "name": "Pennsylvania",
+      "founded": "1787-12-12",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 2,
+      "ciphers": {
+        "Ord": 152,
+        "Red": 53,
+        "Rev": 172,
+        "RR": 64,
+        "Sat": 572,
+        "RevSat": 592,
+        "Chal": 44,
+        "Sept": 33,
+        "Latin": 1406
+      }
+    },
+    {
+      "name": "New Jersey",
+      "founded": "1787-12-18",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 3,
+      "ciphers": {
+        "Ord": 124,
+        "Red": 43,
+        "Rev": 119,
+        "RR": 47,
+        "Sat": 439,
+        "RevSat": 434,
+        "Chal": 33,
+        "Sept": 37,
+        "Latin": 2125
+      }
+    },
+    {
+      "name": "Georgia",
+      "founded": "1788-01-02",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 4,
+      "ciphers": {
+        "Ord": 62,
+        "Red": 44,
+        "Rev": 127,
+        "RR": 37,
+        "Sat": 307,
+        "RevSat": 372,
+        "Chal": 22,
+        "Sept": 32,
+        "Latin": 159
+      }
+    },
+    {
+      "name": "Connecticut",
+      "founded": "1788-01-09",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 5,
+      "ciphers": {
+        "Ord": 127,
+        "Red": 46,
+        "Rev": 170,
+        "RR": 62,
+        "Sat": 512,
+        "RevSat": 555,
+        "Chal": 46,
+        "Sept": 43,
+        "Latin": 553
+      }
+    },
+    {
+      "name": "Massachusetts",
+      "founded": "1788-02-06",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 6,
+      "ciphers": {
+        "Ord": 168,
+        "Red": 33,
+        "Rev": 183,
+        "RR": 84,
+        "Sat": 623,
+        "RevSat": 638,
+        "Chal": 45,
+        "Sept": 61,
+        "Latin": 808
+      }
+    },
+    {
+      "name": "Maryland",
+      "founded": "1788-04-28",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 7,
+      "ciphers": {
+        "Ord": 88,
+        "Red": 34,
+        "Rev": 128,
+        "RR": 47,
+        "Sat": 368,
+        "RevSat": 408,
+        "Chal": 21,
+        "Sept": 17,
+        "Latin": 576
+      }
+    },
+    {
+      "name": "South Carolina",
+      "founded": "1788-05-23",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 8,
+      "ciphers": {
+        "Ord": 156,
+        "Red": 57,
+        "Rev": 195,
+        "RR": 78,
+        "Sat": 611,
+        "RevSat": 650,
+        "Chal": 48,
+        "Sept": 47,
+        "Latin": 652
+      }
+    },
+    {
+      "name": "New Hampshire",
+      "founded": "1788-06-21",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 9,
+      "ciphers": {
+        "Ord": 139,
+        "Red": 67,
+        "Rev": 185,
+        "RR": 59,
+        "Sat": 559,
+        "RevSat": 605,
+        "Chal": 50,
+        "Sept": 48,
+        "Latin": 1236
+      }
+    },
+    {
+      "name": "Virginia",
+      "founded": "1788-06-25",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 10,
+      "ciphers": {
+        "Ord": 89,
+        "Red": 53,
+        "Rev": 127,
+        "RR": 55,
+        "Sat": 369,
+        "RevSat": 407,
+        "Chal": 20,
+        "Sept": 34,
+        "Latin": 855
+      }
+    },
+    {
+      "name": "New York",
+      "founded": "1788-07-26",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 11,
+      "ciphers": {
+        "Ord": 111,
+        "Red": 39,
+        "Rev": 78,
+        "RR": 33,
+        "Sat": 356,
+        "RevSat": 323,
+        "Chal": 28,
+        "Sept": 22,
+        "Latin": 1485
+      }
+    },
+    {
+      "name": "North Carolina",
+      "founded": "1789-11-21",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 12,
+      "ciphers": {
+        "Ord": 148,
+        "Red": 67,
+        "Rev": 203,
+        "RR": 77,
+        "Sat": 603,
+        "RevSat": 658,
+        "Chal": 46,
+        "Sept": 41,
+        "Latin": 482
+      }
+    },
+    {
+      "name": "Rhode Island",
+      "founded": "1790-05-29",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 13,
+      "ciphers": {
+        "Ord": 109,
+        "Red": 55,
+        "Rev": 188,
+        "RR": 62,
+        "Sat": 494,
+        "RevSat": 573,
+        "Chal": 40,
+        "Sept": 41,
+        "Latin": 311
+      }
+    },
+    {
+      "name": "Vermont",
+      "founded": "1791-03-04",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 14,
+      "ciphers": {
+        "Ord": 107,
+        "Red": 35,
+        "Rev": 82,
+        "RR": 37,
+        "Sat": 352,
+        "RevSat": 327,
+        "Chal": 33,
+        "Sept": 26,
+        "Latin": 1005
+      }
+    },
+    {
+      "name": "Kentucky",
+      "founded": "1792-06-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 15,
+      "ciphers": {
+        "Ord": 110,
+        "Red": 29,
+        "Rev": 106,
+        "RR": 43,
+        "Sat": 390,
+        "RevSat": 386,
+        "Chal": 28,
+        "Sept": 30,
+        "Latin": 768
+      }
+    },
+    {
+      "name": "Tennessee",
+      "founded": "1796-06-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 16,
+      "ciphers": {
+        "Ord": 106,
+        "Red": 34,
+        "Rev": 137,
+        "RR": 47,
+        "Sat": 421,
+        "RevSat": 452,
+        "Chal": 40,
+        "Sept": 41,
+        "Latin": 380
+      }
+    },
+    {
+      "name": "Ohio",
+      "founded": "1803-03-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 17,
+      "ciphers": {
+        "Ord": 47,
+        "Red": 29,
+        "Rev": 61,
+        "RR": 16,
+        "Sat": 187,
+        "RevSat": 201,
+        "Chal": 20,
+        "Sept": 15,
+        "Latin": 117
+      }
+    },
+    {
+      "name": "Louisiana",
+      "founded": "1812-04-30",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 18,
+      "ciphers": {
+        "Ord": 101,
+        "Red": 38,
+        "Rev": 142,
+        "RR": 61,
+        "Sat": 416,
+        "RevSat": 457,
+        "Chal": 28,
+        "Sept": 29,
+        "Latin": 420
+      }
+    },
+    {
+      "name": "Indiana",
+      "founded": "1816-12-11",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 19,
+      "ciphers": {
+        "Ord": 52,
+        "Red": 34,
+        "Rev": 137,
+        "RR": 47,
+        "Sat": 297,
+        "RevSat": 382,
+        "Chal": 18,
+        "Sept": 18,
+        "Latin": 104
+      }
+    },
+    {
+      "name": "Mississippi",
+      "founded": "1817-12-10",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 20,
+      "ciphers": {
+        "Ord": 157,
+        "Red": 58,
+        "Rev": 140,
+        "RR": 77,
+        "Sat": 542,
+        "RevSat": 525,
+        "Chal": 36,
+        "Sept": 51,
+        "Latin": 546
+      }
+    },
+    {
+      "name": "Illinois",
+      "founded": "1818-12-03",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 21,
+      "ciphers": {
+        "Ord": 99,
+        "Red": 45,
+        "Rev": 117,
+        "RR": 54,
+        "Sat": 379,
+        "RevSat": 397,
+        "Chal": 24,
+        "Sept": 28,
+        "Latin": 247
+      }
+    },
+    {
+      "name": "Alabama",
+      "founded": "1819-12-14",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 22,
+      "ciphers": {
+        "Ord": 31,
+        "Red": 13,
+        "Rev": 158,
+        "RR": 50,
+        "Sat": 276,
+        "RevSat": 403,
+        "Chal": 13,
+        "Sept": 9,
+        "Latin": 56
+      }
+    },
+    {
+      "name": "Maine",
+      "founded": "1820-03-15",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 23,
+      "ciphers": {
+        "Ord": 42,
+        "Red": 24,
+        "Rev": 93,
+        "RR": 30,
+        "Sat": 217,
+        "RevSat": 268,
+        "Chal": 16,
+        "Sept": 13,
+        "Latin": 85
+      }
+    },
+    {
+      "name": "Missouri",
+      "founded": "1821-08-10",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 24,
+      "ciphers": {
+        "Ord": 123,
+        "Red": 42,
+        "Rev": 93,
+        "RR": 57,
+        "Sat": 403,
+        "RevSat": 373,
+        "Chal": 27,
+        "Sept": 36,
+        "Latin": 558
+      }
+    },
+    {
+      "name": "Arkansas",
+      "founded": "1836-06-15",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 25,
+      "ciphers": {
+        "Ord": 84,
+        "Red": 21,
+        "Rev": 132,
+        "RR": 60,
+        "Sat": 364,
+        "RevSat": 412,
+        "Chal": 18,
+        "Sept": 24,
+        "Latin": 313
+      }
+    },
+    {
+      "name": "Michigan",
+      "founded": "1837-01-26",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 26,
+      "ciphers": {
+        "Ord": 64,
+        "Red": 46,
+        "Rev": 152,
+        "RR": 44,
+        "Sat": 344,
+        "RevSat": 432,
+        "Chal": 23,
+        "Sept": 29,
+        "Latin": 107
+      }
+    },
+    {
+      "name": "Florida",
+      "founded": "1845-03-03",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 27,
+      "ciphers": {
+        "Ord": 65,
+        "Red": 38,
+        "Rev": 124,
+        "RR": 43,
+        "Sat": 310,
+        "RevSat": 369,
+        "Chal": 26,
+        "Sept": 25,
+        "Latin": 170
+      }
+    },
+    {
+      "name": "Texas",
+      "founded": "1845-12-29",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 28,
+      "ciphers": {
+        "Ord": 69,
+        "Red": 15,
+        "Rev": 66,
+        "RR": 30,
+        "Sat": 244,
+        "RevSat": 241,
+        "Chal": 18,
+        "Sept": 22,
+        "Latin": 496
+      }
+    },
+    {
+      "name": "Iowa",
+      "founded": "1846-12-28",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 29,
+      "ciphers": {
+        "Ord": 48,
+        "Red": 21,
+        "Rev": 60,
+        "RR": 24,
+        "Sat": 188,
+        "RevSat": 200,
+        "Chal": 15,
+        "Sept": 12,
+        "Latin": 960
+      }
+    },
+    {
+      "name": "Wisconsin",
+      "founded": "1848-05-29",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 30,
+      "ciphers": {
+        "Ord": 125,
+        "Red": 44,
+        "Rev": 118,
+        "RR": 55,
+        "Sat": 440,
+        "RevSat": 433,
+        "Chal": 34,
+        "Sept": 33,
+        "Latin": 1231
+      }
+    },
+    {
+      "name": "California",
+      "founded": "1850-09-09",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 31,
+      "ciphers": {
+        "Ord": 88,
+        "Red": 52,
+        "Rev": 182,
+        "RR": 65,
+        "Sat": 438,
+        "RevSat": 532,
+        "Chal": 32,
+        "Sept": 31,
+        "Latin": 219
+      }
+    },
+    {
+      "name": "Minnesota",
+      "founded": "1858-05-11",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 32,
+      "ciphers": {
+        "Ord": 110,
+        "Red": 38,
+        "Rev": 133,
+        "RR": 52,
+        "Sat": 425,
+        "RevSat": 448,
+        "Chal": 35,
+        "Sept": 29,
+        "Latin": 365
+      }
+    },
+    {
+      "name": "Oregon",
+      "founded": "1859-02-14",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 33,
+      "ciphers": {
+        "Ord": 74,
+        "Red": 38,
+        "Rev": 88,
+        "RR": 25,
+        "Sat": 284,
+        "RevSat": 298,
+        "Chal": 29,
+        "Sept": 22,
+        "Latin": 232
+      }
+    },
+    {
+      "name": "Kansas",
+      "founded": "1861-01-29",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 34,
+      "ciphers": {
+        "Ord": 65,
+        "Red": 11,
+        "Rev": 97,
+        "RR": 43,
+        "Sat": 275,
+        "RevSat": 307,
+        "Chal": 15,
+        "Sept": 18,
+        "Latin": 232
+      }
+    },
+    {
+      "name": "West Virginia",
+      "founded": "1863-06-20",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 35,
+      "ciphers": {
+        "Ord": 156,
+        "Red": 66,
+        "Rev": 168,
+        "RR": 78,
+        "Sat": 576,
+        "RevSat": 588,
+        "Chal": 38,
+        "Sept": 56,
+        "Latin": 1950
+      }
+    },
+    {
+      "name": "Nevada",
+      "founded": "1864-10-31",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 36,
+      "ciphers": {
+        "Ord": 47,
+        "Red": 20,
+        "Rev": 115,
+        "RR": 34,
+        "Sat": 257,
+        "RevSat": 325,
+        "Chal": 22,
+        "Sept": 17,
+        "Latin": 751
+      }
+    },
+    {
+      "name": "Nebraska",
+      "founded": "1867-03-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 37,
+      "ciphers": {
+        "Ord": 71,
+        "Red": 26,
+        "Rev": 145,
+        "RR": 55,
+        "Sat": 351,
+        "RevSat": 425,
+        "Chal": 21,
+        "Sept": 24,
+        "Latin": 229
+      }
+    },
+    {
+      "name": "Colorado",
+      "founded": "1876-08-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 38,
+      "ciphers": {
+        "Ord": 83,
+        "Red": 38,
+        "Rev": 133,
+        "RR": 43,
+        "Sat": 363,
+        "RevSat": 413,
+        "Chal": 34,
+        "Sept": 21,
+        "Latin": 258
+      }
+    },
+    {
+      "name": "North Dakota",
+      "founded": "1889-11-02",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 39,
+      "ciphers": {
+        "Ord": 127,
+        "Red": 46,
+        "Rev": 170,
+        "RR": 62,
+        "Sat": 512,
+        "RevSat": 555,
+        "Chal": 42,
+        "Sept": 39,
+        "Latin": 444
+      }
+    },
+    {
+      "name": "South Dakota",
+      "founded": "1889-11-02",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 40,
+      "ciphers": {
+        "Ord": 135,
+        "Red": 36,
+        "Rev": 162,
+        "RR": 63,
+        "Sat": 520,
+        "RevSat": 547,
+        "Chal": 44,
+        "Sept": 45,
+        "Latin": 614
+      }
+    },
+    {
+      "name": "Montana",
+      "founded": "1889-11-08",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 41,
+      "ciphers": {
+        "Ord": 78,
+        "Red": 24,
+        "Rev": 111,
+        "RR": 39,
+        "Sat": 323,
+        "RevSat": 356,
+        "Chal": 27,
+        "Sept": 14,
+        "Latin": 262
+      }
+    },
+    {
+      "name": "Washington",
+      "founded": "1889-11-11",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 42,
+      "ciphers": {
+        "Ord": 130,
+        "Red": 49,
+        "Rev": 140,
+        "RR": 50,
+        "Sat": 480,
+        "RevSat": 490,
+        "Chal": 40,
+        "Sept": 40,
+        "Latin": 1245
+      }
+    },
+    {
+      "name": "Idaho",
+      "founded": "1890-07-03",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 43,
+      "ciphers": {
+        "Ord": 37,
+        "Red": 28,
+        "Rev": 98,
+        "RR": 26,
+        "Sat": 212,
+        "RevSat": 273,
+        "Chal": 18,
+        "Sept": 18,
+        "Latin": 72
+      }
+    },
+    {
+      "name": "Wyoming",
+      "founded": "1890-07-10",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 44,
+      "ciphers": {
+        "Ord": 106,
+        "Red": 43,
+        "Rev": 83,
+        "RR": 29,
+        "Sat": 351,
+        "RevSat": 328,
+        "Chal": 27,
+        "Sept": 22,
+        "Latin": 1436
+      }
+    },
+    {
+      "name": "Utah",
+      "founded": "1896-01-04",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 45,
+      "ciphers": {
+        "Ord": 50,
+        "Red": 14,
+        "Rev": 58,
+        "RR": 22,
+        "Sat": 190,
+        "RevSat": 198,
+        "Chal": 16,
+        "Sept": 20,
+        "Latin": 309
+      }
+    },
+    {
+      "name": "Oklahoma",
+      "founded": "1907-11-16",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 46,
+      "ciphers": {
+        "Ord": 76,
+        "Red": 31,
+        "Rev": 140,
+        "RR": 41,
+        "Sat": 356,
+        "RevSat": 420,
+        "Chal": 30,
+        "Sept": 18,
+        "Latin": 170
+      }
+    },
+    {
+      "name": "New Mexico",
+      "founded": "1912-01-06",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 47,
+      "ciphers": {
+        "Ord": 111,
+        "Red": 48,
+        "Rev": 132,
+        "RR": 42,
+        "Sat": 426,
+        "RevSat": 447,
+        "Chal": 41,
+        "Sept": 29,
+        "Latin": 1342
+      }
+    },
+    {
+      "name": "Arizona",
+      "founded": "1912-02-14",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 48,
+      "ciphers": {
+        "Ord": 84,
+        "Red": 39,
+        "Rev": 105,
+        "RR": 42,
+        "Sat": 329,
+        "RevSat": 350,
+        "Chal": 24,
+        "Sept": 16,
+        "Latin": 681
+      }
+    },
+    {
+      "name": "Alaska",
+      "founded": "1959-01-03",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 49,
+      "ciphers": {
+        "Ord": 45,
+        "Red": 9,
+        "Rev": 117,
+        "RR": 45,
+        "Sat": 255,
+        "RevSat": 327,
+        "Chal": 11,
+        "Sept": 14,
+        "Latin": 123
+      }
+    },
+    {
+      "name": "Hawaii",
+      "founded": "1959-08-21",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/List_of_U.S._states_by_date_of_admission_to_the_Union",
+      "admission_order": 50,
+      "ciphers": {
+        "Ord": 51,
+        "Red": 33,
+        "Rev": 111,
+        "RR": 39,
+        "Sat": 261,
+        "RevSat": 321,
+        "Chal": 15,
+        "Sept": 22,
+        "Latin": 928
+      }
+    },
+    {
+      "name": "District of Columbia",
+      "founded": "1790-07-16",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Washington,_D.C.",
+      "admission_order": null,
+      "note": "FLAG: Residence Act (signed 16 Jul 1790, authorized the federal capital district). Alternate anchor 1800-11-17, when Congress first convened there. Not a US state (no admission #). Home 'state' for Nationals + Mystics.",
+      "ciphers": {
+        "Ord": 199,
+        "Red": 82,
+        "Rev": 287,
+        "RR": 116,
+        "Sat": 829,
+        "RevSat": 917,
+        "Chal": 64,
+        "Sept": 72,
+        "Latin": 766
+      }
+    },
+    {
+      "name": "Ontario",
+      "founded": "1867-07-01",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/Ontario",
+      "admission_order": null,
+      "note": "Canadian Confederation (British North America Act, 1 Jul 1867). Canadian province, not a US state. Home province for Blue Jays + Tempo.",
+      "ciphers": {
+        "Ord": 92,
+        "Red": 38,
+        "Rev": 97,
+        "RR": 43,
+        "Sat": 337,
+        "RevSat": 342,
+        "Chal": 27,
+        "Sept": 23,
+        "Latin": 330
       }
     }
   ]

@@ -51,12 +51,16 @@ _meta: { version, cipher_order, date_status_values, rules }
     note?,
     ciphers: {ord, red, rev_ord, rev_red, satanic, chaldean},
     // teams only:
-    sport?, city_ciphers?, nickname_ciphers?
+    sport?, city_ciphers?, nickname_ciphers?,
+    // states only:
+    admission_order?   // 1-50 US admission order (null for DC / non-US)
   }
 ]
 ```
 
-Categories: `rituals`, `secret_societies`, `institutional`, `sports_founders`, `tribute_figures`, `mlb_teams`, `wnba_teams`.
+Categories: `rituals`, `secret_societies`, `institutional`, `sports_founders`, `tribute_figures`, `mlb_teams`, `wnba_teams`, `states`.
+
+`states` is a shared geographic layer (all 50 U.S. states by admission-to-the-Union date, plus non-state team locations like the District of Columbia and Ontario). It routes by a team's home state/province: MLB/WNBA duration probes read the state a club plays in. Dates are statehood-admission dates (source: the Wikipedia admission list); `admission_order` carries the 1–50 number the decoder gematria-checks. Anchored the same way as Tony's Date Decoder "States" block.
 
 `doc_main_numbers` are recorded verbatim from Tony's rituals doc and are **not** recomputed — they may span ciphers not in the standard six (e.g. Church of Satan 669, attribution unresolved). Tracing unresolved attributions is a standing agent task; log findings in `note`, never overwrite doc values.
 
