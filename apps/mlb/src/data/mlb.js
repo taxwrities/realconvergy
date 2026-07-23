@@ -10,11 +10,35 @@ import {isJesuit} from '../engine/jesuit.js';
 import H2H from '../../../../data/mlb-h2h.json';
 
 const API='https://statsapi.mlb.com/api/v1';
+const API11='https://statsapi.mlb.com/api/v1.1'; // live feed lives on v1.1
 
 async function jget(url){
   const r=await fetch(url);
   if(!r.ok)throw new Error(`${r.status} ${url}`);
   return r.json();
+}
+
+/* live pitcher swap (Tony 2026-07-23): the probablePitcher hydrate is frozen at
+   announcement, so once the starter is pulled it reads stale. For an in-progress
+   game, prefer the pitcher actually on the mound — the LAST id in each side's
+   boxscore pitchers list (ordered by appearance), falling back to the currentPlay
+   matchup pitcher assigned to the defending side (top inning → home defends).
+   Returns {home,away} of current-pitcher ids, each null when unavailable so the
+   caller keeps that side's probable. Called only for games gameBucket() marks as
+   in-progress, so it rides every manual refresh with no added polling. */
+async function liveStarters(gamePk){
+  try{
+    const f=await jget(`${API11}/game/${gamePk}/feed/live`);
+    const bx=f.liveData?.boxscore?.teams||{};
+    const lastOf=side=>{const a=bx[side]?.pitchers;return a&&a.length?a[a.length-1]:null;};
+    let home=lastOf('home'),away=lastOf('away');
+    if(home==null&&away==null){
+      const cp=f.liveData?.plays?.currentPlay;
+      const pid=cp?.matchup?.pitcher?.id??null;
+      if(pid!=null){if(cp.about?.isTopInning)home=pid;else away=pid;}
+    }
+    return{home,away};
+  }catch{return{home:null,away:null};}
 }
 
 /* ---------------- carousel / list sort (Tony 2026-07-22) ----------------
@@ -122,6 +146,17 @@ export async function fetchSlate(dstr,onProgress){
       }
     }
   }
+  // live pitcher swap: for in-progress games, replace the frozen probable with
+  // whoever is on the mound now (data/mlb.js liveStarters). Done BEFORE spIds so
+  // the current reliever's id rides into people hydration below and every
+  // downstream memo (ciphers / convergence badge / OPP grid / PhraseFinder
+  // opp-pitcher targets) recomputes off the new pitcher.
+  prog('Live pitchers…');
+  await Promise.all(games.filter(g=>gameBucket(g)===0).map(async g=>{
+    const{home,away}=await liveStarters(g.pk);
+    if(home!=null)g.homeSP=home;
+    if(away!=null)g.awaySP=away;
+  }));
   // bulk people: batters + probable pitchers (career, season, venue splits)
   const batterIds=[...new Set(games.flatMap(g=>[...g.homeIds,...g.awayIds]))];
   const spIds=[...new Set(games.flatMap(g=>[g.homeSP,g.awaySP]).filter(Boolean))];
