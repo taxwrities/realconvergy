@@ -109,6 +109,41 @@ export function founderConvergences(record,today,activeSet){
   return{record,span,hits322,hits};
 }
 
+/* founderHitLines — human-readable pieces for ONE decorated hit, shared by the
+   Board badge popover and the full-sheet FOUNDER section so both read identically.
+   Expects the store to have attached `where` (the resolved target: DN spine row /
+   loaded active number / 322 anchor — see store.founderHits). Returns:
+     {value, where, calc, xref}
+   value  — the span reading  ("33 years since founding")
+   where  — where it landed    ("33 matches DN Row 3" | "prime(33) = 137 matches …")
+   calc   — the target's spine formula, when the target is a DN row (else null)
+   xref   — the prime-index cross-ref line ("33 = composite · prime(33) = 137"). */
+export function founderHitLines(hit){
+  if(!hit)return null;
+  const {n,label,kind,on,xref,where}=hit;
+  const value=`${n.toLocaleString()} ${label}`;
+  const tgt=where?.label||`active number ${on}`;
+  let whereText,calc=null;
+  if(kind==='anchor322'){
+    whereText=`${n} = 322 · Skull & Bones anchor`;
+  }else if(kind==='bridge'){
+    const bridge=xref?(xref.prime?xref.primeIndex:xref.nthPrime):on;
+    whereText=(xref&&xref.prime)
+      ?`prime #${bridge} matches ${tgt}`
+      :`prime(${n}) = ${bridge} matches ${tgt}`;
+    calc=where?.calc||null;
+  }else{
+    whereText=`${on} matches ${tgt}`;
+    calc=where?.calc||null;
+  }
+  const xrefLine=xref
+    ?(xref.prime
+      ?`${n} = prime · position #${xref.primeIndex}`
+      :`${n} = composite · prime(${n}) = ${xref.nthPrime}`)
+    :null;
+  return{value,where:whereText,calc,xref:xrefLine};
+}
+
 /* find the mlb_teams founder record whose name matches a full team name
    (e.g. game.home.name === "Arizona Diamondbacks"). null when absent. */
 export function findTeamFounder(teamFullName){

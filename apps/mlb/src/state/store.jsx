@@ -274,11 +274,28 @@ export function AppStateProvider({children}){
      bridge, or 322) lands live. Narrative only — never gates skip/scoring. */
   const founderHits=useMemo(()=>{
     if(!game)return{away:null,home:null};
-    const activeSet=new Set([...dateFigures(date).map(f=>f.n),...loaded.keys()]);
+    const figs=dateFigures(date);
+    const activeSet=new Set([...figs.map(f=>f.n),...loaded.keys()]);
     activeSet.add(322);
+    /* provenance index for the matched target number → WHERE the convergence
+       landed. The seven-figure DN spine reads primary (Tony), so a figure row
+       wins over a loaded active number of the same value; loaded values keep
+       their src label + cat (thread/core/theme/phrase/context); 322 is the anchor. */
+    const figIdx=new Map();
+    figs.forEach((f,i)=>{if(!figIdx.has(f.n))figIdx.set(f.n,{cat:'dn',row:i+1,label:`DN Row ${i+1}`,calc:f.calc});});
+    const whereFor=hit=>{
+      if(hit.kind==='anchor322')return{cat:'anchor',label:'322 · Skull & Bones',on:322};
+      const on=hit.on;
+      if(figIdx.has(on))return{...figIdx.get(on),on};
+      const l=loaded.get(on);
+      if(l&&l.length)return{cat:l[0].cat||'thread',label:l[0].src,on};
+      if(on===322)return{cat:'anchor',label:'322 · Skull & Bones',on};
+      return{cat:'active',label:`active number ${on}`,on};
+    };
+    const decorate=res=>res?{...res,hits:res.hits.map(h=>({...h,where:whereFor(h)}))}:null;
     return{
-      away:teamFounderHits(game.away.name,date,activeSet),
-      home:teamFounderHits(game.home.name,date,activeSet),
+      away:decorate(teamFounderHits(game.away.name,date,activeSet)),
+      home:decorate(teamFounderHits(game.home.name,date,activeSet)),
     };
   },[game,date,loaded]);
 

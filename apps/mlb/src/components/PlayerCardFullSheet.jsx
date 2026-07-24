@@ -79,6 +79,16 @@ const NEXT1_STATS={
 };
 const SPLIT_COLS=[['gamesPlayed','G'],['plateAppearances','PA'],['atBats','AB'],['runs','R'],['hits','H']];
 const GROUP_ORDER=[['threads','THREADS'],['date','DATE'],['team','TEAM'],['bio','BIO'],['tfam','T-FAM']];
+/* FOUNDER section span-row order (Tony 2026-07-24): years first (the reading he
+   reads primary), then the two anniversary spans, then the running total. Labels
+   mirror the engine's SPAN_FIELDS. Day-granularity records fill all four; year
+   records carry `years` only — the rest are null and drop out. */
+const FOUNDER_ROWS=[
+  ['years','years since founding'],
+  ['since','days since anniversary'],
+  ['until','days until anniversary'],
+  ['totalDays','total days since founding'],
+];
 const handLabel=h=>h==='R'?'RHP':h==='L'?'LHP':h==='S'?'SHP':'';
 
 /* ---- number-property helpers (WHY panel enrichment) ----
@@ -115,7 +125,7 @@ const INST_LABELS=(()=>{
 })();
 
 export default function PlayerCardFullSheet({row,onClose}){
-  const {dayField,matchup,ciphers,game,side,dayState,addThread,addDraft,dn,date,focusReturn}=useApp();
+  const {dayField,matchup,ciphers,game,side,dayState,addThread,addDraft,dn,date,focusReturn,founderHits}=useApp();
   const [outcome,setOutcome]=useState('3B');
   const [lens,setLens]=useState(null);       // category key | null
   const [spot,setSpot]=useState(null);       // spotlighted number | null
@@ -152,6 +162,13 @@ export default function PlayerCardFullSheet({row,onClose}){
   const myTeam=game?game[side]:null;
   const oppTeam=game?game[side==='away'?'home':'away']:null;
   const abbr=t=>t?(t.abbrev||t.teamName||''):'';
+
+  /* FOUNDER convergence (spec: founders-historian) — this batter's OWN team's
+     founding-date span readings for today, already decorated by the store with
+     per-hit `where` provenance. Rendered as its own titled section only when at
+     least one convergence fired (fh is null otherwise). */
+  const fh=founderHits?.[side]||null;
+  const founderRows=fh?FOUNDER_ROWS.filter(([k])=>fh.span&&fh.span[k]>0):[];
 
   /* opponent-team cipher grid (Tony 2026-07-22): nickname / city / full name
      × the enabled ciphers, deduped by name|value — feeds the WHY panel's OPP
@@ -692,6 +709,30 @@ export default function PlayerCardFullSheet({row,onClose}){
           {Grid(model.teamGrid)}
           {Grid(model.oppGrid)}
           {Grid(model.pitcherGrid)}
+
+          {fh&&(fh.hits.length>0||fh.hits322)&&founderRows.length>0&&(
+            <div className="grp founder-grp">
+              <div className="grplabel">FOUNDER — {fh.record.name} ({String(fh.record.founded).slice(0,4)})
+                <span className="grpcount">{fh.hits.length||''}</span></div>
+              <div className="founder-rows">
+                {founderRows.map(([k,label],i)=>{
+                  const val=fh.span[k];
+                  const hit=fh.hits.find(h=>h.field===k);
+                  const last=i===founderRows.length-1;
+                  return(
+                    <div className={`founder-row${hit?' on':''}`} key={k}>
+                      <span className="fr-branch">{last?'└':'├'}</span>
+                      <span className="fr-label">{label}:</span>
+                      <span className="fr-val">{val.toLocaleString()}</span>
+                      {hit
+                        ? <span className="fr-hit">→ {hit.where?.label||'active'} ✓</span>
+                        : <span className="fr-dim">(dr {digitalRoot(val)})</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {(xrefRows.length>0||teamStair.length>0)&&(
             <div className="grp">
