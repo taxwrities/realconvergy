@@ -876,11 +876,36 @@ export function AppStateProvider({children}){
     if(t)setPhrases(ps=>[...ps,{text:t,values:calcAll(t),source:'manual'}]);
   },[]);
 
+  /* ---------- slate-wide roster (Tony 2026-07-24) ----------
+     universal search sweeps EVERY player in EVERY loaded game — the same reach
+     the PhraseFinder / Day-of-Life / Jesuit finders already have — not just the
+     active game's board. Each entry carries its game + team so a cross-game hit
+     still reads clearly. evalBatter's rung / name / clock figures are matchup-
+     independent (only its .hits detail consults the active game's loaded map,
+     which universal search never reads), so evaluating off-board players here is
+     correct. */
+  const slateRoster=useMemo(()=>{
+    if(!slate?.games?.length)return[];
+    const out=[];
+    slate.games.forEach(g=>{
+      const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      ['away','home'].forEach(s=>{
+        g[s+'Ids'].forEach(id=>{
+          const p=slate.people[id];
+          if(!p)return;
+          const ev=evalBatter({...p,_side:s});
+          if(ev)out.push({id,pk:g.pk,side:s,gameLabel,team:g[s].abbrev||g[s].teamName,ev});
+        });
+      });
+    });
+    return out;
+  },[slate,evalBatter]);
+
   /* ---------- universal search (§8: bottom-up method as UI) ---------- */
   const search=useCallback((q,off=0)=>{
     q=q.trim();
     if(!q)return null;
-    const roster=slate&&game?[...board.away,...board.home]:[];
+    const roster=slateRoster;
     /* "jesuit" → every Jesuit-educated player on today's whole slate (§8 info
        branch), not just the active game. Tony 2026-07-20. */
     if(/^jesuit$/i.test(q)){
@@ -899,9 +924,14 @@ export function AppStateProvider({children}){
     if(/^\d+$/.test(q)){
       const n=+q;
       off=Math.max(0,Math.floor(+off||0));
-      /* stat-total rungs landing on n (the original behavior) */
+      /* stat-total rungs landing on n (the original behavior), now slate-wide */
       const rungHits=roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n)
-        .map(g=>({kind:'rung',id:r.id,pk:game.pk,side:r.ev.p._side,who:r.ev.p.fullName,rung:g})));
+        .map(g=>({kind:'rung',id:r.id,pk:r.pk,side:r.side,who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,rung:g})));
+      /* name-cipher raws — any player whose name value (any enabled cipher, any
+         name part) equals n. The batter grid already computes these; surfacing
+         them makes a bare "what name = 137?" query answerable across the slate. */
+      const nameHits=roster.flatMap(r=>r.ev.run.filter(x=>x.n===n)
+        .map(x=>({kind:'name',id:r.id,pk:r.pk,side:r.side,who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,part:x.label,cipher:x.cipher,legal:!!x.legal})));
       /* day-of-life / career-day hits (within ±off) — the birth/debut clocks
          already feed rung scoring; this makes them directly searchable. Tony
          2026-07-20. */
@@ -912,7 +942,7 @@ export function AppStateProvider({children}){
           const val=clock[field];
           if(!(val>0))return;
           const d=val-n;
-          if(Math.abs(d)<=off)out.push({kind:'day',id:r.id,pk:game.pk,side:ev.p._side,who:ev.p.fullName,n:val,delta:d,label:mk(val)});
+          if(Math.abs(d)<=off)out.push({kind:'day',id:r.id,pk:r.pk,side:r.side,who:ev.p.fullName,team:r.team,gameLabel:r.gameLabel,n:val,delta:d,label:mk(val)});
         };
         chk(ev.bday,'totalDays',v=>`day ${v.toLocaleString()} of life`);
         chk(ev.bday,'since',v=>`${v} days since bday`);
@@ -927,15 +957,24 @@ export function AppStateProvider({children}){
         tFam:T_FAMILY.includes(n),chain:chainBase(n),
         tableHits:(loaded.get(n)||[]),
         rosterHits:[...rungHits,...dayHits],
+        nameHits,
       };
     }
     const v=calcAll(q);
     return{kind:'word',word:q.toUpperCase(),values:v,
+      /* stat-rung landings on the typed word's cipher value(s), slate-wide */
       occ:ALL_CIPHERS.filter(c=>ciphers[c]).flatMap(c=>{
         const n=v[c];
-        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({id:r.id,pk:game.pk,side:r.ev.p._side,who:r.ev.p.fullName,cipher:c,rung:g})));
-      })};
-  },[slate,game,board,loaded,ciphers]);
+        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({id:r.id,pk:r.pk,side:r.side,who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,cipher:c,rung:g})));
+      }),
+      /* name matches — players whose NAME value equals the typed word's value in
+         the same cipher (the classic name↔word convergence), slate-wide */
+      nameMatches:ALL_CIPHERS.filter(c=>ciphers[c]).flatMap(c=>{
+        const n=v[c];
+        return roster.flatMap(r=>r.ev.run.filter(x=>x.n===n).map(x=>({id:r.id,pk:r.pk,side:r.side,who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,part:x.label,cipher:c,n})));
+      }),
+    };
+  },[slate,slateRoster,loaded,ciphers]);
 
   /* ---------- Day-of-Life / Career-Day finder (Tony 2026-07-20) ----------
      the ±N slate-wide query: sweep every player in every loaded game, match

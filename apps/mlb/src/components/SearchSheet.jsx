@@ -10,8 +10,9 @@ import {dateFigures} from '../engine/clocks.js';
    hidden); a synthetic history entry wires the mobile / browser back button
    and back-swipe to return to the Board, and every dismiss routes through
    history.back() so no orphan entries are left behind. Body scroll is locked
-   while the page is open. All finder functionality is unchanged — Day-of-Life /
-   Career-Day finder, phrase-variation finder, then universal search. */
+   while the page is open. Three finders stacked with plain-English section
+   headers + per-input labels (Tony 2026-07-24): Day-of-Life / Career-Day,
+   Phrase Variation, then the slate-wide Universal search. */
 export default function SearchSheet({onClose}){
   /* while a full-sheet is open ON TOP of the search page, this page stays mounted
      (display:none) — but its popstate listener is still live. A back-press meant
@@ -49,7 +50,6 @@ export default function SearchSheet({onClose}){
         <div className="search-scroll">
           <DayFinder/>
           <PhraseFinder/>
-          <div className="finder-sep">universal search</div>
           <UniversalSearch/>
         </div>
       </div>
@@ -81,20 +81,25 @@ function DayFinder(){
     [targets,tol,on,findDays]);
   return(
     <div className="finder">
+      <div className="finder-sep first">day-of-life / career-day finder</div>
+      <div className="ph-lbl">quick fill</div>
       <div className="sheet-row" style={{flexWrap:'wrap',gap:6,marginBottom:8}}>
         <button className="btn acc" onClick={()=>quickFill(spine)}>Today's DN spine</button>
         <button className="btn acc" onClick={()=>quickFill(INSTITUTIONAL)}>Institutional table</button>
       </div>
+      <div className="ph-lbl">target number(s)</div>
       <div className="sheet-row">
         <input type="text" autoFocus placeholder="target number(s) — e.g. 67 or 67, 47, 22"
           value={raw} onChange={e=>setRaw(e.target.value)}/>
       </div>
+      <div className="ph-lbl">tolerance</div>
       <div className="sheet-row" style={{gap:6,alignItems:'center'}}>
         <span className="muted" style={{fontSize:12}}>±</span>
         <input type="number" min="0" max="10" style={{width:56}} value={tol}
           onChange={e=>setTol(Math.max(0,Math.min(10,Math.floor(+e.target.value||0))))}/>
-        <span className="muted" style={{fontSize:12}}>tolerance</span>
+        <span className="muted" style={{fontSize:12}}>days</span>
       </div>
+      <div className="ph-lbl">clocks to search</div>
       <div className="sheet-row" style={{gap:6,flexWrap:'wrap',marginBottom:8}}>
         {DAY_CLOCKS.map(c=>(
           <button key={c.key} className={`chip${on[c.key]?' on':''}`} onClick={()=>toggle(c.key)}>
@@ -135,26 +140,39 @@ function DayFinder(){
   );
 }
 
-/* ---- universal search (§8): number → identity card; word → cipher values ---- */
+/* ---- universal search (§8): number → identity card; word → cipher values;
+   "jesuit" → every Jesuit-educated player on the slate. Every branch sweeps the
+   whole slate (Tony 2026-07-24), and each roster row names the player's game +
+   team so cross-game hits read clearly. */
 function UniversalSearch(){
   const {search,ciphers,colorFor,focusPlayer}=useApp();
   const [q,setQ]=useState('');
   const [off,setOff]=useState(0);
   const isNum=/^\d+$/.test(q.trim());
   const res=search(q,off);
+  const where=h=><span className="muted" style={{fontSize:11}}> · {h.team} · {h.gameLabel}</span>;
+  const openBtn=h=>h.id!=null&&(
+    <button className="pf-open" title={`Open ${h.who}'s full sheet`}
+      aria-label={`Open ${h.who}'s full sheet`}
+      onClick={()=>focusPlayer({id:h.id,pk:h.pk,side:h.side,from:'search'})}>↗</button>);
   return(
-    <>
+    <div className="finder">
+      <div className="finder-sep">universal search</div>
+      <div className="ph-lbl">number or word</div>
       <div className="sheet-row">
-        <input type="text" placeholder="number or word…" value={q}
+        <input type="text" placeholder="number, word, or “jesuit”…" value={q}
           onChange={e=>setQ(e.target.value)}/>
       </div>
       {isNum&&(
-        <div className="sheet-row" style={{gap:6,alignItems:'center'}}>
-          <span className="muted" style={{fontSize:12}}>day-of-life / career-day within</span>
-          <input type="number" min="0" style={{width:60}} value={off}
-            onChange={e=>setOff(Math.max(0,Math.floor(+e.target.value||0)))}/>
-          <span className="muted" style={{fontSize:12}}>± days</span>
-        </div>
+        <>
+          <div className="ph-lbl">day-of-life / career-day window</div>
+          <div className="sheet-row" style={{gap:6,alignItems:'center'}}>
+            <span className="muted" style={{fontSize:12}}>±</span>
+            <input type="number" min="0" style={{width:60}} value={off}
+              onChange={e=>setOff(Math.max(0,Math.floor(+e.target.value||0)))}/>
+            <span className="muted" style={{fontSize:12}}>days</span>
+          </div>
+        </>
       )}
       {res?.kind==='number'&&(
         <div className="id-card">
@@ -166,18 +184,23 @@ function UniversalSearch(){
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
-            <div key={'r'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6}}>
+            <div key={'r'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span>
                 {h.kind==='day'
                   ?<>{h.who} — {h.label}{h.delta?` (${h.delta>0?'+':''}${h.delta})`:''}</>
                   :<>{h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}</>}
+                {where(h)}
               </span>
-              {h.id!=null&&<button className="pf-open" title={`Open ${h.who}'s full sheet`}
-                aria-label={`Open ${h.who}'s full sheet`}
-                onClick={()=>focusPlayer({id:h.id,pk:h.pk,side:h.side,from:'search'})}>↗</button>}
+              {openBtn(h)}
             </div>
           ))}
-          {!res.tableHits.length&&!res.rosterHits.length&&<div className="occ muted">no live occurrences today</div>}
+          {res.nameHits.map((h,i)=>(
+            <div key={'n'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+              <span>{h.who} — name {h.part} ({cl(h.cipher)}) = {res.n}{h.legal?' · legal':''}{where(h)}</span>
+              {openBtn(h)}
+            </div>
+          ))}
+          {!res.tableHits.length&&!res.rosterHits.length&&!res.nameHits.length&&<div className="occ muted">no live occurrences today</div>}
         </div>
       )}
       {res?.kind==='jesuit'&&(
@@ -208,12 +231,20 @@ function UniversalSearch(){
             ))}
           </div>
           {res.occ.map((o,i)=>(
-            <div key={i} className="occ v-green cvg-glow">
-              {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)})
+            <div key={i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+              <span>{o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)}){where(o)}</span>
+              {openBtn(o)}
             </div>
           ))}
+          {res.nameMatches.map((o,i)=>(
+            <div key={'nm'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+              <span>{o.who} — name {o.part} = {o.n} ({cl(o.cipher)}){where(o)}</span>
+              {openBtn(o)}
+            </div>
+          ))}
+          {!res.occ.length&&!res.nameMatches.length&&<div className="occ muted">no name or stat matches on the slate</div>}
         </div>
       )}
-    </>
+    </div>
   );
 }

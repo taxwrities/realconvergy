@@ -603,11 +603,35 @@ export function AppStateProvider({children}){
     if(t)setPhrases(ps=>[...ps,{text:t,values:calcAll(t),source:'manual'}]);
   },[]);
 
+  /* ---------- slate-wide roster (Tony 2026-07-24) ----------
+     universal search sweeps EVERY player in EVERY loaded game — same reach as
+     the PhraseFinder / Jesuit finders — not just the active game's board. Each
+     entry carries its game + team so a cross-game hit still reads clearly.
+     evalBatter's rung / name figures are matchup-independent (only its .hits
+     detail reads the active game's loaded map, which universal search never
+     consults), so evaluating off-board players here is correct. */
+  const slateRoster=useMemo(()=>{
+    if(!slate?.games?.length)return[];
+    const out=[];
+    slate.games.forEach(g=>{
+      const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
+      ['away','home'].forEach(s=>{
+        g[s+'Ids'].forEach(id=>{
+          const p=slate.people[id];
+          if(!p)return;
+          const ev=evalBatter({...p,_side:s});
+          if(ev)out.push({id,pk:g.pk,side:s,gameLabel,team:g[s].abbrev||g[s].teamName,ev});
+        });
+      });
+    });
+    return out;
+  },[slate,evalBatter]);
+
   /* ---------- universal search ---------- */
   const search=useCallback(q=>{
     q=q.trim();
     if(!q)return null;
-    const roster=slate&&game?[...board.away,...board.home]:[];
+    const roster=slateRoster;
     /* "jesuit" → every Jesuit-educated player on today's whole slate (§8 info
        branch), not just the active game. WNBA is college-heavy. Tony 2026-07-20. */
     if(/^jesuit$/i.test(q)){
@@ -629,16 +653,26 @@ export function AppStateProvider({children}){
         prime:isPrime(n),primeIdx:primeIndex(n),compIdx:compositeIndex(n),nthP:n<=250?nthPrime(n):0,
         tFam:T_FAMILY.includes(n),chain:chainBase(n),
         tableHits:(loaded.get(n)||[]),
-        rosterHits:roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n).map(g=>({who:r.ev.p.fullName,rung:g}))),
+        rosterHits:roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n).map(g=>({who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,rung:g}))),
+        /* name-cipher raws — any player whose name value (any enabled cipher /
+           name part) equals n, slate-wide */
+        nameHits:roster.flatMap(r=>r.ev.run.filter(x=>x.n===n).map(x=>({who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,part:x.label,cipher:x.cipher,legal:!!x.legal}))),
       };
     }
     const v=calcAll(q);
     return{kind:'word',word:q.toUpperCase(),values:v,
       occ:ALL_CIPHERS.filter(c=>ciphers[c]).flatMap(c=>{
         const n=v[c];
-        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({who:r.ev.p.fullName,cipher:c,rung:g})));
-      })};
-  },[slate,game,board,loaded,ciphers]);
+        return roster.flatMap(r=>r.ev.rungs.filter(g=>g.n===n&&g.off===1).map(g=>({who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,cipher:c,rung:g})));
+      }),
+      /* name matches — players whose NAME value equals the typed word's value in
+         the same cipher (name↔word convergence), slate-wide */
+      nameMatches:ALL_CIPHERS.filter(c=>ciphers[c]).flatMap(c=>{
+        const n=v[c];
+        return roster.flatMap(r=>r.ev.run.filter(x=>x.n===n).map(x=>({who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,part:x.label,cipher:c,n})));
+      }),
+    };
+  },[slate,slateRoster,loaded,ciphers]);
 
   /* ---------- Phrase Variation Finder (Tony 2026-07-22) ----------
      the name×outcome×cipher sweep: for every player in every loaded game, every

@@ -612,6 +612,8 @@ body {
   text-align: center; color: #767d8f; font-size: 10px; letter-spacing: 1px;
   text-transform: uppercase; margin: 16px 0 8px; padding-top: 12px; border-top: 1px solid #1a202b;
 }
+/* first section header sits directly under the search topbar — no divider above it */
+.finder-sep.first { margin-top: 4px; padding-top: 0; border-top: none; }
 /* convergence glow (Tony 2026-07-22): every search-result row that represents a
    live match gets a soft luminous gold halo — no hard border, just a low-opacity
    box-shadow + faint tint that says "convergence" at a glance. Baseline for a

@@ -9,8 +9,9 @@ import {ALL_CIPHERS,cl} from '../engine/gematria.js';
    hidden); a synthetic history entry wires the mobile / browser back button
    and back-swipe to return to the Board, and every dismiss routes through
    history.back() so no orphan entries are left behind. Body scroll is locked
-   while the page is open. All finder functionality is unchanged — the Phrase
-   Variation Finder sits on top, universal number/word search below. */
+   while the page is open. Section headers + per-input labels (Tony 2026-07-24):
+   the Phrase Variation Finder sits on top, then the slate-wide Universal search
+   (number / word / "jesuit"), each roster row naming the player's game + team. */
 export default function SearchSheet({onClose}){
   const {search,ciphers,colorFor}=useApp();
   const [q,setQ]=useState('');
@@ -30,6 +31,7 @@ export default function SearchSheet({onClose}){
     };
   },[]); // eslint-disable-line react-hooks/exhaustive-deps
   const dismiss=()=>window.history.back();
+  const where=h=><span className="muted" style={{fontSize:11}}> · {h.team} · {h.gameLabel}</span>;
   return(
     <>
       <div className="search-scrim" onClick={dismiss}/>
@@ -43,8 +45,9 @@ export default function SearchSheet({onClose}){
         <div className="search-scroll">
       <PhraseFinder/>
       <div className="finder-sep">universal search</div>
+      <div className="ph-lbl">number or word</div>
       <div className="sheet-row">
-        <input type="text" autoFocus placeholder="number or word…" value={q}
+        <input type="text" autoFocus placeholder="number, word, or “jesuit”…" value={q}
           onChange={e=>setQ(e.target.value)}/>
       </div>
       {res?.kind==='number'&&(
@@ -58,10 +61,15 @@ export default function SearchSheet({onClose}){
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
           {res.rosterHits.map((h,i)=>(
             <div key={'r'+i} className="occ v-green cvg-glow">
-              {h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}
+              {h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}{where(h)}
             </div>
           ))}
-          {!res.tableHits.length&&!res.rosterHits.length&&<div className="occ muted">no live occurrences today</div>}
+          {res.nameHits.map((h,i)=>(
+            <div key={'n'+i} className="occ v-green cvg-glow">
+              {h.who} — name {h.part} ({cl(h.cipher)}) = {res.n}{h.legal?' · legal':''}{where(h)}
+            </div>
+          ))}
+          {!res.tableHits.length&&!res.rosterHits.length&&!res.nameHits.length&&<div className="occ muted">no live occurrences today</div>}
         </div>
       )}
       {res?.kind==='jesuit'&&(
@@ -90,9 +98,15 @@ export default function SearchSheet({onClose}){
           </div>
           {res.occ.map((o,i)=>(
             <div key={i} className="occ v-green cvg-glow">
-              {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)})
+              {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)}){where(o)}
             </div>
           ))}
+          {res.nameMatches.map((o,i)=>(
+            <div key={'nm'+i} className="occ v-green cvg-glow">
+              {o.who} — name {o.part} = {o.n} ({cl(o.cipher)}){where(o)}
+            </div>
+          ))}
+          {!res.occ.length&&!res.nameMatches.length&&<div className="occ muted">no name or stat matches on the slate</div>}
         </div>
       )}
         </div>
