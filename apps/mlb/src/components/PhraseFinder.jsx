@@ -1,4 +1,5 @@
 import {useState,useMemo,useEffect} from 'react';
+import GameFilterStrip,{filterByGame} from './GameFilter.jsx';
 import {useApp,INSTITUTIONAL} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
@@ -17,7 +18,7 @@ const NAME_PARTS=[['first','First'],['middle','Middle'],['last','Last'],['full',
 /* how many matched phrases to show inline on the collapsed row before "+N more" */
 const PHRASE_CAP=4;
 
-export default function PhraseFinder(){
+export default function PhraseFinder({gameFilter,setGameFilter}){
   const {findPhrases,ciphers,date,dn,focusPlayer}=useApp();
   const [open,setOpen]=useState(false);
   const [words,setWords]=useState(()=>DEFAULT_WORDS.map(w=>({w,on:true})));
@@ -61,6 +62,9 @@ export default function PhraseFinder(){
     });
     return[...m.values()].sort((a,b)=>b.rows.length-a.rows.length||a.name.localeCompare(b.name));
   },[hits]);
+  /* game filter (Tony 2026-07-24) — narrow the grouped player rows to one game;
+     the strip counts one per player group, matching what's rendered. */
+  const shownGroups=useMemo(()=>filterByGame(groups,gameFilter),[groups,gameFilter]);
 
   const spine5=useMemo(()=>dateFigures(date).slice(0,5).map(f=>f.n),[date]);
   /* today's date-root set — the digit roots of the five DN-spine values; gates
@@ -163,11 +167,15 @@ export default function PhraseFinder(){
               <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
                 targets {[targets.join(', '),oppTeam&&'opp-team',oppPitcher&&'opp-pitcher'].filter(Boolean).join(' + ')||'—'} · ±{tol} · {hits.length} hit{hits.length===1?'':'s'} across {groups.length} player{groups.length===1?'':'s'}
               </div>
-              {groups.map(g=>(
+              <GameFilterStrip rows={groups} value={gameFilter} onChange={setGameFilter}/>
+              {shownGroups.map(g=>(
                 <ResultRow key={g.id} g={g} tol={tol} showSrc={showSrc} focusPlayer={focusPlayer} dateRoots={dateRoots}/>
               ))}
               {!hits.length&&(
                 <div className="occ muted">No hits. Try more ciphers, more variations, or bumping tolerance to 1–2.</div>
+              )}
+              {!!groups.length&&!shownGroups.length&&(
+                <div className="occ muted">no hits in {gameFilter} — clear the game filter to see all {groups.length}</div>
               )}
             </div>
           )}

@@ -1,5 +1,6 @@
 import {useState,useMemo,useEffect,useRef} from 'react';
 import PhraseFinder from './PhraseFinder.jsx';
+import GameFilterStrip,{filterByGame} from './GameFilter.jsx';
 import {useApp,INSTITUTIONAL,DAY_CLOCKS} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 import {dateFigures} from '../engine/clocks.js';
@@ -37,6 +38,10 @@ export default function SearchSheet({onClose}){
     };
   },[]); // eslint-disable-line react-hooks/exhaustive-deps
   const dismiss=()=>window.history.back();
+  /* page-level game filter (Tony 2026-07-24) — a single gameLabel (or null =
+     ALL) shared by every result surface below, so narrowing to one game on any
+     strip narrows them all in lockstep. Local UI state; no store change. */
+  const [gameFilter,setGameFilter]=useState(null);
   return(
     <>
       <div className="search-scrim" onClick={dismiss}/>
@@ -48,9 +53,9 @@ export default function SearchSheet({onClose}){
           <span className="search-topname">Search &amp; Finder</span>
         </div>
         <div className="search-scroll">
-          <DayFinder/>
-          <PhraseFinder/>
-          <UniversalSearch/>
+          <DayFinder gameFilter={gameFilter} setGameFilter={setGameFilter}/>
+          <PhraseFinder gameFilter={gameFilter} setGameFilter={setGameFilter}/>
+          <UniversalSearch gameFilter={gameFilter} setGameFilter={setGameFilter}/>
         </div>
       </div>
     </>
@@ -61,7 +66,7 @@ export default function SearchSheet({onClose}){
    targets (single or comma-list) × ± tolerance × clock toggles, swept across
    every player in every loaded game. Quick-fill from today's DN spine or the
    institutional table runs immediately at the current tolerance. */
-function DayFinder(){
+function DayFinder({gameFilter,setGameFilter}){
   const {findDays,date,focusPlayer}=useApp();
   const [raw,setRaw]=useState('');
   const [tol,setTol]=useState(3);
@@ -79,6 +84,7 @@ function DayFinder(){
   const results=useMemo(
     ()=>targets.length?findDays({targets,tol,on}):[],
     [targets,tol,on,findDays]);
+  const shown=useMemo(()=>filterByGame(results,gameFilter),[results,gameFilter]);
   return(
     <div className="finder">
       <div className="finder-sep first">day-of-life / career-day finder</div>
@@ -112,7 +118,8 @@ function DayFinder(){
           <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
             targets {targets.join(', ')} · ±{tol} · {results.length} match{results.length===1?'':'es'} across the slate
           </div>
-          {results.map((r,i)=>(
+          <GameFilterStrip rows={results} value={gameFilter} onChange={setGameFilter}/>
+          {shown.map((r,i)=>(
             <div key={i} className="finder-row">
               <div className="fr-top">
                 <b>{r.name}</b>
@@ -134,6 +141,7 @@ function DayFinder(){
             </div>
           ))}
           {!results.length&&<div className="occ muted">no player within ±{tol} of {targets.length>1?'those targets':'that target'} today</div>}
+          {!!results.length&&!shown.length&&<div className="occ muted">no matches in {gameFilter} — clear the game filter to see all {results.length}</div>}
         </div>
       )}
     </div>
@@ -144,12 +152,21 @@ function DayFinder(){
    "jesuit" → every Jesuit-educated player on the slate. Every branch sweeps the
    whole slate (Tony 2026-07-24), and each roster row names the player's game +
    team so cross-game hits read clearly. */
-function UniversalSearch(){
+function UniversalSearch({gameFilter,setGameFilter}){
   const {search,ciphers,colorFor,focusPlayer}=useApp();
   const [q,setQ]=useState('');
   const [off,setOff]=useState(0);
   const isNum=/^\d+$/.test(q.trim());
   const res=search(q,off);
+  /* game-bearing result rows for this query — the strip counts + narrows only
+     the player rows (roster / name / jesuit); the number's numerology header and
+     table (loaded-map) hits carry no game and always show. */
+  const gameRows=useMemo(()=>{
+    if(res?.kind==='number')return[...(res.rosterHits||[]),...(res.nameHits||[])];
+    if(res?.kind==='jesuit')return res.players||[];
+    if(res?.kind==='word')return[...(res.occ||[]),...(res.nameMatches||[])];
+    return[];
+  },[res]);
   const where=h=><span className="muted" style={{fontSize:11}}> · {h.team} · {h.gameLabel}</span>;
   const openBtn=h=>h.id!=null&&(
     <button className="pf-open" title={`Open ${h.who}'s full sheet`}
@@ -183,7 +200,8 @@ function UniversalSearch(){
             {res.tFam?' · T-FAMILY':''} · chain {res.chain} ({res.chain}, {res.chain+9}, {res.chain+18}…)
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
-          {res.rosterHits.map((h,i)=>(
+          <GameFilterStrip rows={gameRows} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.rosterHits,gameFilter).map((h,i)=>(
             <div key={'r'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span>
                 {h.kind==='day'
@@ -194,13 +212,14 @@ function UniversalSearch(){
               {openBtn(h)}
             </div>
           ))}
-          {res.nameHits.map((h,i)=>(
+          {filterByGame(res.nameHits,gameFilter).map((h,i)=>(
             <div key={'n'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span>{h.who} — name {h.part} ({cl(h.cipher)}) = {res.n}{h.legal?' · legal':''}{where(h)}</span>
               {openBtn(h)}
             </div>
           ))}
           {!res.tableHits.length&&!res.rosterHits.length&&!res.nameHits.length&&<div className="occ muted">no live occurrences today</div>}
+          {!!gameRows.length&&gameFilter&&!filterByGame(gameRows,gameFilter).length&&<div className="occ muted">no player rows in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
       {res?.kind==='jesuit'&&(
@@ -208,7 +227,8 @@ function UniversalSearch(){
           <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
             {res.players.length} Jesuit-educated player{res.players.length===1?'':'s'} across the slate
           </div>
-          {res.players.map((h,i)=>(
+          <GameFilterStrip rows={gameRows} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.players,gameFilter).map((h,i)=>(
             <div key={i} className="occ v-green" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
               <b>{h.who}</b><span className="muted">{h.team}</span>
               <span className="badge gold">JESUIT</span>
@@ -220,6 +240,7 @@ function UniversalSearch(){
             </div>
           ))}
           {!res.players.length&&<div className="occ muted">no Jesuit-educated players on today's slate</div>}
+          {!!res.players.length&&gameFilter&&!filterByGame(res.players,gameFilter).length&&<div className="occ muted">no Jesuit-educated players in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
       {res?.kind==='word'&&(
@@ -230,19 +251,21 @@ function UniversalSearch(){
               <span key={c}><span className="muted">{cl(c)}</span> <b>{res.values[c]}</b></span>
             ))}
           </div>
-          {res.occ.map((o,i)=>(
+          <GameFilterStrip rows={gameRows} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.occ,gameFilter).map((o,i)=>(
             <div key={i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span>{o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)}){where(o)}</span>
               {openBtn(o)}
             </div>
           ))}
-          {res.nameMatches.map((o,i)=>(
+          {filterByGame(res.nameMatches,gameFilter).map((o,i)=>(
             <div key={'nm'+i} className="occ v-green cvg-glow" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
               <span>{o.who} — name {o.part} = {o.n} ({cl(o.cipher)}){where(o)}</span>
               {openBtn(o)}
             </div>
           ))}
           {!res.occ.length&&!res.nameMatches.length&&<div className="occ muted">no name or stat matches on the slate</div>}
+          {!!gameRows.length&&gameFilter&&!filterByGame(gameRows,gameFilter).length&&<div className="occ muted">no rows in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
     </div>

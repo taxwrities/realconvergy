@@ -151,6 +151,15 @@ body {
 .chip.on .cnt { background: rgba(10, 12, 17, 0.25); }
 .chip:disabled { opacity: .5; cursor: default; }
 
+/* game-filter strip (Tony 2026-07-24) — narrows a search result surface to one
+   game. Reuses .rail (hidden-scrollbar horizontal scroll) + .chip; sized a shade
+   smaller to sit inside a result card. Per-chip match count is dim inline text
+   ("NY @ LV · 4"), not a pill. */
+.game-filter { margin: 2px 0 8px; padding: 0 0 4px; }
+.game-filter .chip { padding: 5px 11px; font-size: 11.5px; }
+.game-filter .gf-count { opacity: .5; font-weight: 600; font-family: var(--cvg-mono); font-size: 10.5px; }
+.game-filter .chip.on .gf-count { color: var(--cvg-acc-ink); opacity: .7; }
+
 /* game rail — two-line matchup cards (SiriusXM today's-games style) */
 .gchip {
   background: var(--card-grad); border: 1px solid var(--sf-line); color: #e8eaf0;

@@ -1,5 +1,6 @@
-import {useState,useEffect} from 'react';
+import {useState,useMemo,useEffect} from 'react';
 import PhraseFinder from './PhraseFinder.jsx';
+import GameFilterStrip,{filterByGame} from './GameFilter.jsx';
 import {useApp} from '../state/store.jsx';
 import {ALL_CIPHERS,cl} from '../engine/gematria.js';
 
@@ -16,6 +17,18 @@ export default function SearchSheet({onClose}){
   const {search,ciphers,colorFor}=useApp();
   const [q,setQ]=useState('');
   const res=search(q);
+  /* page-level game filter (Tony 2026-07-24) — a single gameLabel (or null =
+     ALL) shared by the universal-search surfaces and the PhraseFinder below, so
+     narrowing to one game on any strip narrows them all. Local UI state. */
+  const [gameFilter,setGameFilter]=useState(null);
+  /* game-bearing rows for the active query — the strip counts + narrows only the
+     player rows; the number header / table (loaded-map) hits carry no game. */
+  const gameRows=useMemo(()=>{
+    if(res?.kind==='number')return[...(res.rosterHits||[]),...(res.nameHits||[])];
+    if(res?.kind==='jesuit')return res.players||[];
+    if(res?.kind==='word')return[...(res.occ||[]),...(res.nameMatches||[])];
+    return[];
+  },[res]);
   useEffect(()=>{
     window.history.pushState({search:1},'');
     const onPop=()=>onClose();
@@ -43,7 +56,7 @@ export default function SearchSheet({onClose}){
           <span className="search-topname">Search &amp; Finder</span>
         </div>
         <div className="search-scroll">
-      <PhraseFinder/>
+      <PhraseFinder gameFilter={gameFilter} setGameFilter={setGameFilter}/>
       <div className="finder-sep">universal search</div>
       <div className="ph-lbl">number or word</div>
       <div className="sheet-row">
@@ -59,17 +72,19 @@ export default function SearchSheet({onClose}){
             {res.tFam?' · T-FAMILY':''} · chain {res.chain} ({res.chain}, {res.chain+9}, {res.chain+18}…)
           </div>
           {res.tableHits.map((h,i)=>(<div key={i} className="occ">{h.src} <span className="muted">({h.cat})</span></div>))}
-          {res.rosterHits.map((h,i)=>(
+          <GameFilterStrip rows={gameRows} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.rosterHits,gameFilter).map((h,i)=>(
             <div key={'r'+i} className="occ v-green cvg-glow">
               {h.who} — {h.rung.scope} {h.rung.stat} sits {h.rung.cur}, {h.rung.off===1?'next':'+'+h.rung.off} = {res.n}{where(h)}
             </div>
           ))}
-          {res.nameHits.map((h,i)=>(
+          {filterByGame(res.nameHits,gameFilter).map((h,i)=>(
             <div key={'n'+i} className="occ v-green cvg-glow">
               {h.who} — name {h.part} ({cl(h.cipher)}) = {res.n}{h.legal?' · legal':''}{where(h)}
             </div>
           ))}
           {!res.tableHits.length&&!res.rosterHits.length&&!res.nameHits.length&&<div className="occ muted">no live occurrences today</div>}
+          {!!gameRows.length&&gameFilter&&!filterByGame(gameRows,gameFilter).length&&<div className="occ muted">no player rows in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
       {res?.kind==='jesuit'&&(
@@ -77,7 +92,8 @@ export default function SearchSheet({onClose}){
           <div className="mono muted" style={{fontSize:11.5,marginBottom:4}}>
             {res.players.length} Jesuit-educated player{res.players.length===1?'':'s'} across the slate
           </div>
-          {res.players.map((h,i)=>(
+          <GameFilterStrip rows={res.players} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.players,gameFilter).map((h,i)=>(
             <div key={i} className="occ v-green" style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
               <b>{h.who}</b><span className="muted">{h.team}</span>
               <span className="badge gold">JESUIT</span>
@@ -86,6 +102,7 @@ export default function SearchSheet({onClose}){
             </div>
           ))}
           {!res.players.length&&<div className="occ muted">no Jesuit-educated players on today's slate</div>}
+          {!!res.players.length&&gameFilter&&!filterByGame(res.players,gameFilter).length&&<div className="occ muted">no Jesuit-educated players in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
       {res?.kind==='word'&&(
@@ -96,17 +113,19 @@ export default function SearchSheet({onClose}){
               <span key={c}><span className="muted">{cl(c)}</span> <b>{res.values[c]}</b></span>
             ))}
           </div>
-          {res.occ.map((o,i)=>(
+          <GameFilterStrip rows={gameRows} value={gameFilter} onChange={setGameFilter}/>
+          {filterByGame(res.occ,gameFilter).map((o,i)=>(
             <div key={i} className="occ v-green cvg-glow">
               {o.who} — {o.rung.scope} {o.rung.stat} next = {o.rung.n} ({cl(o.cipher)}){where(o)}
             </div>
           ))}
-          {res.nameMatches.map((o,i)=>(
+          {filterByGame(res.nameMatches,gameFilter).map((o,i)=>(
             <div key={'nm'+i} className="occ v-green cvg-glow">
               {o.who} — name {o.part} = {o.n} ({cl(o.cipher)}){where(o)}
             </div>
           ))}
           {!res.occ.length&&!res.nameMatches.length&&<div className="occ muted">no name or stat matches on the slate</div>}
+          {!!gameRows.length&&gameFilter&&!filterByGame(gameRows,gameFilter).length&&<div className="occ muted">no rows in {gameFilter} — clear the game filter to see all</div>}
         </div>
       )}
         </div>
