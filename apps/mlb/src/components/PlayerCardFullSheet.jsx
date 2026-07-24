@@ -121,6 +121,7 @@ export default function PlayerCardFullSheet({row,onClose}){
   const [spot,setSpot]=useState(null);       // spotlighted number | null
   const [spotOrigin,setSpotOrigin]=useState(null); // origin of the spotlighted cell (projection cells only)
   const [showAllXref,setShowAllXref]=useState(false); // convergence-bullet cap toggle
+  const [rootSel,setRootSel]=useState(()=>new Set()); // date-root lens: selected roots (empty = ALL)
 
   /* dedicated-page navigation (Tony 2026-07-22): push one history entry on
      entry so the mobile / browser back button (and back-swipe) returns to the
@@ -399,6 +400,17 @@ export default function PlayerCardFullSheet({row,onClose}){
     return s;
   },[relevantVals]);
 
+  /* prime-position convergence (Tony 2026-07-23): chain V → digital root D →
+     is D prime? → primeIndex(D)=P → is P one of today's date-roots? A soft
+     (dim-gold) match, sibling to the digit-root-relevant criterion.
+     e.g. 88 → dr 7 (prime) → prime #4 → 4 ∈ {2,4} → fires. Returns {d,P} or null. */
+  const primePosMatch=n=>{
+    const d=digitalRoot(n);
+    if(!isPrime(d))return null;
+    const P=primeIndex(d);
+    return dateRoots.has(P)?{d,P}:null;
+  };
+
   /* externalConv(n,origin) — the non-tautological glow test for a projected stat
      rung / cascade cell (Tony 2026-07-23). A projection lights ONLY when its
      value ALSO converges with something OUTSIDE its own advancement:
@@ -410,13 +422,16 @@ export default function PlayerCardFullSheet({row,onClose}){
      6 prime-factor cross-reference (Tony 2026-07-23):
          composite n (≥4) → a prime factor is active / a cipher raw / date-root-relevant
          prime n          → n is itself a prime factor of an active or cipher-raw value
-       the trivial 1×n factorization never counts. */
+       the trivial 1×n factorization never counts.
+     7 prime-position (Tony 2026-07-23): digital root D is prime and primeIndex(D)
+       lands on a date-root — see primePosMatch. */
   const externalConv=(n,origin)=>{
     if(!(n>0))return false;
     if(isActive(n))return true;
     if(cipherVals.has(n))return true;
     if(phraseVals.has(n))return true;
     if(dateRoots.has(digitalRoot(n)))return true;
+    if(primePosMatch(n))return true;
     const cr=crossRefsForNumber({sr:srf,opp:oppVals},n,dateRoots,origin);
     if(cr.opponent.items.some(i=>i.rawMatch))return true;
     if(cr.statRungs.items.some(i=>i.rawMatch&&i.off===1&&allowRung.has(i.label)))return true;
@@ -450,6 +465,15 @@ export default function PlayerCardFullSheet({row,onClose}){
   const teamStair=matchup?.stair||[];
   const shownXref=showAllXref?xrefRows:xrefRows.slice(0,XREF_CAP);
 
+  /* ---- date-root filter (ROOT chips, Tony 2026-07-23): a soft lens sibling to
+     the category lens. Chips are today's date-roots + ALL; multi-select. With
+     any root selected the sheet dims every glow whose digital root isn't in the
+     selection (opacity in CSS), leaving the picked roots lit. Empty = ALL. */
+  const rootChips=useMemo(()=>[...dateRoots].sort((a,b)=>a-b),[dateRoots]);
+  const toggleRoot=r=>setRootSel(s=>{const n=new Set(s);n.has(r)?n.delete(r):n.add(r);return n;});
+  const clearRoots=()=>setRootSel(new Set());
+  const rootMatch=n=>rootSel.size>0&&rootSel.has(digitalRoot(n));
+
   /* ---- filter helpers ---- */
   const lensMatch=n=>lens? (lens==='tfam'?tfamSet.has(n):activeMap.get(n)?.cat===lens) : false;
   /* glow layering (additive, Tony 2026-07-22, take 2 — thresholds tightened so
@@ -468,6 +492,7 @@ export default function PlayerCardFullSheet({row,onClose}){
     else if(active)c+=' hit';
     else if(xrefSet.has(n)||(origin&&externalConv(n,origin)))c+=' xhit';
     if(lens&&lensMatch(n))c+=' lensmatch';
+    if(rootSel.size>0&&rootMatch(n))c+=' rootmatch';
     if(spot===n)c+=' spot-match';
     return c;
   };
@@ -475,7 +500,7 @@ export default function PlayerCardFullSheet({row,onClose}){
   const toggleLens=cat=>{setSpot(null);setLens(l=>l===cat?null:cat);};
   const goAll=()=>{setLens(null);setSpot(null);};
 
-  const rootCls=`pcfs${lens?' lensed':''}${spot!=null?' spotlight':''}`;
+  const rootCls=`pcfs${lens?' lensed':''}${spot!=null?' spotlight':''}${rootSel.size>0?' rooted':''}`;
 
   /* clickable number cell (spotlight on tap). Plain render fn, not a
      component, so leaf spans diff in place instead of remounting each render. */
@@ -507,6 +532,9 @@ export default function PlayerCardFullSheet({row,onClose}){
     else if(spot>=4)classify=`COMPOSITE · prime(${spot}) = ${nthPrime(spot)}`;
     else classify='—';
     const inst=INST_SET.has(spot)?(INST_LABELS.get(spot)||['INSTITUTIONAL TABLE']):[];
+    /* prime-position convergence (Tony 2026-07-23): dr(spot) prime & its
+       prime-index lands on a date-root — surfaced as its own WHY line. */
+    const primePos=primePosMatch(spot);
 
     /* ---- cross-refs against today's date spine + numerology, even when the
        spotlighted number is "owned" by another active category ---- */
@@ -539,7 +567,7 @@ export default function PlayerCardFullSheet({row,onClose}){
 
     return{n:spot,
       reason:a?`Active (${a.cat.toUpperCase()}): ${a.reason}`:null,
-      props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine},
+      props:{classify,inst,ds:digitSum(spot),dr:digitalRoot(spot),spine,primePos},
       xrefGroups,locs};
   },[spot,spotOrigin,activeMap,model,cascade,dn,date,bday,p,oppVals,dateRoots,srf]);
 
@@ -586,6 +614,17 @@ export default function PlayerCardFullSheet({row,onClose}){
               </div>
             ))}
           </div>
+          {rootChips.length>0&&(
+            <div className="rootbar">
+              <span className="tlabel">ROOT</span>
+              <button className={`rchip${rootSel.size===0?' sel':''}`}
+                onClick={clearRoots}>ALL</button>
+              {rootChips.map(r=>(
+                <button key={r} className={`rchip${rootSel.has(r)?' sel':''}`}
+                  onClick={()=>toggleRoot(r)}>{r}</button>
+              ))}
+            </div>
+          )}
           <div className="testbar">
             <span className="tlabel">TEST</span>
             {OUTCOMES.map(o=>(
@@ -754,7 +793,10 @@ export default function PlayerCardFullSheet({row,onClose}){
                   <span className="wp-v gold">{why.props.inst.map(l=>`= ${l}`).join('   ')}</span></div>
               )}
               <div className="why-prop"><span className="wp-k">DIGITS</span>
-                <span className="wp-v">digit sum {why.props.ds} · digital root {why.props.dr}</span></div>
+                <span className="wp-v">digit sum {why.props.ds} · digital root {why.props.dr}
+                  {why.props.primePos&&(
+                    <span className="wp-primepos"> ↳ dr {why.props.primePos.d} = prime #{why.props.primePos.P} → matches date-root {why.props.primePos.P}</span>
+                  )}</span></div>
               {why.props.spine.length>0&&(
                 <div className="why-prop"><span className="wp-k">SPINE</span>
                   <span className="wp-v teal">{why.props.spine.join('   ')}</span></div>

@@ -72,6 +72,19 @@
   border-color:color-mix(in srgb, var(--gold) 45%, transparent);
   box-shadow:0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent) inset;}
 
+/* ROOT chips (Tony 2026-07-23): date-root lens, same pill look as TEST but on
+   its own row above it. Selected chips pick up the gold sel treatment. */
+.pcfs .rootbar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 12px 4px;align-items:center;}
+.pcfs .rootbar::-webkit-scrollbar{display:none;}
+.pcfs .rchip{flex-shrink:0;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:700;color:var(--dim);
+  background:var(--card-grad);border:1px solid var(--sf-line);cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
+  transition:background .15s,color .15s,box-shadow .15s,transform .1s;}
+.pcfs .rchip:active{transform:scale(.94);}
+.pcfs .rchip.sel{color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, transparent);
+  border-color:color-mix(in srgb, var(--gold) 45%, transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent) inset;}
+
 .pcfs .cascpin{padding:0 12px 10px;border-bottom:1px solid var(--line);}
 .pcfs .casc{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;}
 .pcfs .casc::-webkit-scrollbar{display:none;}
@@ -186,6 +199,8 @@
 .pcfs .bn[data-n].xhit{background:none;}
 
 .pcfs.lensed [data-n].hit:not(.lensmatch),.pcfs.lensed [data-n].hit2:not(.lensmatch),.pcfs.lensed [data-n].xhit:not(.lensmatch){opacity:0.28;}
+/* date-root lens: dim every glow whose digital root isn't in the picked set */
+.pcfs.rooted [data-n].hit:not(.rootmatch),.pcfs.rooted [data-n].hit2:not(.rootmatch),.pcfs.rooted [data-n].xhit:not(.rootmatch){opacity:0.2;}
 .pcfs.spotlight [data-n]:not(.spot-match){opacity:0.18 !important;}
 .pcfs .spot-match{opacity:1 !important;}
 
@@ -206,6 +221,8 @@
 /* PLAYER cross-ref matches — strong (gold) vs soft digit-root (dim gold) */
 .pcfs .wp-v .xref-strong{color:var(--gold);font-weight:700;}
 .pcfs .wp-v .xref-soft{color:color-mix(in srgb, var(--gold) 55%, transparent);font-style:italic;}
+/* prime-position convergence line under DIGITS (dim-gold, soft tier) */
+.pcfs .wp-v .wp-primepos{display:block;margin-top:2px;color:color-mix(in srgb, var(--gold) 60%, var(--text));font-weight:600;}
 .pcfs .why-locs{margin-top:9px;border-top:1px solid var(--line);padding-top:8px;max-height:34vh;overflow-y:auto;}
 .pcfs .why-loc{font-size:10.5px;color:var(--dim);font-family:var(--mono);padding:2px 0;}
 .pcfs .why-loc b{color:var(--text);}
