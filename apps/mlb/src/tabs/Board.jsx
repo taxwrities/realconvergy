@@ -253,8 +253,16 @@ function TeamToggle(){
    dedicated full-sheet page (pitcher / team / totals / all convergences live
    there now). No inline preview — the two-column split retired 2026-07-22. */
 function BatterZone(){
-  const {board,side,batterId,setBatterId,focusPlayer,contextFilter,patternFilter,dayState}=useApp();
+  const {board,side,batterId,setBatterId,focusPlayer,contextFilter,patternFilter,dayState,founderHits}=useApp();
   const rows=board[side]||[];
+  /* auxiliary FOUNDER pill (spec: founders-historian) — team-level, so the
+     batter's OWN side's founding convergence shows on each of its rows, same
+     placement convention as JESUIT. The pill is a plain <span> inside the row
+     button, so a tap bubbles to the row's onClick → opens the full sheet. */
+  const fh=founderHits?.[side]||null;
+  const fhTitle=fh?`${fh.record.name} · founded ${fh.record.founded} — `+
+    fh.hits.map(h=>`${h.label} ${h.n}`+
+      (h.kind==='anchor322'?' = 322':h.kind==='bridge'?` → ${h.on}`:'')).join(' · '):'';
   /* keep a leadoff batter selected for the current side so the Matchup header
      (which reads the selected batter's venue split) is populated on load —
      the roster rows themselves navigate to the full-sheet, not this state. */
@@ -314,6 +322,11 @@ function BatterZone(){
                 </span>
               )}
               {r.ev.threadHit&&<span className="badge blue">THR</span>}
+              {fh&&(fh.hits.length>0||fh.hits322)&&(
+                <span className="badge gold founder" title={fhTitle}>
+                  FOUNDER{fh.hits.length>1?` ${fh.hits.length}`:''}
+                </span>
+              )}
               {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
             </span>
           </button>

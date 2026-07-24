@@ -15,6 +15,7 @@ import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveS
 import {fetchSlate,fetchSeasonInfo,fetchLineups,deepFetchGame,h2hFor,fetchGameTotals} from '../data/mlb.js';
 import {applyLineups} from '../data/lineups.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
+import {teamFounderHits} from '../engine/founders.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
 
@@ -264,6 +265,22 @@ export function AppStateProvider({children}){
     }
     return m;
   },[vocab,ciphers,dn,dayState,registry,phrases,game,h2h,vals]);
+
+  /* ---------- founders layer (auxiliary, spec: founders-historian) ----------
+     Per-side founding-date convergences for the active game's two clubs. The
+     active number set = today's seven date figures + the loaded spine + 322;
+     teamFounderHits reads ONLY data/decoder-exports/founders-locked.json and
+     returns the decorated team record when a founding span (or its prime-index
+     bridge, or 322) lands live. Narrative only — never gates skip/scoring. */
+  const founderHits=useMemo(()=>{
+    if(!game)return{away:null,home:null};
+    const activeSet=new Set([...dateFigures(date).map(f=>f.n),...loaded.keys()]);
+    activeSet.add(322);
+    return{
+      away:teamFounderHits(game.away.name,date,activeSet),
+      home:teamFounderHits(game.home.name,date,activeSet),
+    };
+  },[game,date,loaded]);
 
   /* ---------- pattern-engine source sets + ctx builder ---------- */
   const patternSources=useMemo(()=>{
@@ -1145,7 +1162,7 @@ export function AppStateProvider({children}){
     settings,setSettings,date,setDate,today,dayState,setDayState,dn,seasonInfo,
     slate,loading,error,refresh,slateSavedAt,game,gamePk,setGamePk,side,setSide,gameTotals,refreshGameTotals,
     batterId,setBatterId,focusedPlayerId,setFocusedPlayerId,focusReturn,setFocusReturn,focusPlayer,searchOpen,setSearchOpen,contextFilter,setContextFilter,patternFilter,setPatternFilter,
-    board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,
+    board,contextChips,dayField,matchup,loaded,colorFor,evalBatter,h2h,founderHits,
     addTheme,removeTheme,removeRegistryTheme,addThread,addLabel,search,findDays,findPhrases,exportConfig,importConfig,
     patterns,setPatterns,previewPattern,patternCounts,patternHitsAll,
     recipeDraft,addDraft,removeDraft,toggleDraftHard,clearDrafts,pendingPattern,setPendingPattern,
