@@ -292,10 +292,27 @@ function BatterZone(){
               <span className="go">›</span>
             </span>
             <span className="badges">
+              {/* card-level convergence flags cluster first (Tony 2026-07-24):
+                 ⚡ pitcher-convergence → FOUNDER → JESUIT. Each flags a whole
+                 player/team convergence at a glance so it no longer needs a
+                 tap-through to the full sheet. All reuse pre-computed store
+                 slices (r.ev.*, founderHits) — no recomputation here. The
+                 gematria lane / date / pattern badges follow. */}
               {r.ev.pitcherConvergences>=2&&(
                 <span className="badge gold conv"
                   title={`${r.ev.pitcherConvergences} convergences with the opposing pitcher`}>
                   ⚡{r.ev.pitcherConvergences}
+                </span>
+              )}
+              {fh&&(fh.hits.length>0||fh.hits322)&&(
+                <span className="badge gold founder" title={fhTitle}>
+                  FOUNDER{fh.hits.length>1?` ${fh.hits.length}`:''}
+                </span>
+              )}
+              {r.ev.jesuit&&(
+                <span className="badge gold jesuit"
+                  title={`Jesuit-educated — ${r.ev.school||'AJCU school'}`}>
+                  JESUIT
                 </span>
               )}
               {r.patternHits.map(({pattern})=>(
@@ -322,11 +339,6 @@ function BatterZone(){
                 </span>
               )}
               {r.ev.threadHit&&<span className="badge blue">THR</span>}
-              {fh&&(fh.hits.length>0||fh.hits322)&&(
-                <span className="badge gold founder" title={fhTitle}>
-                  FOUNDER{fh.hits.length>1?` ${fh.hits.length}`:''}
-                </span>
-              )}
               {labels.map((l,i)=><span key={i} className="badge purple">{l}</span>)}
             </span>
           </button>
