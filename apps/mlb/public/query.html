@@ -222,6 +222,16 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
   display:flex;gap:5px;flex-wrap:wrap}
 .card-meta span:not(:last-child)::after{content:' ·';color:var(--ink-3)}
 .card-bd{padding:9px 11px}
+/* collapsible cards (Tony 2026-07-25): on phones the header row IS the
+   scannable list — cards default collapsed under 900px, open on desktop.
+   Toggling flips a class in place (no re-render), so scroll position holds. */
+.card-hd{cursor:pointer;-webkit-user-select:none;user-select:none}
+.card-hd:active{background:rgba(255,255,255,.035)}
+.ccar{flex:0 0 auto;margin-left:6px;color:var(--ink-3);font-size:10px;
+  transition:transform .15s var(--ease-out)}
+.card.clps .card-bd{display:none}
+.card.clps .card-hd{border-bottom:none}
+.card.clps .ccar{transform:rotate(-90deg)}
 
 /* strips (card display config) */
 .strip{font-family:var(--mono);font-size:11px;color:var(--ink-2);
@@ -1658,7 +1668,7 @@ var A={
   /* FIX-1 section 2: hiddenFamilies replaces the old tap-to-hide type/counter
      lists (migrated at boot); hiddenWords is now typed in the sheet. */
   work:{hiddenWords:[],hiddenFamilies:[],spotlight:'',probes:{},
-        openProbes:{},collapsed:{}},
+        openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},
   sheetOpen:false,
   undo:null,
   railOpen:null,   /* null = not yet resolved; boot() picks per viewport */
@@ -1883,7 +1893,7 @@ function switchSport(s){
   A.cfg=mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null));
   A.cfg.sport=s;
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
-    probes:{},openProbes:{},collapsed:{}},lsGet(LS.work+s,null));
+    probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},lsGet(LS.work+s,null));
   A.slate=null;A.results=[];A.scanned=false;A.error=null;
   persistRail();                 /* the sport IS rail state — save it now */
   render();
@@ -2358,6 +2368,15 @@ function renderResults(){
       h('option',{value:'team',selected:C.sort==='team'?true:null,text:'Sort: team / game'}),
     ]),
     (function(){
+      var anyOpen=rows.some(function(r){return cardIsOpen(r.player.id)});
+      return h('button',{class:'mini-btn',style:{flex:'0 0 auto'},
+        text:anyOpen?'collapse all':'expand all',
+        onclick:function(){
+          A.work.cardsBase=anyOpen?'clps':'open';
+          A.work.cardOpen={};saveWork();renderResults();
+        }});
+    })(),
+    (function(){
       var nf=filterCount();
       return h('button',{class:'filters-btn',onclick:function(){A.sheetOpen=true;renderSheet()}},
         [h('span',{text:'Filters'}),nf?h('span',{class:'fbadge',text:String(nf)}):null]);
@@ -2492,29 +2511,51 @@ function provSuffix(e){
 var GROUP_CLASS={age:'g-age',bday:'g-bday',stat:'g-stat',date:'g-date',
   founders:'g-founders',clock:'g-clock',team:'g-team'};
 
+/* collapsible cards: viewport default (phone = collapsed) → cardsBase
+   override from expand/collapse-all → per-card override from a header tap. */
+function cardIsOpen(pid){
+  var o=A.work.cardOpen||{};
+  if(Object.prototype.hasOwnProperty.call(o,pid))return o[pid];
+  if(A.work.cardsBase==='open')return true;
+  if(A.work.cardsBase==='clps')return false;
+  return !window.matchMedia('(max-width:899px)').matches;
+}
+function toggleCard(card,pid,hd){
+  var clps=card.classList.toggle('clps');
+  (A.work.cardOpen=A.work.cardOpen||{})[pid]=!clps;
+  hd.setAttribute('aria-expanded',clps?'false':'true');
+  saveWork();
+}
+
 function renderCard(r){
   var p=r.player,C=A.cfg,slate=A.slate;
   var team=slate.teams[p.teamId]||{},opp=slate.teams[p.oppTeamId]||{};
   var game=slate.games.filter(function(g){return g.gameId===p.gameId})[0]||{};
-  var card=h('div',{class:'card'});
+  var open=cardIsOpen(p.id);
+  var card=h('div',{class:'card'+(open?'':' clps')});
 
-  /* §7.1 header */
+  /* §7.1 header — the whole header is the collapse toggle */
   var nm=h('div',{class:'card-name'},[
     h('span',{text:p.fullName}),
     p.isPitcher?h('span',{class:'p-mark',title:p.isProbable?'probable starter':'pitcher',
       text:p.isProbable?'P·prob':'P'}):null,
     h('span',{class:'badge',text:String(r.visibleCount)}),
+    h('span',{class:'ccar',text:'▾'}),
   ]);
   var away=(game.away&&(game.away.abbr||game.away.fullName))||'?';
   var home=(game.home&&(game.home.abbr||game.home.fullName))||'?';
-  card.appendChild(h('div',{class:'card-hd'},[nm,
+  var hd=h('div',{class:'card-hd',role:'button',tabindex:'0','aria-expanded':open?'true':'false',
+    onclick:function(){toggleCard(card,p.id,hd)},
+    onkeydown:function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();toggleCard(card,p.id,hd)}}},
+    [nm,
     h('div',{class:'card-meta'},[
       h('span',{text:team.abbr||team.fullName||'—'}),
       h('span',{text:p.pos||'—'}),
       h('span',{text:p.dob||'no DOB'}),
       h('span',{text:away+' @ '+home}),
       h('span',{text:slate.date}),
-    ])]));
+    ])]);
+  card.appendChild(hd);
 
   var bd=h('div',{class:'card-bd'});
 
