@@ -1,0 +1,3478 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="gothic">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0f15">
+<title>Daily Matches — Slate Query Engine</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+/* ============================================================
+   query.html — Slate Query Engine ("Daily Matches")
+   QUERY-SPEC.md. Single file, no build step, mobile-first.
+   Palette lifted from apps/mlb/src/cvg.css so the page reads as
+   part of the same app without importing it (public/ has no build).
+============================================================ */
+:root{
+  --bg:#0c0f15; --sf-1:#151a23; --sf-2:#1a202b; --sf-3:#171c26;
+  --line:rgba(148,158,180,.14); --line-hi:rgba(148,158,180,.26);
+  --ink:#e8eaf0; --ink-2:#8a90a0; --ink-3:#5f6678;
+  --gold:#ffb02e; --green:#35d07f; --blue:#46a6ff; --cyan:#46d0ff;
+  --purple:#d046ff; --red:#e24b4a; --orange:#ff8a3d; --pink:#ff6ba8;
+  --lime:#b8e04a; --teal:#2fd0c0;
+  --acc:var(--purple); --acc-ink:#1d0526;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --sans:'Fustat',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --card-grad:linear-gradient(180deg,#1a202b 0%,#151a23 100%);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.35);
+  /* counter-type colors (§7.2 "color by counter type", consistent across cards) */
+  --c-age:#46d0ff; --c-bday:#35d07f; --c-stat:#ffb02e; --c-date:#d046ff;
+  --c-founders:#ff8a3d; --c-clock:#b8e04a; --c-team:#ff6ba8; --c-probe:#2fd0c0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:radial-gradient(1100px 420px at 50% -180px,rgba(208,70,255,.09),transparent 65%),
+             linear-gradient(180deg,#0d1017 0%,#0c0f15 340px);
+  background-color:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:14px; line-height:1.45;
+  overscroll-behavior-y:none; -webkit-text-size-adjust:100%;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+a{color:var(--acc)}
+
+/* ---------------- app frame ---------------- */
+.app{display:flex;flex-direction:column;min-height:100%}
+.hdr{
+  position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:8px;
+  padding:10px 12px;background:rgba(12,15,21,.86);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.hdr-title{font-size:16px;font-weight:700;letter-spacing:.3px;line-height:1.05}
+.hdr-title em{color:var(--acc);font-style:normal}
+.hdr-sub{font-family:var(--mono);font-size:10px;color:var(--ink-2);margin-top:1px;
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hdr-spacer{flex:1}
+.icon-btn{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+  background:var(--sf-1);display:grid;place-items:center;font-size:15px;color:var(--ink-2);
+}
+.icon-btn:active{background:var(--sf-2)}
+.lg-pill{
+  font-size:9px;font-weight:800;letter-spacing:1px;color:var(--acc);
+  border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);
+  border-radius:5px;padding:1px 5px;
+}
+.back-link{font-size:11px;font-family:var(--mono);color:var(--ink-2);
+  border:1px solid var(--line);border-radius:8px;padding:5px 9px;text-decoration:none;white-space:nowrap}
+
+/* banners */
+.banner{margin:8px 12px;padding:9px 11px;border-radius:10px;font-size:12px;
+  font-family:var(--mono);line-height:1.4}
+.banner.err{background:rgba(226,75,74,.14);border:1px solid rgba(226,75,74,.5);color:#ffb3b2}
+.banner.warn{background:rgba(255,176,46,.11);border:1px solid rgba(255,176,46,.42);color:#ffd48a}
+.banner.info{background:var(--sf-1);border:1px solid var(--line);color:var(--ink-2)}
+.banner button{color:var(--acc);text-decoration:underline;padding:0;font-size:inherit}
+
+/* ---------------- layout: rail + results ---------------- */
+.body{display:flex;flex-direction:column;gap:0;flex:1}
+@media(min-width:900px){
+  .body{flex-direction:row;align-items:flex-start;max-width:1500px;margin:0 auto;width:100%}
+  .rail{position:sticky;top:58px;width:310px;flex:0 0 310px;max-height:calc(100vh - 58px);
+    overflow-y:auto;border-right:1px solid var(--line);border-bottom:none}
+  .results{flex:1;min-width:0}
+}
+
+/* ---------------- rail ---------------- */
+.rail{padding:10px 12px 18px;border-bottom:1px solid var(--line)}
+/* the collapse toggle only EXISTS below 900px (.rail-sum is display:none
+   above it), so the collapsed state must not survive into desktop layout —
+   otherwise a phone-collapsed rail becomes an invisible rail with no control. */
+@media(max-width:899px){.rail.collapsed .rail-body{display:none}}
+.rail-sum{
+  display:none;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;
+  background:var(--sf-1);border:1px solid var(--line);font-family:var(--mono);font-size:11px;
+  color:var(--ink-2);width:100%;text-align:left;
+}
+@media(max-width:899px){
+  .rail{position:sticky;top:52px;z-index:50;background:rgba(12,15,21,.94);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding-bottom:10px}
+  .rail-sum{display:flex}
+  .rail-body{margin-top:10px;max-height:64vh;overflow-y:auto;
+    padding-right:2px;-webkit-overflow-scrolling:touch}
+}
+.rail-sum b{color:var(--ink);font-weight:700}
+.rail-sum .chev{margin-left:auto;color:var(--ink-3)}
+
+.fld{margin-bottom:11px}
+.fld > label,.fld-label{
+  display:block;font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:5px;
+}
+.ctl{
+  width:100%;background:var(--sf-1);border:1px solid var(--line);border-radius:10px;
+  padding:9px 10px;font-size:13px;color:var(--ink);
+}
+.ctl:focus{outline:none;border-color:var(--line-hi)}
+select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),
+  linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+.summary-btn{
+  width:100%;display:flex;align-items:center;gap:8px;background:var(--sf-1);
+  border:1px solid var(--line);border-radius:10px;padding:9px 10px;text-align:left;
+  font-size:12.5px;color:var(--ink);
+}
+.summary-btn .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--acc)}
+.summary-btn:active{background:var(--sf-2)}
+.seg{display:flex;background:var(--sf-1);border:1px solid var(--line);border-radius:10px;padding:2px;gap:2px}
+.seg button{flex:1;padding:7px 4px;border-radius:8px;font-size:12px;color:var(--ink-2);white-space:nowrap}
+.seg button.on{background:var(--acc);color:var(--acc-ink);font-weight:700}
+.daterow{display:flex;gap:5px;align-items:center}
+.daterow .ctl{flex:1;min-width:0}
+.daterow button{
+  width:32px;height:36px;flex:0 0 32px;border:1px solid var(--line);border-radius:9px;
+  background:var(--sf-1);color:var(--ink-2);font-size:14px;display:grid;place-items:center}
+.today-btn{
+  width:auto!important;flex:0 0 auto!important;padding:0 10px!important;
+  font-size:11px!important;font-family:var(--mono)}
+.run-btn{
+  width:100%;margin-top:6px;padding:13px;border-radius:12px;background:var(--acc);
+  color:var(--acc-ink);font-weight:800;font-size:14.5px;letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(208,70,255,.28);
+}
+.run-btn:disabled{opacity:.5;box-shadow:none}
+.run-btn:active{transform:translateY(1px)}
+.mini-btn{
+  font-size:11px;font-family:var(--mono);padding:5px 8px;border-radius:8px;
+  border:1px solid var(--line);background:var(--sf-1);color:var(--ink-2)}
+.mini-btn.on{border-color:var(--acc);color:var(--acc)}
+.row-btns{display:flex;gap:5px;flex-wrap:wrap}
+
+/* preset row */
+.preset-row{display:flex;gap:5px}
+.preset-row select{flex:1;min-width:0}
+
+/* game filter list */
+.gamelist{max-height:170px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
+  background:var(--sf-1);padding:4px}
+.gamelist label{display:flex;gap:7px;align-items:center;padding:5px 6px;border-radius:7px;
+  font-size:12px;font-family:var(--mono);color:var(--ink-2)}
+.gamelist label:active{background:var(--sf-2)}
+
+/* typeahead */
+.ta-wrap{position:relative}
+.ta-list{position:absolute;top:100%;left:0;right:0;z-index:70;margin-top:3px;
+  background:var(--sf-3);border:1px solid var(--line-hi);border-radius:10px;
+  max-height:210px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.ta-list button{display:block;width:100%;text-align:left;padding:8px 10px;font-size:12.5px;
+  border-bottom:1px solid var(--line)}
+.ta-list button:last-child{border-bottom:none}
+.ta-list button:active{background:var(--sf-2)}
+.ta-list .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+
+/* ---------------- results ---------------- */
+.results{padding:10px 12px 90px}
+.res-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.res-count{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.res-count b{color:var(--ink)}
+.spot-wrap{position:relative;flex:1;min-width:130px}
+.spot{width:100%;background:var(--sf-1);border:1px solid var(--line);border-radius:9px;
+  padding:7px 9px;font-family:var(--mono);font-size:12px}
+.spot.on{border-color:var(--gold);color:var(--gold)}
+.grid{display:grid;gap:11px;grid-template-columns:1fr}
+@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1180px){.grid{grid-template-columns:repeat(3,1fr)}}
+.grid.individual{grid-template-columns:1fr!important;max-width:760px}
+
+/* card */
+.card{
+  background:var(--card-grad);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--card-shadow);overflow:hidden;
+}
+.card-hd{padding:9px 11px;border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.015)}
+.card-name{font-size:14.5px;font-weight:700;line-height:1.2;display:flex;
+  align-items:baseline;gap:6px;flex-wrap:wrap}
+.card-name .badge{
+  margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:800;
+  background:var(--acc);color:var(--acc-ink);border-radius:6px;padding:1px 6px;flex:0 0 auto}
+.p-mark{font-family:var(--mono);font-size:9px;font-weight:800;color:var(--cyan);
+  border:1px solid color-mix(in srgb,var(--cyan) 45%,transparent);border-radius:4px;padding:0 4px}
+.card-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:3px;
+  display:flex;gap:5px;flex-wrap:wrap}
+.card-meta span:not(:last-child)::after{content:' ·';color:var(--ink-3)}
+.card-bd{padding:9px 11px}
+
+/* strips (card display config) */
+.strip{font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  background:var(--sf-2);border:1px solid var(--line);border-radius:9px;
+  padding:6px 8px;margin-bottom:8px;line-height:1.55}
+.strip b{color:var(--ink);font-weight:600}
+.strip .k{color:var(--ink-3)}
+
+/* the sacred format (§7.2) */
+.mgroup{margin-bottom:9px}
+.mgroup:last-child{margin-bottom:0}
+.mhead{
+  font-family:var(--mono);font-size:12px;font-weight:700;line-height:1.3;
+  display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;cursor:pointer;
+}
+.mhead .mval{margin-left:auto;font-size:13px;font-weight:800}
+.mhead .arith{color:var(--ink-3);font-weight:400;font-size:10.5px}
+.mline{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-2);
+  padding:1.5px 0 1.5px 10px;line-height:1.45;cursor:pointer;
+  border-left:2px solid var(--line);margin-left:1px;
+  display:flex;gap:5px;align-items:baseline;flex-wrap:wrap;
+}
+.mline:active{background:rgba(255,255,255,.03)}
+.mline .w{color:var(--ink)}
+.mline .eq{color:var(--ink-3)}
+.mline .v{font-weight:700}
+.mline .cip{font-size:10.5px}
+.mline .kindtag{color:var(--ink-3);font-style:italic}
+.mline.spot-hit{background:rgba(255,176,46,.14);border-left-color:var(--gold);border-radius:0 6px 6px 0}
+.mval.spot-hit{color:var(--gold)!important;background:rgba(255,176,46,.16);
+  border-radius:5px;padding:0 4px}
+/* tap-a-line options (7.3) -- a real menu, not a browser prompt */
+.menu{position:fixed;z-index:150;background:var(--sf-3);border:1px solid var(--line-hi);
+  border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.6);padding:4px;min-width:196px;
+  max-width:min(90vw,300px)}
+.menu button{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:8px;
+  font-size:12.5px;color:var(--ink)}
+.menu button:active{background:var(--sf-2)}
+.menu .mtitle{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding:5px 10px 3px;
+  word-break:break-word}
+.mline.spot-hit .v{color:var(--gold)}
+.mline .chain{color:var(--ink-3);font-size:10.5px}
+.depth-chip{font-family:var(--mono);font-size:9px;font-weight:800;border-radius:4px;
+  padding:0 3px;border:1px solid currentColor;opacity:.85}
+.flagline{font-family:var(--mono);font-size:11.5px;padding:2px 0 2px 10px;
+  border-left:2px solid var(--c-founders);color:var(--c-founders);font-weight:600}
+.muted-counter{opacity:.42}
+.muted-counter .mval{font-weight:600}
+.nomatch{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  padding:1px 0 1px 10px;border-left:2px solid var(--line)}
+
+/* counter-type colors */
+.g-age .mhead{color:var(--c-age)} .g-age .mline{border-left-color:color-mix(in srgb,var(--c-age) 35%,transparent)}
+.g-bday .mhead{color:var(--c-bday)} .g-bday .mline{border-left-color:color-mix(in srgb,var(--c-bday) 35%,transparent)}
+.g-stat .mhead{color:var(--c-stat)} .g-stat .mline{border-left-color:color-mix(in srgb,var(--c-stat) 35%,transparent)}
+.g-date .mhead{color:var(--c-date)} .g-date .mline{border-left-color:color-mix(in srgb,var(--c-date) 35%,transparent)}
+.g-founders .mhead{color:var(--c-founders)} .g-founders .mline{border-left-color:color-mix(in srgb,var(--c-founders) 35%,transparent)}
+.g-clock .mhead{color:var(--c-clock)} .g-clock .mline{border-left-color:color-mix(in srgb,var(--c-clock) 35%,transparent)}
+.g-team .mhead{color:var(--c-team)} .g-team .mline{border-left-color:color-mix(in srgb,var(--c-team) 35%,transparent)}
+
+/* card sections (opp pitcher / team totals) */
+.sect{margin-top:9px;border-top:1px dashed var(--line-hi);padding-top:8px}
+.sect-hd{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.sect-hd button{margin-left:auto;font-size:10px;color:var(--ink-3)}
+
+/* probe (§7.5) */
+.probe{margin-top:9px;border:1px dashed var(--c-probe);border-radius:10px;padding:8px;
+  background:rgba(47,208,192,.05)}
+.probe-hd{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:1.2px;
+  color:var(--c-probe);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.probe-hd button{margin-left:auto;color:var(--ink-3);font-size:11px}
+.probe-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.probe-chips button{font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:6px;
+  border:1px solid var(--line);color:var(--ink-2);background:var(--sf-1)}
+.probe-in{display:flex;gap:5px}
+.probe-in input{flex:1;min-width:0;background:var(--sf-1);border:1px solid var(--line);
+  border-radius:8px;padding:7px 9px;font-family:var(--mono);font-size:12px}
+.probe-in button{padding:0 11px;border-radius:8px;background:var(--c-probe);color:#04201d;
+  font-weight:800;font-size:12px}
+.probe-item{margin-top:7px;border-top:1px solid rgba(47,208,192,.18);padding-top:6px}
+.probe-item .pq{font-family:var(--mono);font-size:11.5px;color:var(--c-probe);font-weight:700;
+  display:flex;gap:6px;align-items:center}
+.probe-item .pq button{margin-left:auto;font-size:10px;color:var(--ink-3)}
+.promote{border:1px solid var(--c-probe)!important;color:var(--c-probe)!important;
+  border-radius:6px;padding:1px 5px!important;font-family:var(--mono)}
+.probe-open{font-family:var(--mono);font-size:11px;color:var(--c-probe);
+  border:1px dashed color-mix(in srgb,var(--c-probe) 45%,transparent);border-radius:8px;
+  padding:5px 8px;width:100%;margin-top:8px}
+
+/* ---------------- dialogs ---------------- */
+.scrim{position:fixed;inset:0;z-index:100;background:rgba(6,8,12,.72);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:700px){.scrim{align-items:center;padding:20px}}
+.dlg{
+  background:var(--sf-3);border:1px solid var(--line-hi);width:100%;max-width:660px;
+  max-height:92vh;display:flex;flex-direction:column;
+  border-radius:16px 16px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.55);
+}
+@media(min-width:700px){.dlg{border-radius:16px;max-height:86vh}}
+.dlg-hd{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--sf-3);z-index:2;border-radius:16px 16px 0 0}
+.dlg-hd h2{margin:0;font-size:15px;font-weight:700}
+.dlg-hd .x{margin-left:auto;font-size:20px;color:var(--ink-3);width:30px;height:30px;
+  display:grid;place-items:center;border-radius:8px}
+.dlg-bd{padding:12px 14px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.dlg-ft{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:7px;
+  background:var(--sf-3);position:sticky;bottom:0}
+.dlg-ft .grow{flex:1}
+.btn{padding:9px 13px;border-radius:10px;border:1px solid var(--line);background:var(--sf-1);
+  font-size:12.5px;color:var(--ink)}
+.btn.pri{background:var(--acc);color:var(--acc-ink);border-color:transparent;font-weight:700}
+
+.dsec{margin-bottom:15px}
+.dsec > h3{margin:0 0 7px;font-size:10.5px;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--ink-3)}
+.hint{font-size:11px;color:var(--ink-3);line-height:1.45;margin:0 0 7px;font-family:var(--mono)}
+
+/* checkbox rows */
+.crow{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;
+  border:1px solid var(--line);background:var(--sf-1);margin-bottom:5px}
+.crow:active{background:var(--sf-2)}
+.crow label{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer}
+.crow .cfg{font-size:11px;font-family:var(--mono);color:var(--acc);border:1px solid
+  color-mix(in srgb,var(--acc) 40%,transparent);border-radius:7px;padding:3px 8px;flex:0 0 auto}
+.crow .cfg[disabled]{opacity:.35;border-color:var(--line);color:var(--ink-3)}
+.crow .inline-val{font-family:var(--mono);font-size:11px;color:var(--gold);flex:0 0 auto}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc);flex:0 0 auto;margin:0}
+.sublist{padding-left:8px;border-left:2px solid var(--line);margin:5px 0 9px}
+
+/* cipher grid */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.ccard{border:1.5px solid var(--line);border-radius:10px;padding:7px 8px;text-align:left;
+  background:var(--sf-1);font-family:var(--mono);font-size:11.5px;color:var(--ink-3);line-height:1.3}
+.ccard .cn{font-weight:800;font-size:12px;display:block}
+.ccard .cv{font-size:10px;opacity:.75}
+.ccard.on{background:var(--sf-2)}
+
+/* phrase rows */
+.prow{display:flex;gap:5px;margin-bottom:5px;align-items:center}
+.prow input{flex:1;min-width:0;background:var(--sf-1);border:1px solid var(--line);
+  border-radius:9px;padding:8px 9px;font-family:var(--mono);font-size:12px}
+.prow .del{width:32px;flex:0 0 32px;height:34px;border:1px solid var(--line);border-radius:9px;
+  color:var(--ink-3);display:grid;place-items:center;background:var(--sf-1)}
+.pvals{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding:0 0 6px 2px;
+  word-break:break-word}
+
+/* stat cards */
+.statwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.statcard{border:1px solid var(--line);border-radius:10px;background:var(--sf-1);padding:7px}
+.statcard.on{border-color:color-mix(in srgb,var(--c-stat) 45%,transparent)}
+.statcard .sc-hd{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.statcard .modes{display:flex;gap:3px;margin-top:6px}
+.statcard .modes button{flex:1;font-family:var(--mono);font-size:9.5px;padding:4px 2px;
+  border-radius:6px;border:1px solid var(--line);color:var(--ink-3)}
+.statcard .modes button.on{background:var(--c-stat);color:#241700;font-weight:800;border-color:transparent}
+.statcard input.off{width:100%;margin-top:5px;background:var(--sf-2);border:1px solid var(--line);
+  border-radius:7px;padding:4px 6px;font-family:var(--mono);font-size:11px}
+
+/* entity picker (§6.9) */
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.pill{font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:20px;
+  border:1px solid var(--line);color:var(--ink-2);background:var(--sf-1)}
+.pill.on{border-color:var(--c-founders);color:var(--c-founders)}
+.entlist{max-height:250px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
+  background:var(--sf-1);padding:4px}
+.entrow{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:7px;font-size:12px}
+.entrow .g-year{font-family:var(--mono);font-size:9px;color:var(--ink-3);
+  border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:auto;flex:0 0 auto}
+.entrow.excluded{opacity:.5}
+
+/* toast + tray */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:200;
+  background:var(--sf-3);border:1px solid var(--line-hi);border-radius:11px;
+  padding:9px 13px;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+  display:flex;gap:11px;align-items:center;max-width:calc(100vw - 24px)}
+.toast button{color:var(--acc);font-weight:700;font-size:12.5px}
+.tray-btn{position:fixed;right:12px;bottom:14px;z-index:70;background:var(--sf-3);
+  border:1px solid var(--line-hi);border-radius:22px;padding:8px 13px;font-family:var(--mono);
+  font-size:11.5px;color:var(--ink-2);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+
+.empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-family:var(--mono);font-size:12.5px;
+  line-height:1.6}
+.empty b{display:block;color:var(--ink-2);font-size:13.5px;margin-bottom:5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line-hi);
+  border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hdr">
+    <div>
+      <div class="hdr-title">DAILY <em>MATCHES</em></div>
+      <div class="hdr-sub" id="hdrSub"><span class="lg-pill" id="hdrSport">MLB</span></div>
+    </div>
+    <div class="hdr-spacer"></div>
+    <a class="back-link" href="/">← Board</a>
+    <button class="icon-btn" id="btnGear" aria-label="Card display config">⚙</button>
+  </header>
+
+  <div id="banners"></div>
+
+  <div class="body">
+    <aside class="rail" id="rail">
+      <button class="rail-sum" id="railSum" aria-expanded="true">
+        <span id="railSumTxt">query</span><span class="chev">▾</span>
+      </button>
+      <div class="rail-body" id="railBody"></div>
+    </aside>
+    <main class="results" id="results"></main>
+  </div>
+</div>
+
+<div id="dialogHost"></div>
+<div id="toastHost"></div>
+<button class="tray-btn" id="trayBtn" style="display:none"></button>
+
+<script>
+/* eslint-disable */
+(function(){
+'use strict';
+/* ============================================================
+   1. GEMATRIA — embedded verbatim from packages/gematria-core/gematria.js
+   (QUERY-SPEC §3: public/ has no build step, so the engine is COPIED, not
+   refactored. Values are regression-locked — DO NOT ALTER.)
+   The ONE addition is normText(): QUERY-SPEC §9 requires NFD normalization +
+   diacritical stripping before ciphering. gematria-core's letters() drops
+   non-a-z entirely, so "José" would lose the accented letter instead of
+   folding it to "e". normText() runs BEFORE letters(), so every unaccented
+   string — including the JESUIT ORDER checksum — is bit-identical to the app.
+============================================================ */
+var CHALDEAN={a:1,b:2,c:3,d:4,e:5,f:8,g:3,h:5,i:1,j:1,k:2,l:3,m:4,n:5,o:7,p:8,q:1,r:2,s:3,t:4,u:6,v:6,w:6,x:5,y:1,z:7};
+var SEPTENARY={a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:6,i:5,j:4,k:3,l:2,m:1,n:1,o:2,p:3,q:4,r:5,s:6,t:7,u:6,v:5,w:4,x:3,y:2,z:1};
+var LATIN={a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:9,k:10,l:20,m:30,n:40,o:50,p:60,q:70,r:80,s:90,t:100,u:200,v:700,x:300,y:400,z:500,j:600,w:900};
+var red1=function(v){while(v>9)v=String(v).split('').reduce(function(a,d){return a+ +d},0);return v};
+/* §9 house rule: NFD-normalize, strip combining marks, then cipher. */
+function normText(s){
+  /* combining-mark range written as escapes so re-encoding the file cannot
+     corrupt the class (U+0300..U+036F). */
+  return String(s==null?'':s).normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]','g'),'');
+}
+var letters=function(s){return normText(s).toLowerCase().split('').filter(function(c){return c>='a'&&c<='z'})};
+
+function calcAll(s){
+  var L=letters(s);
+  var ord=L.reduce(function(a,c){return a+(c.charCodeAt(0)-96)},0);
+  return{Ord:ord,
+    Red:L.reduce(function(a,c){return a+red1(c.charCodeAt(0)-96)},0),
+    Rev:L.reduce(function(a,c){return a+(27-(c.charCodeAt(0)-96))},0),
+    RR:L.reduce(function(a,c){return a+red1(27-(c.charCodeAt(0)-96))},0),
+    Sat:ord+35*L.length,
+    RevSat:L.reduce(function(a,c){return a+(62-(c.charCodeAt(0)-96))},0),
+    Chal:L.reduce(function(a,c){return a+CHALDEAN[c]},0),
+    Sept:L.reduce(function(a,c){return a+SEPTENARY[c]},0),
+    Latin:L.reduce(function(a,c){return a+LATIN[c]},0)};
+}
+var CIPHER_LABEL={Ord:'Ordinal',Red:'Reduction',Rev:'Rev Ordinal',RR:'Rev Reduction',
+  Sat:'Satanic',RevSat:'Rev Satanic',Chal:'Chaldean',Sept:'Septenary',Latin:'Jewish'};
+var cl=function(c){return CIPHER_LABEL[c]||c};
+var ALL_CIPHERS=['Ord','Red','Rev','RR','Sat','RevSat','Chal','Sept','Latin'];
+/* §6.2 signature colors — the SAME ink used for that cipher on result cards. */
+var CIPHER_COLOR={Ord:'#ffb02e',Red:'#35d07f',Rev:'#46a6ff',RR:'#d046ff',Sat:'#e24b4a',
+  RevSat:'#ff8a3d',Chal:'#2fd0c0',Sept:'#b8e04a',Latin:'#ff6ba8'};
+/* EXTENSION POINT (§6.2): the reference site runs 27 ciphers (Fibonacci,
+   Sumerian, Trigonal…). Those are NOT in gematria-core, so they are NOT
+   implemented here — inventing variants would produce numbers Tony's other
+   tools disagree with. To add one later: add the letter table above, add the
+   key to calcAll's return, CIPHER_LABEL, ALL_CIPHERS and CIPHER_COLOR — the
+   whole UI is data-driven off ALL_CIPHERS and needs no other change. */
+
+/* §9 checksum — hard gate before first render. */
+function checksum(){
+  var v=calcAll('JESUIT ORDER');
+  var ok=v.Ord===144&&v.Red===54&&v.Rev===153&&v.RR===72&&v.Sat===529;
+  return{ok:ok,got:v,want:{Ord:144,Red:54,Rev:153,RR:72,Sat:529}};
+}
+
+/* ============================================================
+   2. NUMBERS — prime/composite sieve (§8 index chaining, §6.6 nth prime).
+   Mirrors packages/gematria-core/numbers.js (locks: nthPrime(12)=37,
+   nthComposite(8)=15, primeIndex(61)=18) but SIEVE_N is raised from 100k
+   to 200k: founders day-spans reach ~177,444 (Society of Jesus 1540-09-27),
+   and a 100k sieve would silently refuse to index them.
+============================================================ */
+var SIEVE_N=200000;
+var _comp=new Uint8Array(SIEVE_N+1);
+for(var _i=2;_i*_i<=SIEVE_N;_i++)if(!_comp[_i])for(var _j=_i*_i;_j<=SIEVE_N;_j+=_i)_comp[_j]=1;
+var _pc=new Int32Array(SIEVE_N+1),_cc=new Int32Array(SIEVE_N+1);
+var _plist=[0],_clist=[0];
+for(var _k=2;_k<=SIEVE_N;_k++){
+  var _pr=!_comp[_k];
+  _pc[_k]=_pc[_k-1]+(_pr?1:0);_cc[_k]=_cc[_k-1]+((_k>=4&&_comp[_k])?1:0);
+  if(_pr)_plist.push(_k);else if(_k>=4)_clist.push(_k);
+}
+function isPrime(n){return n>=2&&n<=SIEVE_N&&!_comp[n]}
+function primeIndex(n){return isPrime(n)?_pc[n]:-1}
+function compositeIndex(n){return(n>=4&&n<=SIEVE_N&&_comp[n])?_cc[n]:-1}
+function nthPrime(n){return _plist[n]||0}
+function nthComposite(n){return _clist[n]||0}
+
+/* ============================================================
+   3. DATE MATH — §9: UTC date-only arithmetic, no timezone drift.
+   Every date in this file is a "YYYY-MM-DD" string; every span is an
+   integer number of whole UTC days.
+============================================================ */
+function isISO(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)}
+function utc(dstr){ // -> ms at UTC midnight, or NaN
+  if(!isISO(dstr))return NaN;
+  var p=dstr.split('-');
+  return Date.UTC(+p[0],+p[1]-1,+p[2]);
+}
+function ymd(ms){
+  var d=new Date(ms);
+  return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+function daysBetween(a,b){ // whole UTC days from a to b (exclusive of end)
+  var A=utc(a),B=utc(b);
+  if(isNaN(A)||isNaN(B))return null;
+  return Math.round((B-A)/864e5);
+}
+function todayISO(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function shiftDate(dstr,n){var t=utc(dstr);return isNaN(t)?dstr:ymd(t+n*864e5)}
+function isLeap(y){return y%4===0&&(y%100!==0||y%400===0)}
+function dayOfYear(dstr){
+  var p=dstr.split('-');
+  return Math.round((utc(dstr)-Date.UTC(+p[0],0,1))/864e5)+1;
+}
+var DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var RULERS={Sunday:'Sun',Monday:'Moon',Tuesday:'Mars',Wednesday:'Mercury',
+  Thursday:'Jupiter',Friday:'Venus',Saturday:'Saturn'};
+function dayName(dstr){var t=utc(dstr);return isNaN(t)?null:DAY_NAMES[new Date(t).getUTCDay()]}
+
+/* clockFrom(origin, on, inclusive) — calendar-exact, leap-aware anniversary
+   clock. `inclusive` is the §6.7 "End date included" global toggle: it adds
+   one day to every SPAN count (total / since / until), never to the calendar
+   year or month figures. Returns null when origin is missing/after `on`. */
+function clockFrom(origin,on,inclusive){
+  var O=utc(origin),D=utc(on);
+  if(isNaN(O)||isNaN(D)||D<O)return null;
+  var od=new Date(O),dd=new Date(D);
+  var oM=od.getUTCMonth(),oD=od.getUTCDate();
+  var years=dd.getUTCFullYear()-od.getUTCFullYear();
+  var annThis=Date.UTC(dd.getUTCFullYear(),oM,oD);
+  if(annThis>D){years--;annThis=Date.UTC(dd.getUTCFullYear()-1,oM,oD)}
+  var annNext=Date.UTC(new Date(annThis).getUTCFullYear()+1,oM,oD);
+  var add=inclusive?1:0;
+  var totalDays=Math.round((D-O)/864e5)+add;
+  var since=Math.round((D-annThis)/864e5)+add;
+  var until=Math.round((annNext-D)/864e5)+add;
+  var months=(dd.getUTCFullYear()-od.getUTCFullYear())*12+(dd.getUTCMonth()-oM);
+  if(dd.getUTCDate()<oD)months--;
+  return{years:years,since:since,until:until,totalDays:totalDays,
+    weeks:Math.floor(totalDays/7),weekRem:totalDays%7,
+    months:months,monthRem:daysSinceMonthMark(origin,on)+add,
+    yearDays:since,anniversary:since===add};
+  function daysSinceMonthMark(o,d2){
+    var O2=new Date(utc(o)),D2=new Date(utc(d2));
+    var m=Date.UTC(D2.getUTCFullYear(),D2.getUTCMonth(),O2.getUTCDate());
+    if(m>utc(d2))m=Date.UTC(D2.getUTCFullYear(),D2.getUTCMonth()-1,O2.getUTCDate());
+    return Math.round((utc(d2)-m)/864e5);
+  }
+}
+
+/* ============================================================
+   4. DATE CALCULATIONS (§6.6) — Tony's spine, implemented exactly as
+   listed. No inventions. Each formula is an individually toggleable
+   entry carrying its own label, arithmetic string and computed value,
+   so the dialog can show the value inline and the card can print the
+   receipt. Recomputed whenever the analysis date changes.
+============================================================ */
+var DATE_FORMULAS=[
+  {id:'doy',   label:'Day of Year'},
+  {id:'left',  label:'Days Left in Year'},
+  {id:'mddccyy',label:'M+DD+CC+YY (full)'},
+  {id:'mddYdig',label:'M+DD+Y-digit-sum'},
+  {id:'alldig',label:'All-digit sum'},
+  {id:'mddY2000',label:'M+DD+(YYYY-2000)'},
+  {id:'mdddigYYdig',label:'Mdig+Ddig+YYdig'},
+  {id:'mdddigYYCC',label:'Mdig+Ddig+YY+CC'},
+  {id:'mdddigY2000',label:'Mdig+Ddig+(YYYY-2000)'},
+  {id:'mdd',   label:'M+DD'},
+  {id:'dd',    label:'DD (day of month)'},
+  {id:'ddPrime',label:'Day-of-month Nth prime'},
+  {id:'ddComposite',label:'Day-of-month Nth composite'},
+  {id:'catMD', label:'Date concat M/DD'},
+  {id:'catDM', label:'Date concat DD/M'},
+  {id:'dayName',label:'Day name gematria'},
+  {id:'ruler', label:'Ruling planet gematria'},
+];
+var DATE_FORMULA_IDS=DATE_FORMULAS.map(function(f){return f.id});
+
+/* dateCalcs(dstr, enabledIds, enabledCiphers) -> [{id,label,calc,n,cipher}]
+   Numeric formulas yield one entry; the two gematria formulas (day name,
+   ruling planet) yield one entry PER enabled cipher (§6.6 last bullet). */
+function dateCalcs(dstr,on,ciphers){
+  if(!isISO(dstr))return[];
+  var p=dstr.split('-'),YYYY=+p[0],M=+p[1],DD=+p[2];
+  var YY=YYYY%100,CC=Math.floor(YYYY/100);
+  var dsum=function(n){return String(n).split('').reduce(function(a,x){return a+ +x},0)};
+  var dstr2=function(n){return String(n).split('').join('+')};
+  var doy=dayOfYear(dstr),left=(isLeap(YYYY)?366:365)-doy;
+  var out=[],want=function(id){return!on||on[id]};
+  var push=function(id,label,calc,n,cipher){
+    if(!(n>0))return;
+    out.push({id:id,label:label,calc:calc,n:n,cipher:cipher||null});
+  };
+  if(want('doy'))push('doy','Day of Year','day '+doy+' of '+YYYY,doy);
+  if(want('left'))push('left','Days Left in Year',(isLeap(YYYY)?366:365)+' - '+doy,left);
+  if(want('mddccyy'))push('mddccyy','M+DD+CC+YY','('+M+') + ('+DD+') + ('+CC+') + ('+YY+')',M+DD+CC+YY);
+  if(want('mddYdig'))push('mddYdig','M+DD+Y-digit-sum','('+M+') + ('+DD+') + '+dstr2(YYYY),M+DD+dsum(YYYY));
+  if(want('alldig'))push('alldig','All-digit sum',dstr2(M)+' + '+dstr2(DD)+' + '+dstr2(YYYY),dsum(M)+dsum(DD)+dsum(YYYY));
+  if(want('mddY2000'))push('mddY2000','M+DD+(YYYY-2000)','('+M+') + ('+DD+') + ('+(YYYY-2000)+')',M+DD+(YYYY-2000));
+  if(want('mdddigYYdig'))push('mdddigYYdig','Mdig+Ddig+YYdig',dstr2(M)+' + '+dstr2(DD)+' + '+dstr2(YY),dsum(M)+dsum(DD)+dsum(YY));
+  if(want('mdddigYYCC'))push('mdddigYYCC','Mdig+Ddig+YY+CC',dstr2(M)+' + '+dstr2(DD)+' + ('+YY+') + ('+CC+')',dsum(M)+dsum(DD)+YY+CC);
+  if(want('mdddigY2000'))push('mdddigY2000','Mdig+Ddig+(YYYY-2000)',dstr2(M)+' + '+dstr2(DD)+' + ('+(YYYY-2000)+')',dsum(M)+dsum(DD)+(YYYY-2000));
+  if(want('mdd'))push('mdd','M+DD','('+M+') + ('+DD+')',M+DD);
+  if(want('dd'))push('dd','DD (day of month)','day '+DD,DD);
+  if(want('ddPrime'))push('ddPrime','Day-of-month Nth prime','prime #'+DD,nthPrime(DD));
+  if(want('ddComposite'))push('ddComposite','Day-of-month Nth composite','composite #'+DD,nthComposite(DD));
+  if(want('catMD'))push('catMD','Date concat','concat '+M+'/'+DD,+(''+M+DD));
+  if(want('catDM'))push('catDM','Date concat','concat '+DD+'/'+M,+(''+DD+M));
+  var dn=dayName(dstr);
+  if(dn){
+    var rl=RULERS[dn];
+    if(want('dayName')){
+      var dv=calcAll(dn);
+      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('dayName','Day name gematria','"'+dn+'"',dv[c],c)});
+    }
+    if(want('ruler')){
+      var rv=calcAll(rl);
+      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('ruler','Ruling planet ('+rl+')','"'+rl+'"',rv[c],c)});
+    }
+  }
+  return out;
+}
+/* ============================================================
+   5. SPORT PROFILES (§6.4) — base cipher set, vocab/core reference,
+   banned tables. Cross-sport table leakage is a bug, not a feature.
+============================================================ */
+var SPORT_PROFILES={
+  mlb:{
+    id:'mlb',label:'MLB',live:true,
+    /* §6.2 house rule: Ord/Red/Rev/RR core; Satanic auxiliary (available,
+       not Base); Chaldean available but NOT in Base. */
+    base:{Ord:true,Red:true,Rev:true,RR:true},
+    coreTable:'mlb-core',
+    banned:['basketball','wnba'],
+    bannedNote:'MLB profile bans basketball/WNBA core-table values.',
+    foundersCategories:['rituals','secret_societies','institutional','sports_founders',
+                        'tribute_figures','mlb_teams','states'],
+  },
+  wnba:{
+    id:'wnba',label:'WNBA',live:false,
+    /* §6.2: WNBA Base has Satanic ON and Chaldean ON; MLB core table values banned. */
+    base:{Ord:true,Red:true,Rev:true,RR:true,Sat:true,Chal:true},
+    coreTable:'wnba-core',
+    banned:['mlb'],
+    bannedNote:'WNBA profile bans MLB core-table values.',
+    foundersCategories:['rituals','secret_societies','institutional','sports_founders',
+                        'tribute_figures','wnba_teams','states'],
+  },
+  /* NFL — structure only, per §4.2/§5.1. No adapter, no profile values.
+     Adding it later = one entry here + one adapter in ADAPTERS. */
+};
+var SPORT_ORDER=['mlb','wnba'];
+
+/* ============================================================
+   6. DEFAULT QUERY CONFIG — every default NEUTRAL (§0).
+   Sort default = match count (dumb). Sibling dedupe OFF (both show).
+   Nothing filtered that Tony didn't filter.
+============================================================ */
+var MATCH_TYPES=[
+  /* configurable engines (checkbox + Configure) */
+  {id:'custom',   label:'Custom Matching',    cfg:'custom',   phase:1},
+  {id:'date',     label:'Date Matching',      cfg:'date',     phase:1},
+  {id:'age',      label:'Player Total Age',   cfg:'age',      phase:1},
+  {id:'stat',     label:'Stat Matching',      cfg:'stat',     phase:1},
+  {id:'founders', label:'Founders & Spans',   cfg:'founders', phase:2},
+  {id:'clocks',   label:'Career Clocks',      cfg:'clocks',   phase:2},
+];
+var SIMPLE_SOURCES=[
+  {id:'pName',  label:'Player Full Name'},
+  {id:'pFirst', label:'Player First Name'},
+  {id:'pLast',  label:'Player Last Name'},
+  {id:'tName',  label:'Team Full Name'},
+  {id:'tLoc',   label:'Team Location'},
+  {id:'tMascot',label:'Team Mascot'},
+  {id:'oName',  label:'Opponent Full Name'},
+  {id:'oLoc',   label:'Opponent Location'},
+  {id:'oMascot',label:'Opponent Mascot'},
+  {id:'jersey', label:'Jersey Number'},
+  {id:'jerseyBday',label:'Jersey Birthday Match'},
+  {id:'teamTotals',label:'Team Totals',phase:2},
+];
+/* §6.8 stat tables. key = the normalized slate stat key. */
+var BAT_STATS=[['G','G'],['H','H'],['2B','2B'],['3B','3B'],['HR','HR'],['R','R'],
+  ['RBI','RBI'],['BB','BB'],['TB','TB'],['SO','SO'],['AB','AB'],['PA','PA']];
+var PIT_STATS=[['G','G'],['GS','GS'],['W','W'],['L','L'],['SO','SO'],['BB','BB'],
+  ['H','H'],['HR','HR'],['IP (outs)','outs']];
+var TEAM_STATS=[['R','R'],['H','H'],['HR','HR'],['TB','TB'],['SO','SO'],['BB','BB'],
+  ['AB','AB'],['PA','PA']];
+/* §6.8 value sources — which pool kinds test against stat counters. */
+var STAT_SOURCES=[
+  {id:'phrase',label:'Custom Phrases'},
+  {id:'date',  label:'Date Matching values'},
+  {id:'pName', label:'Player Name'},
+  {id:'tName', label:'Team Name'},
+  {id:'oName', label:'Opponent Name'},
+  {id:'age',   label:'Player Age figures'},
+  {id:'jersey',label:'Jersey Number'},
+  {id:'raw',   label:'Also match specific number(s)'},
+];
+var COMPOSE_FIELDS=[
+  {id:'pName',label:'Player full name'},{id:'pFirst',label:'Player first name'},
+  {id:'pLast',label:'Player last name'},{id:'tName',label:'Team full name'},
+  {id:'tLoc',label:'Team location'},{id:'tMascot',label:'Team mascot'},
+  {id:'oName',label:'Opponent full name'},{id:'oLoc',label:'Opponent location'},
+  {id:'oMascot',label:'Opponent mascot'},
+];
+
+function defaultConfig(sport){
+  var prof=SPORT_PROFILES[sport]||SPORT_PROFILES.mlb;
+  var ciphers={};ALL_CIPHERS.forEach(function(c){ciphers[c]=!!prof.base[c]});
+  var dateOn={};DATE_FORMULA_IDS.forEach(function(id){dateOn[id]=true});
+  /* §0: "choose the option that gives Tony more control and SHOWS MORE, not
+     less." Picking a subset of sources would be an opinion, so every simple
+     source ships ON. Tony narrows; the app never pre-narrows for him. */
+  var simple={};SIMPLE_SOURCES.forEach(function(s){simple[s.id]=true});
+  var types={};MATCH_TYPES.forEach(function(t){types[t.id]=true});
+  return{
+    sport:sport,
+    ciphers:ciphers,
+    dedupeSiblings:false,          /* §6.3 DEFAULT OFF — show both */
+    types:types,
+    simple:simple,
+    chain:'d1',                    /* §8 default d1 = direct only */
+    position:'all',                /* §5.7 */
+    games:[],                      /* §5.8 empty = all games */
+    mode:'daily',                  /* §5.3 */
+    individualId:null,
+    sort:'count',                  /* §7.3 dumb default */
+    /* §6.5 Custom Matching */
+    custom:{phrases:[],compose:[]},
+    /* §6.6 Date Matching */
+    date:{namesToDate:true,bdayToDate:true,
+          pools:{pName:true,pFirst:true,pLast:true,phrase:true},
+          formulas:dateOn},
+    /* §6.7 Player Total Age */
+    age:{inclusive:false,
+         lanes:{weeks:{on:true,exact:false},months:{on:true,exact:false},
+                days:{on:true,exact:false},
+                bdaySince:{on:true,exact:false},bdayUntil:{on:true,exact:false}},
+         targets:{name:true,phrase:true,date:true}},
+    /* §6.8 Stat Matching */
+    stat:{sources:{phrase:true,date:true,pName:true,tName:true,oName:true,
+                   age:true,jersey:true,raw:true},
+          raw:'',
+          bat:statDefaults(BAT_STATS),pit:statDefaults(PIT_STATS)},
+    /* §6.9 Founders & Spans (Phase 2) */
+    founders:{cats:{},entities:{},
+              spans:{since:true,sinceAnn:true,untilAnn:true},
+              gematria:false,founderDob:false,birthplace:false,
+              crossDates:false,debutCross:false},
+    /* §6.10 Career Clocks (Phase 2) */
+    clocks:{debutSince:true,debutAnnSince:true,debutAnnUntil:true,
+            bdaySince:false,bdayUntil:false,franchise:true},
+    /* §6.11 Team Totals (Phase 2). Team stats are SEASON-only, so this map is
+       keyed by the bare stat key — not scope-prefixed like the player tables. */
+    teamTotals:teamDefaults(),
+    /* §7.4 card display config */
+    card:{groups:true,ageStrip:false,bdayStrip:false,statLine:false,
+          oppPitcher:false,teamTotals:false},
+  };
+}
+/* §0 again: every lane ON. A ticked "Stat Matching" that contributes zero
+   counters until Tony hand-enables lanes is the app deciding for him; picking
+   a "sensible" subset is worse still. Mode defaults to Current (the value
+   as-is) — the only non-opinionated mode. */
+function statDefaults(table){
+  var o={};
+  table.forEach(function(r){
+    o['season-'+r[1]]={on:true,mode:'current',off:1};
+    o['career-'+r[1]]={on:true,mode:'current',off:1};
+  });
+  return o;
+}
+function teamDefaults(){
+  var o={};
+  TEAM_STATS.forEach(function(r){o[r[1]]={on:true,mode:'current',off:1}});
+  return o;
+}
+
+/* ============================================================
+   7. PERSISTENCE — §5: all rail state auto-persists on EVERY change,
+   no save buttons. §7.3: hide/filter state persists too and is NEVER
+   discarded (raw material for the deferred backlog phase).
+============================================================ */
+var LS={cfg:'cvgq.cfg.',presets:'cvgq.presets.',slate:'cvgq.slate.',
+        work:'cvgq.work.',founders:'cvgq.founders',rail:'cvgq.rail'};
+function lsGet(k,fb){
+  try{var v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch(e){return fb}
+}
+function lsSet(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true}
+  catch(e){toast('Storage full — state not saved');return false}
+}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+
+/* deep merge saved config over defaults so a spec/version bump that adds a
+   key never wipes Tony's saved query. */
+function mergeCfg(base,saved){
+  if(!saved||typeof saved!=='object')return base;
+  var out=Array.isArray(base)?base.slice():Object.assign({},base);
+  if(Array.isArray(base))return Array.isArray(saved)?saved.slice():out;
+  Object.keys(saved).forEach(function(k){
+    var b=base[k],s=saved[k];
+    if(b&&typeof b==='object'&&!Array.isArray(b)&&s&&typeof s==='object'&&!Array.isArray(s))
+      out[k]=mergeCfg(b,s);
+    else if(s!==undefined)out[k]=s;
+  });
+  return out;
+}
+
+/* ============================================================
+   8. ADAPTERS (§4.2) — the engine reads a NORMALIZED slate (§4.3) and
+   never calls a sport API directly.
+============================================================ */
+var ADAPTERS={};
+
+/* ---------------- adapters/mlb — LIVE ---------------- */
+ADAPTERS.mlb=(function(){
+  var API='https://statsapi.mlb.com/api/v1';
+  function jget(u){
+    return fetch(u).then(function(r){
+      if(!r.ok)throw new Error(r.status+' '+u);
+      return r.json();
+    });
+  }
+  /* statsapi hitting/pitching line -> the §4.3 stat shape. Missing = null,
+     never fabricated. */
+  function bat(s){
+    if(!s)return null;
+    return{G:num(s.gamesPlayed),AB:num(s.atBats),PA:num(s.plateAppearances),H:num(s.hits),
+      '2B':num(s.doubles),'3B':num(s.triples),HR:num(s.homeRuns),R:num(s.runs),
+      RBI:num(s.rbi),BB:num(s.baseOnBalls),SO:num(s.strikeOuts),TB:num(s.totalBases)};
+  }
+  function pit(s){
+    if(!s)return null;
+    return{G:num(s.gamesPlayed),GS:num(s.gamesStarted),W:num(s.wins),L:num(s.losses),
+      outs:num(s.outs),SO:num(s.strikeOuts),BB:num(s.baseOnBalls),H:num(s.hits),
+      HR:num(s.homeRuns),IP:s.inningsPitched==null?null:String(s.inningsPitched)};
+  }
+  function num(v){return v==null||v===''?null:(isNaN(+v)?null:+v)}
+
+  function fetchSlate(dstr,prog){
+    prog=prog||function(){};
+    var season=dstr.slice(0,4);
+    var slate={sport:'mlb',date:dstr,fetchedAt:null,games:[],teams:{},players:{}};
+    prog('Schedule…');
+    return jget(API+'/schedule?sportId=1&date='+dstr+'&hydrate=probablePitcher,lineups,venue')
+    .then(function(sched){
+      var raw=(sched.dates&&sched.dates[0]&&sched.dates[0].games)||[];
+      /* EMPTY SLATE is a legitimate state, not an error (off-day, All-Star
+         break, bad date). Return the shell; the UI renders an honest empty. */
+      if(!raw.length){slate.fetchedAt=new Date().toISOString();return slate}
+      var lineupIds=[],needRoster=[];
+      raw.forEach(function(g){
+        var homeIds=((g.lineups&&g.lineups.homePlayers)||[]).map(function(x){return x.id});
+        var awayIds=((g.lineups&&g.lineups.awayPlayers)||[]).map(function(x){return x.id});
+        var gm={
+          gameId:g.gamePk,
+          away:{id:g.teams.away.team.id,fullName:g.teams.away.team.name},
+          home:{id:g.teams.home.team.id,fullName:g.teams.home.team.name},
+          venue:(g.venue&&g.venue.name)||null,
+          status:(g.status&&g.status.abstractGameState)||'',
+          detailedState:(g.status&&g.status.detailedState)||'',
+          gameDate:g.gameDate||null,
+          probables:{away:(g.teams.away.probablePitcher&&g.teams.away.probablePitcher.id)||null,
+                     home:(g.teams.home.probablePitcher&&g.teams.home.probablePitcher.id)||null},
+          _awayIds:awayIds,_homeIds:homeIds,
+          lineupPosted:{away:awayIds.length>0,home:homeIds.length>0},
+        };
+        if(!awayIds.length)needRoster.push([gm,'away']);
+        if(!homeIds.length)needRoster.push([gm,'home']);
+        slate.games.push(gm);
+      });
+      prog('Teams…');
+      var teamIds=[];
+      slate.games.forEach(function(g){
+        [g.away.id,g.home.id].forEach(function(id){if(teamIds.indexOf(id)<0)teamIds.push(id)});
+      });
+      return jget(API+'/teams?teamIds='+teamIds.join(',')+'&sportId=1').then(function(td){
+        (td.teams||[]).forEach(function(t){
+          slate.teams[t.id]={id:t.id,fullName:t.name,city:t.locationName||null,
+            nickname:t.teamName||null,abbr:t.abbreviation||null,
+            league:(t.league&&t.league.id)||null,seasonTotals:null};
+        });
+        slate.games.forEach(function(g){
+          ['away','home'].forEach(function(sd){
+            var t=slate.teams[g[sd].id];
+            if(t){g[sd].city=t.city;g[sd].nickname=t.nickname;g[sd].abbr=t.abbr}
+          });
+        });
+        /* §4.1 lineup fallback → active roster position players (keep TWP).
+           Mirrors the app's rule so a pre-lineup slate still scans. */
+        return seq(needRoster,function(pair){
+          var g=pair[0],sd=pair[1];
+          prog('Roster '+(g[sd].nickname||g[sd].fullName)+'…');
+          return jget(API+'/teams/'+g[sd].id+'/roster?rosterType=active').then(function(r){
+            g['_'+sd+'Ids']=(r.roster||[]).filter(function(x){
+              return x.position.type!=='Pitcher'||x.position.abbreviation==='TWP';
+            }).map(function(x){return x.person.id});
+          }).catch(function(){g['_'+sd+'Ids']=[]});
+        });
+      }).then(function(){
+        var ids=[];
+        slate.games.forEach(function(g){
+          g._awayIds.concat(g._homeIds).forEach(function(id){if(ids.indexOf(id)<0)ids.push(id)});
+          [g.probables.away,g.probables.home].forEach(function(id){
+            if(id!=null&&ids.indexOf(id)<0)ids.push(id);
+          });
+        });
+        var chunks=[];
+        for(var i=0;i<ids.length;i+=50)chunks.push(ids.slice(i,i+50));
+        return seq(chunks,function(chunk,ci){
+          prog('Players '+Math.min((ci+1)*50,ids.length)+'/'+ids.length+'…');
+          /* ONE call carries hitting AND pitching, career AND season
+             (live-verified 2026-07-25). Two-way players return all four. */
+          return jget(API+'/people?personIds='+chunk.join(',')+'&season='+season+
+            '&hydrate=stats(group=[hitting,pitching],type=[career,season],season='+season+')')
+          .then(function(d){
+            (d.people||[]).forEach(function(pp){
+              var rec={
+                id:pp.id,fullName:pp.fullName||'',
+                firstName:pp.useName||(pp.fullName||'').split(' ')[0]||'',
+                lastName:pp.useLastName||pp.lastName||(pp.fullName||'').split(' ').slice(-1)[0]||'',
+                teamId:null,gameId:null,oppTeamId:null,side:null,
+                pos:(pp.primaryPosition&&pp.primaryPosition.abbreviation)||'',
+                isPitcher:false,isBatter:false,
+                jersey:pp.primaryNumber?+pp.primaryNumber:null,
+                dob:isISO(pp.birthDate)?pp.birthDate:null,
+                debut:isISO(pp.mlbDebutDate)?pp.mlbDebutDate:null,
+                batting:{season:null,career:null},pitching:{season:null,career:null},
+              };
+              (pp.stats||[]).forEach(function(st){
+                var t=st.type&&st.type.displayName,gp=st.group&&st.group.displayName;
+                var s=st.splits&&st.splits[0]&&st.splits[0].stat;
+                if(!s||(t!=='career'&&t!=='season'))return;
+                if(gp==='hitting')rec.batting[t]=bat(s);
+                else if(gp==='pitching')rec.pitching[t]=pit(s);
+              });
+              slate.players[pp.id]=rec;
+            });
+          }).catch(function(){/* degrade this chunk; other players still scan */});
+        });
+      }).then(function(){
+        /* attach roles + team/game/opponent refs */
+        slate.games.forEach(function(g){
+          ['away','home'].forEach(function(sd){
+            var opp=sd==='away'?'home':'away';
+            g['_'+sd+'Ids'].forEach(function(id){
+              var p=slate.players[id];if(!p)return;
+              p.teamId=g[sd].id;p.gameId=g.gameId;p.oppTeamId=g[opp].id;p.side=sd;
+              p.isBatter=true;
+              if(p.pos==='TWP')p.isPitcher=true;
+            });
+            var sp=g.probables[sd];
+            var p2=sp!=null&&slate.players[sp];
+            if(p2){
+              p2.teamId=g[sd].id;p2.gameId=g.gameId;p2.oppTeamId=g[opp].id;p2.side=sd;
+              p2.isPitcher=true;p2.isProbable=true;
+              if(p2.pos==='TWP')p2.isBatter=true;
+            }
+          });
+        });
+        /* §6.11 team season totals — same endpoint the app uses, plus SO/BB. */
+        prog('Team totals…');
+        var tids=Object.keys(slate.teams);
+        return seq(tids,function(id){
+          return jget(API+'/teams/'+id+'/stats?stats=season&group=hitting&season='+season)
+          .then(function(d){
+            var s=d.stats&&d.stats[0]&&d.stats[0].splits&&d.stats[0].splits[0]&&d.stats[0].splits[0].stat;
+            if(s)slate.teams[id].seasonTotals={R:num(s.runs),H:num(s.hits),HR:num(s.homeRuns),
+              TB:num(s.totalBases),SO:num(s.strikeOuts),BB:num(s.baseOnBalls),
+              AB:num(s.atBats),PA:num(s.plateAppearances)};
+          }).catch(function(){/* staircases just absent for this team */});
+        },6);
+      }).then(function(){
+        slate.games.forEach(function(g){delete g._awayIds;delete g._homeIds});
+        slate.fetchedAt=new Date().toISOString();
+        prog('');
+        return slate;
+      });
+    });
+  }
+  return{id:'mlb',live:true,fetchSlate:fetchSlate};
+})();
+
+/* ---------------- adapters/wnba — PHANTOM (§4.2) ----------------
+   Returns an empty slate and a "coming soon" state. NOTHING here calls
+   BDL: the key must never ship client-side.
+
+   TODO — wiring this up is mechanical. Known BDL conventions (house
+   knowledge, do not re-derive):
+     • base path            /wnba/v1/
+     • auth                 raw API key in the Authorization header,
+                            NO "Bearer " prefix
+     • tier                 GOAT
+     • player_season_stats  PER-GAME AVERAGES (not totals) — multiply by
+                            games played before treating as a counter
+     • career totals        SUM across season_type=2 rows
+     • BDL has ZERO WNBA games before 2008
+     • PROXY IS MANDATORY before any public deploy: netlify.toml at the
+       repo root with [functions] directory = "functions" and
+       node_bundler = "none"; the function relays the key server-side.
+       apps/wnba/functions/bdl.js is the existing reference implementation.
+   Until the proxy exists, this adapter stays phantom by design. */
+ADAPTERS.wnba={
+  id:'wnba',live:false,
+  fetchSlate:function(dstr){
+    return Promise.resolve({sport:'wnba',date:dstr,fetchedAt:new Date().toISOString(),
+      games:[],teams:{},players:{},phantom:true});
+  }
+};
+
+/* sequential runner with a small concurrency window — keeps the fetch
+   polite and the progress line honest. */
+function seq(items,fn,conc){
+  conc=conc||1;
+  var i=0,active=0,done=0;
+  return new Promise(function(res,rej){
+    if(!items.length)return res([]);
+    function pump(){
+      while(active<conc&&i<items.length){
+        var idx=i++;active++;
+        Promise.resolve(fn(items[idx],idx)).then(step,function(e){step()});
+      }
+    }
+    function step(){active--;done++;if(done>=items.length)res();else pump()}
+    pump();
+  });
+}
+/* ============================================================
+   9. THE ENGINE — pool x counters.
+
+   The whole page is one idea: build a POOL of values (gematria of words,
+   raw numbers, date figures) and a list of COUNTERS (things that count:
+   stats, ages, spans, date figures), then intersect them. A match is
+   equality. Nothing is scored, ranked, weighted or filtered beyond what
+   Tony switched on (§0).
+
+   Every match renders under the COUNTER that carries it, with the pool
+   entry as its receipt — which is exactly the sacred card format (§7.2).
+============================================================ */
+
+/* ---- pool entry: {v, text, cipher, kind, label} ---- */
+function poolAdd(out,v,text,cipher,kind,label){
+  if(!(v>0))return;
+  out.push({v:v,text:text,cipher:cipher||null,kind:kind,label:label||null});
+}
+function addCiphered(out,text,kind,ciphers,label){
+  if(!text)return;
+  var vals=calcAll(text);
+  for(var i=0;i<ALL_CIPHERS.length;i++){
+    var c=ALL_CIPHERS[i];
+    if(ciphers[c])poolAdd(out,vals[c],text,c,kind,label);
+  }
+}
+
+/* §6.3 sibling-cipher dedupe. DEFAULT OFF (both show). When ON, pool
+   entries with the SAME text and SAME value collapse to one line whose
+   cipher label is the combined list ("Ord/Sat"). Never drops a value —
+   only merges identical claims about the same word. */
+function dedupePool(pool,on){
+  if(!on)return pool;
+  var by={},out=[];
+  pool.forEach(function(e){
+    var k=e.kind+'|'+e.text+'|'+e.v;
+    if(by[k]){if(e.cipher&&by[k].ciphers.indexOf(e.cipher)<0)by[k].ciphers.push(e.cipher);return}
+    var c=Object.assign({},e);c.ciphers=e.cipher?[e.cipher]:[];
+    by[k]=c;out.push(c);
+  });
+  return out;
+}
+
+/* ---------- POOL (value sources) ---------- */
+function buildPool(p,ctx){
+  var cfg=ctx.cfg,ciphers=cfg.ciphers,out=[];
+  var team=ctx.slate.teams[p.teamId]||{},opp=ctx.slate.teams[p.oppTeamId]||{};
+  var S=cfg.simple;
+  if(S.pName) addCiphered(out,p.fullName,'pName',ciphers);
+  if(S.pFirst)addCiphered(out,p.firstName,'pFirst',ciphers);
+  if(S.pLast) addCiphered(out,p.lastName,'pLast',ciphers);
+  if(S.tName) addCiphered(out,team.fullName,'tName',ciphers);
+  if(S.tLoc)  addCiphered(out,team.city,'tLoc',ciphers);
+  if(S.tMascot)addCiphered(out,team.nickname,'tMascot',ciphers);
+  if(S.oName) addCiphered(out,opp.fullName,'oName',ciphers);
+  if(S.oLoc)  addCiphered(out,opp.city,'oLoc',ciphers);
+  if(S.oMascot)addCiphered(out,opp.nickname,'oMascot',ciphers);
+  if(S.jersey&&p.jersey!=null)poolAdd(out,p.jersey,'jersey #'+p.jersey,null,'jersey');
+
+  /* §6.5 Direct Phrase Matching — the day's theme lives here. */
+  if(cfg.types.custom){
+    cfg.custom.phrases.forEach(function(ph){addCiphered(out,ph,'phrase',ciphers)});
+    /* §6.5 Enhanced Match Type Filtering — composition grid. */
+    cfg.custom.compose.forEach(function(c){
+      if(!c||!c.word)return;
+      var base=composeField(c.field,p,team,opp);
+      if(!base)return;
+      addCiphered(out,(base+' '+c.word).trim(),'compose',ciphers);
+    });
+  }
+  /* §6.6 date-calc values also act as a SOURCE (they are an explicit value
+     source in §6.8's Stat Matching list). They still act as counters too —
+     the self-match is excluded in matchCounter(). */
+  /* the cipher is NOT baked into the text — renderLine prints it as the
+     receipt's label, and embedding it here printed it twice. */
+  if(cfg.types.date)ctx.dateVals.forEach(function(d){
+    poolAdd(out,d.n,d.label,d.cipher,'date',d.calc);
+  });
+  /* §6.8 free-entry thread numbers. */
+  if(cfg.types.stat&&cfg.stat.sources.raw)ctx.rawNums.forEach(function(n){
+    poolAdd(out,n,'number '+n,null,'raw');
+  });
+  /* §6.7 age figures as a source (§6.8 lists "Player Age figures"). */
+  if(cfg.types.age&&ctx.clockOf(p))ageFigures(p,ctx).forEach(function(a){
+    poolAdd(out,a.value,a.label+' '+a.value,null,'age',a.detail);
+  });
+  /* Phase 2 sources are appended by their engines (founders spans /
+     entity gematria / career clocks) — see PHASE2_POOL below. */
+  PHASE2_POOL.forEach(function(fn){fn(out,p,ctx)});
+  return dedupePool(out,cfg.dedupeSiblings);
+}
+var PHASE2_POOL=[];
+/* pool entries that do NOT vary by player — built once per scan. */
+var PHASE2_SHARED_POOL=[];
+function sharedPool(ctx){
+  if(ctx._shared)return ctx._shared;
+  var out=[];
+  PHASE2_SHARED_POOL.forEach(function(fn){fn(out,ctx)});
+  ctx._shared=dedupePool(out,ctx.cfg.dedupeSiblings);
+  ctx._sharedByValue={};
+  ctx._shared.forEach(function(e){
+    (ctx._sharedByValue[e.v]=ctx._sharedByValue[e.v]||[]).push(e);
+  });
+  return ctx._shared;
+}
+function sharedByValue(ctx){sharedPool(ctx);return ctx._sharedByValue}
+
+function composeField(field,p,team,opp){
+  switch(field){
+    case'pName':return p.fullName; case'pFirst':return p.firstName; case'pLast':return p.lastName;
+    case'tName':return team.fullName; case'tLoc':return team.city; case'tMascot':return team.nickname;
+    case'oName':return opp.fullName; case'oLoc':return opp.city; case'oMascot':return opp.nickname;
+  }
+  return null;
+}
+
+/* ---------- age / birthday figures (§6.7) ---------- */
+function ageFigures(p,ctx){
+  var ck=ctx.clockOf(p);
+  if(!ck)return[];
+  var L=ctx.cfg.age.lanes,out=[];
+  /* Exact-match-only: when ON the lane only participates if the figure is
+     exact (no remainder). OFF = the floor figure matches (§6.7). */
+  if(L.days.on)out.push({key:'days',label:'Total age (days)',value:ck.totalDays,
+    detail:ck.years+'y '+ck.since+'d'});
+  if(L.weeks.on&&(!L.weeks.exact||ck.weekRem===0))
+    out.push({key:'weeks',label:'Total age (weeks)',value:ck.weeks,
+      detail:ck.weeks+'w '+ck.weekRem+'d'+(L.weeks.exact?' · exact':'')});
+  if(L.months.on&&(!L.months.exact||ck.monthRem===0))
+    out.push({key:'months',label:'Total age (months)',value:ck.months,
+      detail:ck.months+'mo '+ck.monthRem+'d'+(L.months.exact?' · exact':'')});
+  return out;
+}
+function bdayFigures(p,ctx){
+  var ck=ctx.clockOf(p);
+  if(!ck)return[];
+  var L=ctx.cfg.age.lanes,out=[];
+  if(L.bdaySince.on)out.push({key:'since',label:'Days after last birthday',value:ck.since,
+    detail:'birthday '+p.dob});
+  if(L.bdayUntil.on)out.push({key:'until',label:'Days before next birthday',value:ck.until,
+    detail:'birthday '+p.dob});
+  return out;
+}
+
+/* ---------- COUNTERS ---------- */
+/* counter: {group, gid, label, value, detail, arith, accepts} where
+   `accepts` is the set of pool kinds allowed to test against it. */
+function buildCounters(p,ctx){
+  var cfg=ctx.cfg,out=[];
+  var nameKinds=['pName','pFirst','pLast','tName','tLoc','tMascot','oName','oLoc','oMascot','compose'];
+
+  /* §6.6 date calcs as counters (names/phrases -> date calcs). */
+  if(cfg.types.date){
+    /* accepts is a KIND MAP, not an array: matchCounter does one lookup per
+       candidate hit and a maximal query produces millions of them, so an
+       indexOf() scan here is the difference between 70ms and 1.3s. */
+    var accept={};
+    if(cfg.date.namesToDate){
+      if(cfg.date.pools.pName)accept.pName=true;
+      if(cfg.date.pools.pFirst)accept.pFirst=true;
+      if(cfg.date.pools.pLast)accept.pLast=true;
+      if(cfg.date.pools.phrase){accept.phrase=true;accept.compose=true}
+    }
+    if(cfg.date.bdayToDate)accept.bdaySpan=true;
+    ctx.dateVals.forEach(function(d){
+      out.push({group:'date',gid:'date-'+d.id+'-'+(d.cipher||'')+'-'+d.n,
+        label:d.label,value:d.n,detail:d.calc,accepts:accept});
+    });
+  }
+  /* §6.7 age + birthday spans as counters. */
+  if(cfg.types.age){
+    var t=cfg.age.targets,acc={};
+    if(t.name)nameKinds.forEach(function(k){acc[k]=true});
+    if(t.phrase)acc.phrase=true;
+    if(t.date)acc.date=true;
+    acc.raw=true;
+    ageFigures(p,ctx).forEach(function(a){
+      out.push({group:'age',gid:'age-'+a.key,label:a.label,value:a.value,
+        detail:a.detail,accepts:acc});
+    });
+    bdayFigures(p,ctx).forEach(function(a){
+      out.push({group:'bday',gid:'bday-'+a.key,label:a.label,value:a.value,
+        detail:a.detail,accepts:acc});
+    });
+  }
+  /* §6.8 stat counters, with Current / Next / Custom modes. */
+  if(cfg.types.stat){
+    var sacc=statAccepts(cfg);
+    if(p.isBatter)pushStatCounters(out,cfg.stat.bat,BAT_STATS,p.batting,'Batting',sacc);
+    if(p.isPitcher)pushStatCounters(out,cfg.stat.pit,PIT_STATS,p.pitching,'Pitching',sacc);
+  }
+  /* Phase 2 counters (founders spans / career clocks / team totals). */
+  PHASE2_COUNTERS.forEach(function(fn){fn(out,p,ctx)});
+  return out;
+}
+var PHASE2_COUNTERS=[];
+
+function statAccepts(cfg){
+  var s=cfg.stat.sources,acc={};
+  if(s.phrase){acc.phrase=true;acc.compose=true}
+  if(s.date)acc.date=true;
+  if(s.pName){acc.pName=true;acc.pFirst=true;acc.pLast=true}
+  if(s.tName){acc.tName=true;acc.tLoc=true;acc.tMascot=true}
+  if(s.oName){acc.oName=true;acc.oLoc=true;acc.oMascot=true}
+  if(s.age)acc.age=true;
+  if(s.jersey)acc.jersey=true;
+  if(s.raw)acc.raw=true;
+  /* Phase 2 pool kinds are always eligible against stats — §6.9 states
+     founders spans are "testable against player stats" explicitly. */
+  acc.founders=true;acc.clock=true;acc.entity=true;
+  return acc;
+}
+/* §7.2: Custom-offset stats show their arithmetic ("59 + 3 = 62"). */
+function pushStatCounters(out,conf,table,stats,role,acc){
+  ['season','career'].forEach(function(scope){
+    var src=stats&&stats[scope];
+    if(!src)return;
+    table.forEach(function(row){
+      var label=row[0],key=row[1],c=conf[scope+'-'+key];
+      if(!c||!c.on)return;
+      var base=src[key];
+      /* §6.8: zero-value stats are skipped for the other role (a pitcher's
+         empty batting line produces no counters). null = never fabricated. */
+      if(base==null||!(base>0))return;
+      var off=c.mode==='current'?0:(c.mode==='next'?1:Math.round(+c.off||0));
+      var val=base+off;
+      if(!(val>0))return;
+      var arith=off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString();
+      out.push({group:'stat',gid:'stat-'+scope+'-'+key+'-'+role,
+        label:cap(scope)+' '+role+' '+label+(off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
+        value:val,detail:null,arith:arith,accepts:acc});
+    });
+  });
+}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+/* ---------- §8 index chaining ---------- */
+/* d1 = direct only. d2 = counter value's prime/composite index joins the
+   pool test for that counter. d3 = one more indexing step. Chained hits
+   carry the full chain text and a depth chip — NEVER masquerade as direct. */
+/* chainSteps is called once per counter per scan; at maximal settings that is
+   hundreds of thousands of calls over a small set of distinct values, so the
+   result is memoized per (value, depth). Cleared on every scan. */
+var _chainMemo={depth:-1,map:null};
+function chainSteps(value,depth){
+  if(_chainMemo.depth!==depth){_chainMemo={depth:depth,map:{}}}
+  var hit=_chainMemo.map[value];
+  if(hit)return hit;
+  return(_chainMemo.map[value]=chainStepsRaw(value,depth));
+}
+function chainStepsRaw(value,depth){
+  var steps=[{v:value,depth:1,text:null}];
+  if(depth<2)return steps;
+  var cur=value;
+  for(var d=2;d<=depth;d++){
+    var pi=primeIndex(cur),ci=pi>0?-1:compositeIndex(cur);
+    var nv,lbl;
+    if(pi>0){nv=pi;lbl=cur.toLocaleString()+' = prime #'+pi}
+    else if(ci>0){nv=ci;lbl=cur.toLocaleString()+' = composite #'+ci}
+    else break;             /* 0/1/out-of-sieve → chain simply stops */
+    var prev=steps[steps.length-1];
+    steps.push({v:nv,depth:d,text:(prev.text?prev.text+' → ':'')+lbl});
+    cur=nv;
+  }
+  return steps;
+}
+var CHAIN_DEPTH={off:0,d1:1,d2:2,d3:3};
+
+/* ---------- match one counter against the pool ---------- */
+/* `maps` is one value-map or an array of them. Player-independent pool
+   entries (founders spans, entity gematria) live in a SHARED map built once
+   per scan instead of being rebuilt for all 400+ players — same entries, same
+   matches, a fraction of the allocation. */
+function matchCounter(counter,maps,depth){
+  var hits=[];
+  if(depth<1)return hits;
+  if(!Array.isArray(maps))maps=[maps];
+  var steps=chainSteps(counter.value,depth);
+  for(var s=0;s<steps.length;s++){
+    var st=steps[s];
+    for(var m=0;m<maps.length;m++){
+    var bucket=maps[m][st.v];
+    if(!bucket)continue;
+    for(var i=0;i<bucket.length;i++){
+      var e=bucket[i];
+      if(!counter.accepts[e.kind])continue;
+      /* a counter never matches a pool entry of its own family — a date calc
+         equalling itself, or an entity span equalling its own span, is a
+         tautology, not a convergence. */
+      if(e.kind==='date'&&counter.group==='date')continue;
+      if(e.kind==='age'&&(counter.group==='age'||counter.group==='bday'))continue;
+      if(e.kind==='founders'&&counter.group==='founders'&&e.entityKey===counter.entityKey)continue;
+      if(e.kind==='clock'&&counter.group==='clock')continue;
+      hits.push({entry:e,depth:st.depth,chain:st.text,value:st.v});
+    }
+    }
+  }
+  return hits;
+}
+
+/* ---------- scan ---------- */
+function makeCtx(slate,cfg,founders){
+  var dateVals=cfg.types.date?dateCalcs(slate.date,cfg.date.formulas,cfg.ciphers):[];
+  var rawNums=parseNums(cfg.stat.raw);
+  var clockCache={};
+  var ctx={
+    slate:slate,cfg:cfg,founders:founders||null,
+    dateVals:dateVals,rawNums:rawNums,
+    depth:CHAIN_DEPTH[cfg.chain]||1,
+    clockOf:function(p){
+      if(!p.dob)return null;                      /* no DOB → no age matches, no error */
+      var k=p.id+'|'+slate.date+'|'+(cfg.age.inclusive?1:0);
+      if(!(k in clockCache))clockCache[k]=clockFrom(p.dob,slate.date,cfg.age.inclusive);
+      return clockCache[k];
+    },
+  };
+  return ctx;
+}
+function parseNums(s){
+  if(!s)return[];
+  var out=[];
+  String(s).split(/[^0-9]+/).forEach(function(t){
+    if(!t)return;var n=+t;if(n>0&&out.indexOf(n)<0)out.push(n);
+  });
+  return out;
+}
+
+/* scanPlayer -> {player, groups:[{group,label,value,...,lines:[]}], count, flags} */
+function scanPlayer(p,ctx){
+  var pool=buildPool(p,ctx);
+  var byValue={};
+  pool.forEach(function(e){(byValue[e.v]=byValue[e.v]||[]).push(e)});
+  /* §6.6 direction 2: birthday spans as a POOL kind so they can hit date
+     calcs. Added after byValue so they never self-match a bday counter. */
+  if(ctx.cfg.types.age&&ctx.cfg.date&&ctx.cfg.date.bdayToDate){
+    bdayFigures(p,ctx).forEach(function(b){
+      var e={v:b.value,text:b.label.toLowerCase()+' = '+b.value,cipher:null,
+        kind:'bdaySpan',label:b.detail};
+      if(e.v>0)(byValue[e.v]=byValue[e.v]||[]).push(e);
+    });
+  }
+  var counters=buildCounters(p,ctx);
+  var maps=[byValue,sharedByValue(ctx)];
+  var groups=[],count=0;
+  counters.forEach(function(c){
+    var hits=matchCounter(c,maps,ctx.depth);
+    count+=hits.length;
+    groups.push({counter:c,hits:hits});
+  });
+  return{player:p,groups:groups,count:count,flags:playerFlags(p,ctx),
+    pool:pool.concat(sharedPool(ctx))};
+}
+
+/* §6.1 "Jersey Birthday Match" — jersey equals a DOB day/month figure.
+   Rendered as an explicit flag line, not a silent value (it is a claim
+   about the player, and claims get receipts). */
+function playerFlags(p,ctx){
+  var out=[];
+  if(ctx.cfg.simple.jerseyBday&&p.jersey!=null&&p.dob){
+    var m=+p.dob.slice(5,7),d=+p.dob.slice(8,10);
+    var tests=[[d,'DOB day '+d],[m,'DOB month '+m],[m+d,'DOB month+day '+m+'+'+d],
+               [+(''+m+d),'DOB concat '+m+'/'+d]];
+    tests.forEach(function(t){
+      if(t[0]===p.jersey)out.push({kind:'jerseyBday',
+        text:'⚑ jersey #'+p.jersey+' = '+t[1]});
+    });
+  }
+  PHASE2_FLAGS.forEach(function(fn){fn(out,p,ctx)});
+  return out;
+}
+var PHASE2_FLAGS=[];
+
+/* full-slate scan — pure computation over the cached slate (§4.1). */
+function scanSlate(slate,cfg,founders){
+  var ctx=makeCtx(slate,cfg,founders);
+  var out=[];
+  var ids=Object.keys(slate.players);
+  for(var i=0;i<ids.length;i++){
+    var p=slate.players[ids[i]];
+    if(!includePlayer(p,cfg))continue;
+    out.push(scanPlayer(p,ctx));
+  }
+  return{results:out,ctx:ctx};
+}
+function includePlayer(p,cfg){
+  if(p.teamId==null||p.gameId==null)return false;
+  if(cfg.games.length&&cfg.games.indexOf(p.gameId)<0)return false;
+  /* §5.7 two-way players appear under BOTH filters. */
+  if(cfg.position==='bat'&&!p.isBatter)return false;
+  if(cfg.position==='pit'&&!p.isPitcher)return false;
+  return true;
+}
+/* ============================================================
+   10. APP STATE
+============================================================ */
+var A={
+  sport:'mlb',
+  cfg:defaultConfig('mlb'),
+  slate:null,
+  founders:null,
+  foundersErr:null,
+  results:[],
+  ctx:null,
+  scanned:false,
+  loading:false,
+  progress:'',
+  error:null,
+  scanMs:0,
+  boot:checksum(),
+  /* §7.3 working state — persisted, never discarded on refresh. */
+  work:{hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',probes:{},
+        openProbes:{},collapsed:{}},
+  undo:null,
+  railOpen:null,   /* null = not yet resolved; boot() picks per viewport */
+};
+
+function workKey(){return LS.work+A.sport}
+function cfgKey(){return LS.cfg+A.sport}
+function presetKey(){return LS.presets+A.sport}   /* §5.2 presets are PER-SPORT */
+function slateKey(sport,date){return LS.slate+sport+'.'+date}
+
+function saveCfg(){lsSet(cfgKey(),A.cfg)}
+function persistRail(){lsSet(LS.rail,{sport:A.sport,railOpen:A.railOpen})}
+function applyRail(){
+  var el=document.getElementById('rail');
+  if(el)el.classList.toggle('collapsed',!A.railOpen);
+  var b=document.getElementById('railSum');
+  if(b)b.setAttribute('aria-expanded',String(!!A.railOpen));
+}
+function saveWork(){lsSet(workKey(),A.work)}
+
+/* every knob turn: persist, then recompute (never refetch) — §4.1. */
+function onChange(rescan){
+  saveCfg();
+  if(rescan!==false&&A.scanned)runScan();
+  render();
+}
+
+/* ============================================================
+   11. RENDER HELPERS
+============================================================ */
+function h(tag,attrs,kids){
+  var el=document.createElement(tag);
+  if(attrs)Object.keys(attrs).forEach(function(k){
+    var v=attrs[k];
+    if(v==null||v===false)return;
+    if(k==='class')el.className=v;
+    else if(k==='text')el.textContent=v;
+    else if(k==='html')el.innerHTML=v;
+    else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='style'&&typeof v==='object')Object.assign(el.style,v);
+    else el.setAttribute(k,v===true?'':v);
+  });
+  (kids||[]).forEach(function(c){
+    if(c==null||c===false)return;
+    el.appendChild(typeof c==='string'?document.createTextNode(c):c);
+  });
+  return el;
+}
+function clear(el){while(el.firstChild)el.removeChild(el.firstChild)}
+function toast(msg,actionLabel,action){
+  var host=document.getElementById('toastHost');
+  clear(host);
+  var t=h('div',{class:'toast'},[h('span',{text:msg}),
+    actionLabel?h('button',{text:actionLabel,onclick:function(){clear(host);action&&action()}}):null]);
+  host.appendChild(t);
+  setTimeout(function(){if(t.parentNode===host)host.removeChild(t)},5200);
+}
+function fmt(n){return n==null?'—':Number(n).toLocaleString()}
+function countOn(o){return Object.keys(o||{}).filter(function(k){return o[k]}).length}
+
+/* ============================================================
+   12. RAIL (§5)
+============================================================ */
+function renderRail(){
+  var body=document.getElementById('railBody');
+  clear(body);
+  var C=A.cfg;
+
+  /* 1. Sport */
+  body.appendChild(fld('Sport',h('select',{class:'ctl',onchange:function(e){switchSport(e.target.value)}},
+    SPORT_ORDER.map(function(s){
+      var p=SPORT_PROFILES[s];
+      return h('option',{value:s,selected:A.sport===s?true:null,
+        text:p.label+(p.live?'':' (phantom — coming soon)')});
+    }).concat([h('option',{value:'',disabled:true,text:'NFL — not built'})]))));
+
+  /* 2. Filter Presets (§5.2, per-sport) */
+  var presets=lsGet(presetKey(),{});
+  var names=Object.keys(presets).sort();
+  body.appendChild(fld('Filter Presets',h('div',{},[
+    h('div',{class:'preset-row'},[
+      h('select',{class:'ctl',id:'presetSel'},[h('option',{value:'',text:names.length?'— load preset —':'— none saved —'})]
+        .concat(names.map(function(n){return h('option',{value:n,text:n})}))),
+      h('button',{class:'mini-btn',text:'Load',onclick:function(){
+        var n=document.getElementById('presetSel').value;
+        if(!n)return;
+        loadPreset(n);
+      }}),
+    ]),
+    h('div',{class:'row-btns',style:{marginTop:'5px'}},[
+      h('button',{class:'mini-btn',text:'Save as…',onclick:savePreset}),
+      h('button',{class:'mini-btn',text:'Delete',onclick:function(){
+        var n=document.getElementById('presetSel').value;
+        if(!n)return;
+        var ps=lsGet(presetKey(),{});delete ps[n];lsSet(presetKey(),ps);
+        toast('Preset "'+n+'" deleted');render();
+      }}),
+    ]),
+  ])));
+
+  /* 3. Search Mode (§5.3) */
+  body.appendChild(fld('Search Mode',h('div',{class:'seg'},[
+    segBtn('Daily Matches',C.mode==='daily',function(){C.mode='daily';onChange()}),
+    segBtn('Individual',C.mode==='individual',function(){C.mode='individual';onChange()}),
+  ])));
+  if(C.mode==='individual')body.appendChild(renderTypeahead());
+
+  /* 4. Analysis Date (§5.4) */
+  body.appendChild(fld('Analysis Date',h('div',{class:'daterow'},[
+    h('button',{text:'‹',title:'Previous day',onclick:function(){setDate(shiftDate(C.dateStr||A.slate&&A.slate.date||todayISO(),-1))}}),
+    h('input',{class:'ctl',type:'date',value:currentDate(),onchange:function(e){setDate(e.target.value)}}),
+    h('button',{text:'›',title:'Next day',onclick:function(){setDate(shiftDate(currentDate(),1))}}),
+    h('button',{class:'today-btn',text:'Today',onclick:function(){setDate(todayISO())}}),
+  ])));
+
+  /* 5. Match Type Filter (§5.5) */
+  var typesOn=countOn(C.types)+countOn(C.simple);
+  body.appendChild(fld('Match Types',h('button',{class:'summary-btn',onclick:function(){openDialog('types')}},
+    [h('span',{text:typesOn+' type'+(typesOn===1?'':'s')+' selected'}),h('span',{class:'cnt',text:'Configure ›'})])));
+
+  /* 6. Cipher Selection (§5.6) */
+  var cOn=countOn(C.ciphers);
+  body.appendChild(fld('Ciphers',h('button',{class:'summary-btn',onclick:function(){openDialog('ciphers')}},
+    [h('span',{text:cOn+' of '+ALL_CIPHERS.length+' ciphers'}),h('span',{class:'cnt',text:'Configure ›'})])));
+
+  /* 7. Position Filter (§5.7) */
+  body.appendChild(fld('Position',h('div',{class:'seg'},[
+    segBtn('All',C.position==='all',function(){C.position='all';onChange()}),
+    segBtn('Batters',C.position==='bat',function(){C.position='bat';onChange()}),
+    segBtn('Pitchers',C.position==='pit',function(){C.position='pit';onChange()}),
+  ])));
+
+  /* 8. Game Filter (§5.8) */
+  body.appendChild(fld('Games',renderGameFilter()));
+
+  /* 9. RUN (§5.9) */
+  body.appendChild(h('button',{class:'run-btn',disabled:A.loading||!A.boot.ok,
+    onclick:runButton,
+    text:A.loading?'Working…':(C.mode==='individual'?'Analyze Player':'Find All Daily Matches')}));
+
+  document.getElementById('railSumTxt').innerHTML=
+    '<b>'+(C.mode==='individual'?'Individual':'Daily Matches')+'</b> · '+currentDate()+
+    ' · '+typesOn+' types · '+cOn+' ciphers';
+}
+function fld(label,ctl){return h('div',{class:'fld'},[h('div',{class:'fld-label',text:label}),ctl])}
+function segBtn(label,on,fn){return h('button',{class:on?'on':'',text:label,onclick:fn})}
+function currentDate(){return A.cfg.dateStr||(A.slate&&A.slate.date)||todayISO()}
+
+function renderGameFilter(){
+  if(!A.slate||!A.slate.games.length)
+    return h('div',{class:'hint',text:A.slate?'no games on this date':'run a scan to list games'});
+  var C=A.cfg;
+  var wrap=h('div',{class:'gamelist'});
+  wrap.appendChild(h('label',{},[
+    h('input',{type:'checkbox',checked:C.games.length===0?true:null,onchange:function(){C.games=[];onChange()}}),
+    h('span',{text:'All games ('+A.slate.games.length+')'})]));
+  A.slate.games.forEach(function(g){
+    wrap.appendChild(h('label',{},[
+      h('input',{type:'checkbox',checked:C.games.indexOf(g.gameId)>=0?true:null,
+        onchange:function(e){
+          var i=C.games.indexOf(g.gameId);
+          if(e.target.checked&&i<0)C.games.push(g.gameId);
+          else if(!e.target.checked&&i>=0)C.games.splice(i,1);
+          onChange();
+        }}),
+      h('span',{text:(g.away.abbr||g.away.fullName)+' @ '+(g.home.abbr||g.home.fullName)}),
+    ]));
+  });
+  return wrap;
+}
+
+function renderTypeahead(){
+  var wrap=h('div',{class:'fld ta-wrap'});
+  wrap.appendChild(h('div',{class:'fld-label',text:'Player'}));
+  var cur=A.slate&&A.cfg.individualId!=null&&A.slate.players[A.cfg.individualId];
+  var inp=h('input',{class:'ctl',type:'text',placeholder:'type a name…',
+    value:cur?cur.fullName:'',
+    oninput:function(e){showTA(e.target.value)},
+    onfocus:function(e){showTA(e.target.value)}});
+  wrap.appendChild(inp);
+  var list=h('div',{class:'ta-list',style:{display:'none'}});
+  wrap.appendChild(list);
+  function showTA(q){
+    clear(list);
+    if(!A.slate){list.style.display='none';return}
+    q=(q||'').trim().toLowerCase();
+    var hits=[];
+    Object.keys(A.slate.players).forEach(function(id){
+      var p=A.slate.players[id];
+      if(p.teamId==null)return;
+      if(q&&normText(p.fullName).toLowerCase().indexOf(q)<0)return;
+      hits.push(p);
+    });
+    hits.sort(function(a,b){return a.fullName<b.fullName?-1:1});
+    if(!hits.length){list.style.display='none';return}
+    hits.slice(0,40).forEach(function(p){
+      var t=A.slate.teams[p.teamId]||{};
+      list.appendChild(h('button',{onclick:function(){
+        A.cfg.individualId=p.id;list.style.display='none';onChange();
+      }},[h('div',{text:p.fullName}),
+          h('div',{class:'sub',text:(t.abbr||'')+' · '+(p.pos||'')+(p.dob?' · '+p.dob:' · no DOB')})]));
+    });
+    list.style.display='block';
+  }
+  return wrap;
+}
+
+function setDate(d){
+  if(!isISO(d))return;
+  A.cfg.dateStr=d;saveCfg();
+  A.slate=null;A.results=[];A.scanned=false;
+  render();
+  loadSlate(d);
+}
+function switchSport(s){
+  if(!SPORT_PROFILES[s])return;
+  saveCfg();
+  A.sport=s;
+  A.cfg=mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null));
+  A.cfg.sport=s;
+  A.work=mergeCfg({hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',
+    probes:{},openProbes:{},collapsed:{}},lsGet(LS.work+s,null));
+  A.slate=null;A.results=[];A.scanned=false;A.error=null;
+  persistRail();                 /* the sport IS rail state — save it now */
+  render();
+  loadSlate(currentDate());
+}
+
+/* ============================================================
+   13. PRESETS (§5.2) — a preset captures the ENTIRE query config.
+============================================================ */
+var PRESET_KEYS=['types','simple','ciphers','dedupeSiblings','chain','position','games',
+  'sort','custom','date','age','stat','founders','clocks','teamTotals','card','mode'];
+function savePreset(){
+  var n=prompt('Preset name');
+  if(!n)return;
+  n=n.trim();if(!n)return;
+  var ps=lsGet(presetKey(),{}),snap={};
+  PRESET_KEYS.forEach(function(k){snap[k]=JSON.parse(JSON.stringify(A.cfg[k]))});
+  snap._sport=A.sport;
+  ps[n]=snap;
+  if(lsSet(presetKey(),ps))toast('Preset "'+n+'" saved');
+  render();
+}
+function loadPreset(n){
+  var ps=lsGet(presetKey(),{}),snap=ps[n];
+  if(!snap)return;
+  /* §5.2 presets are PER-SPORT — a preset saved under MLB never loads under
+     WNBA. The storage key is already sport-scoped; this is the belt. */
+  if(snap._sport&&snap._sport!==A.sport){toast('Preset "'+n+'" belongs to '+snap._sport.toUpperCase());return}
+  PRESET_KEYS.forEach(function(k){if(snap[k]!==undefined)A.cfg[k]=JSON.parse(JSON.stringify(snap[k]))});
+  toast('Preset "'+n+'" loaded');
+  onChange();
+}
+/* ============================================================
+   14. DIALOGS (§6)
+============================================================ */
+var openDlg=null;
+function openDialog(id){openDlg=id;renderDialog()}
+function closeDialog(){openDlg=null;renderDialog()}
+function renderDialog(){
+  var host=document.getElementById('dialogHost');
+  clear(host);
+  if(!openDlg)return;
+  var spec=DIALOGS[openDlg];
+  if(!spec){openDlg=null;return}
+  var bd=h('div',{class:'dlg-bd'});
+  spec.body(bd);
+  var dlg=h('div',{class:'dlg',role:'dialog','aria-modal':'true'},[
+    h('div',{class:'dlg-hd'},[h('h2',{text:spec.title}),
+      h('button',{class:'x',text:'×','aria-label':'Close',onclick:closeDialog})]),
+    bd,
+    h('div',{class:'dlg-ft'},(spec.footer?spec.footer():[]).concat([
+      h('div',{class:'grow'}),h('button',{class:'btn pri',text:'Done',onclick:closeDialog})])),
+  ]);
+  host.appendChild(h('div',{class:'scrim',onclick:function(e){if(e.target===e.currentTarget)closeDialog()}},[dlg]));
+}
+function crow(label,checked,onchange,extra){
+  return h('div',{class:'crow'},[
+    h('label',{},[h('input',{type:'checkbox',checked:checked?true:null,onchange:onchange}),
+      h('span',{text:label})]),
+  ].concat(extra||[]));
+}
+function sec(title,kids){return h('div',{class:'dsec'},[h('h3',{text:title})].concat(kids))}
+
+var DIALOGS={};
+
+/* ---------------- §6.1 Match Types (master) ---------------- */
+DIALOGS.types={
+  title:'Match Types',
+  footer:function(){
+    return[h('button',{class:'btn',text:'Select All',onclick:function(){
+        MATCH_TYPES.forEach(function(t){A.cfg.types[t.id]=true});
+        SIMPLE_SOURCES.forEach(function(s){A.cfg.simple[s.id]=true});
+        onChange();renderDialog();
+      }}),
+      h('button',{class:'btn',text:'Clear All',onclick:function(){
+        MATCH_TYPES.forEach(function(t){A.cfg.types[t.id]=false});
+        SIMPLE_SOURCES.forEach(function(s){A.cfg.simple[s.id]=false});
+        onChange();renderDialog();
+      }})];
+  },
+  body:function(bd){
+    var C=A.cfg;
+    bd.appendChild(sec('Configurable engines',MATCH_TYPES.map(function(t){
+      return crow(t.label,C.types[t.id],function(e){C.types[t.id]=e.target.checked;onChange();renderDialog()},
+        [h('button',{class:'cfg',text:'Configure',disabled:DIALOGS[t.cfg]?null:true,
+          onclick:function(){if(DIALOGS[t.cfg])openDialog(t.cfg)}})]);
+    })));
+    bd.appendChild(sec('Simple sources',SIMPLE_SOURCES.map(function(s){
+      return crow(s.label,C.simple[s.id],function(e){C.simple[s.id]=e.target.checked;onChange();renderDialog()});
+    })));
+    /* §8 index chaining lives in this dialog per spec. */
+    bd.appendChild(sec('Index chaining (§8)',[
+      h('p',{class:'hint',text:'If a counter value is prime, its prime index joins the pool for that counter; composite likewise. Chained hits are labelled with the full chain and a depth chip — they never read as direct hits.'}),
+      h('div',{class:'seg'},[
+        segBtn('Off',C.chain==='off',function(){C.chain='off';onChange();renderDialog()}),
+        segBtn('d1 direct',C.chain==='d1',function(){C.chain='d1';onChange();renderDialog()}),
+        segBtn('d2',C.chain==='d2',function(){C.chain='d2';onChange();renderDialog()}),
+        segBtn('d3',C.chain==='d3',function(){C.chain='d3';onChange();renderDialog()}),
+      ]),
+    ]));
+  }
+};
+
+/* ---------------- §6.2 / §6.3 Cipher Selection ---------------- */
+DIALOGS.ciphers={
+  title:'Cipher Selection',
+  footer:function(){
+    var prof=SPORT_PROFILES[A.sport];
+    return[h('button',{class:'btn',text:'Select Base',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){A.cfg.ciphers[c]=!!prof.base[c]});
+        onChange();renderDialog();
+      }}),
+      h('button',{class:'btn',text:'All',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){A.cfg.ciphers[c]=true});onChange();renderDialog();
+      }}),
+      h('button',{class:'btn',text:'Clear',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){A.cfg.ciphers[c]=false});onChange();renderDialog();
+      }})];
+  },
+  body:function(bd){
+    var C=A.cfg,prof=SPORT_PROFILES[A.sport];
+    var probe=calcAll('JESUIT ORDER');
+    bd.appendChild(h('p',{class:'hint',
+      text:prof.label+' Base = '+ALL_CIPHERS.filter(function(c){return prof.base[c]}).map(cl).join(', ')+
+        '. '+prof.bannedNote}));
+    var grid=h('div',{class:'cgrid'});
+    ALL_CIPHERS.forEach(function(c){
+      var on=!!C.ciphers[c],col=CIPHER_COLOR[c];
+      /* §6.2 "each rendered in its signature color" — the colour is the
+         cipher's identity, so it shows whether or not the card is selected.
+         Selection is carried by fill + border weight, not by the hue. */
+      grid.appendChild(h('button',{class:'ccard'+(on?' on':''),
+        style:{color:col,borderColor:on?col:'transparent',
+               background:on?'color-mix(in srgb,'+col+' 16%,var(--sf-1))':'var(--sf-1)',
+               opacity:on?'1':'.62',
+               boxShadow:on?'inset 0 0 0 1px '+col:'inset 0 0 0 1px var(--line)'},
+        onclick:function(){C.ciphers[c]=!C.ciphers[c];onChange();renderDialog()}},[
+        h('span',{class:'cn',text:cl(c)}),
+        h('span',{class:'cv',text:'JESUIT ORDER = '+probe[c]}),
+      ]));
+    });
+    bd.appendChild(sec('Ciphers',[grid]));
+    /* §6.3 sibling dedupe — visible toggle, DEFAULT OFF. */
+    bd.appendChild(sec('Noise control',[
+      crow('Collapse identical sibling values',C.dedupeSiblings,function(e){
+        C.dedupeSiblings=e.target.checked;onChange();renderDialog();
+      }),
+      h('p',{class:'hint',text:'OFF (default): when two ciphers give a word the same value, both lines show. ON: one line with a combined cipher label. Never drops a value.'}),
+    ]));
+    bd.appendChild(sec('Engine',[
+      h('p',{class:'hint',text:'This page computes the '+ALL_CIPHERS.length+' ciphers gematria-core implements. Ciphers the reference site runs but this engine does not (Fibonacci, Sumerian, Trigonal…) are deliberately absent — inventing them would disagree with Tony’s other tools.'}),
+    ]));
+  }
+};
+
+/* ---------------- §6.5 Custom Matching ---------------- */
+DIALOGS.custom={
+  title:'Custom Matching',
+  body:function(bd){
+    var C=A.cfg.custom;
+    var list=h('div',{});
+    function redraw(){
+      clear(list);
+      C.phrases.forEach(function(ph,i){
+        var vals=calcAll(ph);
+        list.appendChild(h('div',{},[
+          h('div',{class:'prow'},[
+            h('input',{type:'text',value:ph,placeholder:'phrase…',
+              oninput:function(e){C.phrases[i]=e.target.value;saveCfg()},
+              onchange:function(e){C.phrases[i]=e.target.value;onChange();redraw()}}),
+            h('button',{class:'del',text:'×','aria-label':'Remove phrase',onclick:function(){
+              C.phrases.splice(i,1);onChange();redraw();
+            }}),
+          ]),
+          ph?h('div',{class:'pvals',text:ALL_CIPHERS.filter(function(c){return A.cfg.ciphers[c]})
+            .map(function(c){return cl(c)+' '+vals[c]}).join(' · ')}):null,
+        ]));
+      });
+      list.appendChild(h('button',{class:'mini-btn',text:'+ Add phrase',onclick:function(){
+        C.phrases.push('');redraw();
+      }}));
+    }
+    redraw();
+    bd.appendChild(sec('Direct Phrase Matching',[
+      h('p',{class:'hint',text:'Every phrase is computed in all selected ciphers; its values join the pool against every enabled counter. The day’s theme lives here — and a saved preset IS a saved theme.'}),
+      list]));
+
+    var comp=h('div',{});
+    function redrawComp(){
+      clear(comp);
+      A.cfg.custom.compose.forEach(function(c,i){
+        comp.appendChild(h('div',{class:'prow'},[
+          h('select',{class:'ctl',style:{flex:'0 0 44%'},onchange:function(e){c.field=e.target.value;onChange()}},
+            COMPOSE_FIELDS.map(function(f){
+              return h('option',{value:f.id,selected:c.field===f.id?true:null,text:f.label});
+            })),
+          h('input',{type:'text',value:c.word,placeholder:'+ word (e.g. triples)',
+            oninput:function(e){c.word=e.target.value;saveCfg()},
+            onchange:function(e){c.word=e.target.value;onChange()}}),
+          h('button',{class:'del',text:'×',onclick:function(){
+            A.cfg.custom.compose.splice(i,1);onChange();redrawComp();
+          }}),
+        ]));
+      });
+      comp.appendChild(h('button',{class:'mini-btn',text:'+ Add composition',onclick:function(){
+        A.cfg.custom.compose.push({field:'pFirst',word:''});redrawComp();
+      }}));
+    }
+    redrawComp();
+    bd.appendChild(sec('Enhanced Match Type Filtering',[
+      h('p',{class:'hint',text:'Append a word to a structural field. "Player first name" + "triples" computes "{first} triples" per player at scan time.'}),
+      comp]));
+  }
+};
+
+/* ---------------- §6.6 Date Matching ---------------- */
+DIALOGS.date={
+  title:'Date Matching',
+  footer:function(){
+    return[h('button',{class:'btn',text:'All formulas',onclick:function(){
+        DATE_FORMULA_IDS.forEach(function(id){A.cfg.date.formulas[id]=true});onChange();renderDialog();
+      }}),
+      h('button',{class:'btn',text:'None',onclick:function(){
+        DATE_FORMULA_IDS.forEach(function(id){A.cfg.date.formulas[id]=false});onChange();renderDialog();
+      }})];
+  },
+  body:function(bd){
+    var D=A.cfg.date,dstr=currentDate();
+    bd.appendChild(sec('Match directions',[
+      crow('Names / phrases whose gematria = date calculations',D.namesToDate,
+        function(e){D.namesToDate=e.target.checked;onChange();renderDialog()}),
+      D.namesToDate?h('div',{class:'sublist'},[
+        crow('Player full name',D.pools.pName,function(e){D.pools.pName=e.target.checked;onChange()}),
+        crow('Player first name',D.pools.pFirst,function(e){D.pools.pFirst=e.target.checked;onChange()}),
+        crow('Player last name',D.pools.pLast,function(e){D.pools.pLast=e.target.checked;onChange()}),
+        crow('Custom phrases',D.pools.phrase,function(e){D.pools.phrase=e.target.checked;onChange()}),
+      ]):null,
+      crow('Birthday timespan values = date calculations',D.bdayToDate,
+        function(e){D.bdayToDate=e.target.checked;onChange()}),
+    ]));
+    /* every formula as its own checkbox with TODAY'S value inline (§6.6) */
+    var all=dateCalcs(dstr,null,A.cfg.ciphers);
+    var byId={};
+    all.forEach(function(d){(byId[d.id]=byId[d.id]||[]).push(d)});
+    bd.appendChild(sec('Date formulas — '+dstr+' ('+(dayName(dstr)||'')+')',
+      DATE_FORMULAS.map(function(f){
+        var vals=byId[f.id]||[];
+        var inline=vals.length
+          ?(f.id==='dayName'||f.id==='ruler'
+             ?vals.map(function(v){return v.n}).filter(uniq).join(' · ')
+             :fmt(vals[0].n))
+          :'—';
+        return crow(f.label,D.formulas[f.id],function(e){
+          D.formulas[f.id]=e.target.checked;onChange();renderDialog();
+        },[h('span',{class:'inline-val',text:inline})]);
+      })));
+  }
+};
+function uniq(v,i,a){return a.indexOf(v)===i}
+
+/* ---------------- §6.7 Player Total Age ---------------- */
+DIALOGS.age={
+  title:'Player Total Age',
+  body:function(bd){
+    var G=A.cfg.age;
+    bd.appendChild(sec('Convention',[
+      crow('End date included (+1 day to every span)',G.inclusive,function(e){
+        G.inclusive=e.target.checked;onChange();renderDialog();
+      }),
+      h('p',{class:'hint',text:'One switch for the inclusive/exclusive convention. Applies to every age, birthday, founders and career-clock span on the page.'}),
+    ]));
+    var lanes=[['days','Total age in days'],['weeks','Total age in weeks'],
+               ['months','Total age in months']];
+    bd.appendChild(sec('Age lanes',lanes.map(function(l){
+      var L=G.lanes[l[0]];
+      return crow(l[1],L.on,function(e){L.on=e.target.checked;onChange();renderDialog()},
+        [h('button',{class:'mini-btn'+(L.exact?' on':''),text:'Exact only',
+          onclick:function(){L.exact=!L.exact;onChange();renderDialog()}})]);
+    }).concat([h('p',{class:'hint',text:'Exact off = the floor figure matches (1500w 3d matches on 1500). Exact on = the lane only participates when the remainder is zero.'})])));
+    bd.appendChild(sec('Birthday spans',[
+      crow('Days after last birthday',G.lanes.bdaySince.on,function(e){
+        G.lanes.bdaySince.on=e.target.checked;onChange();renderDialog()},
+        [h('button',{class:'mini-btn'+(G.lanes.bdaySince.exact?' on':''),text:'Exact only',
+          onclick:function(){G.lanes.bdaySince.exact=!G.lanes.bdaySince.exact;onChange();renderDialog()}})]),
+      crow('Days before next birthday',G.lanes.bdayUntil.on,function(e){
+        G.lanes.bdayUntil.on=e.target.checked;onChange();renderDialog()},
+        [h('button',{class:'mini-btn'+(G.lanes.bdayUntil.exact?' on':''),text:'Exact only',
+          onclick:function(){G.lanes.bdayUntil.exact=!G.lanes.bdayUntil.exact;onChange();renderDialog()}})]),
+    ]));
+    bd.appendChild(sec('Match against',[
+      crow('Names',G.targets.name,function(e){G.targets.name=e.target.checked;onChange()}),
+      crow('Custom phrases',G.targets.phrase,function(e){G.targets.phrase=e.target.checked;onChange()}),
+      crow('Date calculations',G.targets.date,function(e){G.targets.date=e.target.checked;onChange()}),
+    ]));
+  }
+};
+
+/* ---------------- §6.8 Stat Matching ---------------- */
+DIALOGS.stat={
+  title:'Stat Matching',
+  footer:function(){
+    return[h('button',{class:'btn',text:'Bulk Apply…',onclick:bulkApply})];
+  },
+  body:function(bd){
+    var S=A.cfg.stat;
+    bd.appendChild(sec('Value sources',STAT_SOURCES.map(function(s){
+      if(s.id==='raw')return h('div',{},[
+        crow(s.label,S.sources.raw,function(e){S.sources.raw=e.target.checked;onChange();renderDialog()}),
+        S.sources.raw?h('input',{class:'ctl',type:'text',value:S.raw,
+          placeholder:'e.g. 62 74 118  (comma or space separated)',
+          oninput:function(e){S.raw=e.target.value;saveCfg()},
+          onchange:function(e){S.raw=e.target.value;onChange()}}):null,
+      ]);
+      return crow(s.label,S.sources[s.id],function(e){S.sources[s.id]=e.target.checked;onChange()});
+    })));
+    bd.appendChild(statSection('Batting',BAT_STATS,S.bat));
+    bd.appendChild(statSection('Pitching',PIT_STATS,S.pit));
+    bd.appendChild(h('p',{class:'hint',text:'Both sections always render. A two-way player matches across both; a stat with no value for the other role is skipped, never zero-filled.'}));
+  }
+};
+function statSection(title,table,conf){
+  var wrap=h('div',{class:'dsec'},[h('h3',{text:title})]);
+  ['season','career'].forEach(function(scope){
+    wrap.appendChild(h('h3',{text:cap(scope),style:{marginTop:'8px',opacity:'.7'}}));
+    var grid=h('div',{class:'statwrap'});
+    table.forEach(function(row){
+      var label=row[0],key=row[1],c=conf[scope+'-'+key];
+      var card=h('div',{class:'statcard'+(c.on?' on':'')});
+      card.appendChild(h('div',{class:'sc-hd'},[
+        h('input',{type:'checkbox',checked:c.on?true:null,onchange:function(e){
+          c.on=e.target.checked;onChange();renderDialog();
+        }}),
+        h('span',{text:label}),
+      ]));
+      if(c.on){
+        card.appendChild(h('div',{class:'modes'},[
+          h('button',{class:c.mode==='current'?'on':'',text:'Current',
+            onclick:function(){c.mode='current';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='next'?'on':'',text:'Next',
+            onclick:function(){c.mode='next';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='custom'?'on':'',text:'Custom',
+            onclick:function(){c.mode='custom';onChange();renderDialog()}}),
+        ]));
+        if(c.mode==='custom')card.appendChild(h('input',{class:'off',type:'number',value:c.off,
+          onchange:function(e){c.off=Math.round(+e.target.value||0);onChange();renderDialog()}}));
+      }
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  });
+  return wrap;
+}
+/* §6.8 Bulk Apply — one mode across ALL enabled stats. */
+function bulkApply(){
+  var m=prompt('Bulk apply mode to all ENABLED stats:\n  current | next | <number offset>','next');
+  if(m==null)return;
+  m=String(m).trim().toLowerCase();
+  var mode,off=1;
+  if(m==='current')mode='current';
+  else if(m==='next')mode='next';
+  else if(/^-?\d+$/.test(m)){mode='custom';off=+m}
+  else{toast('Not a mode: '+m);return}
+  [A.cfg.stat.bat,A.cfg.stat.pit,A.cfg.teamTotals].forEach(function(conf){
+    Object.keys(conf).forEach(function(k){
+      if(conf[k].on){conf[k].mode=mode;if(mode==='custom')conf[k].off=off}
+    });
+  });
+  onChange();renderDialog();
+  toast('Bulk applied: '+m);
+}
+/* ---------------- §7.4 card display config (gear) ---------------- */
+DIALOGS.card={
+  title:'Card display',
+  body:function(bd){
+    var K=A.cfg.card;
+    bd.appendChild(sec('Sections',[
+      crow('Match groups',K.groups,function(e){K.groups=e.target.checked;onChange();renderDialog()}),
+      crow('Age summary strip',K.ageStrip,function(e){K.ageStrip=e.target.checked;onChange();renderDialog()}),
+      crow('Birthday span strip',K.bdayStrip,function(e){K.bdayStrip=e.target.checked;onChange();renderDialog()}),
+      crow('Stat line (entering season + career)',K.statLine,function(e){K.statLine=e.target.checked;onChange();renderDialog()}),
+      crow('Opposing pitcher section (batter cards)',K.oppPitcher,function(e){K.oppPitcher=e.target.checked;onChange();renderDialog()}),
+      crow('Team totals collapsible',K.teamTotals,function(e){K.teamTotals=e.target.checked;onChange();renderDialog()}),
+    ]));
+    bd.appendChild(h('p',{class:'hint',text:'Saved with presets.'}));
+    /* §7.3 hidden-items tray lives here too so everything is reversible. */
+    bd.appendChild(renderTray());
+  }
+};
+function renderTray(){
+  var W=A.work;
+  var items=[];
+  W.hiddenWords.forEach(function(w){items.push(['word',w,'word "'+w+'"'])});
+  W.hiddenTypes.forEach(function(t){items.push(['type',t,'match type '+t])});
+  W.hiddenCounters.forEach(function(c){items.push(['counter',c,'counter '+c])});
+  var wrap=h('div',{class:'dsec'},[h('h3',{text:'Hidden items ('+items.length+')'})]);
+  if(!items.length){wrap.appendChild(h('p',{class:'hint',text:'Nothing hidden. Tap any match line on a card to hide a word, a match type or a counter — everything lands here and is reversible.'}));return wrap}
+  items.forEach(function(it){
+    wrap.appendChild(h('div',{class:'crow'},[
+      h('label',{},[h('span',{text:it[2]})]),
+      h('button',{class:'cfg',text:'Unhide',onclick:function(){
+        var arr=it[0]==='word'?W.hiddenWords:it[0]==='type'?W.hiddenTypes:W.hiddenCounters;
+        var i=arr.indexOf(it[1]);if(i>=0)arr.splice(i,1);
+        saveWork();render();renderDialog();
+      }}),
+    ]));
+  });
+  wrap.appendChild(h('button',{class:'mini-btn',text:'Unhide all',onclick:function(){
+    W.hiddenWords=[];W.hiddenTypes=[];W.hiddenCounters=[];saveWork();render();renderDialog();
+  }}));
+  return wrap;
+}
+
+/* ============================================================
+   15. RESULTS (§7)
+============================================================ */
+var renderToken=0;
+function renderResults(){
+  renderToken++;   /* invalidate any in-flight chunked append */
+  var host=document.getElementById('results');
+  clear(host);
+  var C=A.cfg;
+
+  if(!A.boot.ok)return; /* checksum banner already rendered; never show numbers */
+
+  if(A.loading){
+    host.appendChild(h('div',{class:'empty'},[h('b',{},[h('span',{class:'spin'}),' loading slate']),
+      h('div',{text:A.progress||'…'})]));
+    return;
+  }
+  if(A.slate&&A.slate.phantom){
+    host.appendChild(h('div',{class:'empty'},[
+      h('b',{text:SPORT_PROFILES[A.sport].label+' — coming soon'}),
+      h('div',{text:'The WNBA adapter is a phantom. The BDL key must be proxied through a Netlify function before any public deploy, so no live call is made from this page. Every knob above still works and is saved under the WNBA profile.'}),
+    ]));
+    return;
+  }
+  if(!A.slate){
+    host.appendChild(h('div',{class:'empty'},[h('b',{text:'no slate loaded'}),
+      h('div',{text:'Pick a date and the slate fetches automatically.'})]));
+    return;
+  }
+  if(!A.slate.games.length){
+    host.appendChild(h('div',{class:'empty'},[h('b',{text:'no games on '+A.slate.date}),
+      h('div',{text:'Empty slate — not an error. Try another date, or tap Today.'})]));
+    return;
+  }
+  if(!A.scanned){
+    host.appendChild(h('div',{class:'empty'},[h('b',{text:A.slate.games.length+' games cached'}),
+      h('div',{text:'Assemble the query in the rail, then run it.'})]));
+    return;
+  }
+
+  var rows=visibleResults();
+
+  /* results header: count · spotlight · sort */
+  var hdr=h('div',{class:'res-hdr'},[
+    h('div',{class:'res-count'},[
+      h('b',{text:String(rows.length)}),' cards · ',
+      h('b',{text:String(rows.reduce(function(a,r){return a+r.visibleCount},0))}),' matches · ',
+      h('span',{text:A.scanMs+'ms'}),
+    ]),
+    h('div',{class:'spot-wrap'},[
+      /* re-rendering the results replaces this node, so focus + caret are
+         restored afterwards — otherwise a two-digit number is untypable. */
+      h('input',{class:'spot'+(A.work.spotlight?' on':''),type:'text',inputmode:'numeric',
+        id:'spotInput',placeholder:'number spotlight…',value:A.work.spotlight,
+        oninput:function(e){
+          A.work.spotlight=e.target.value.replace(/[^0-9]/g,'');
+          var caret=A.work.spotlight.length;
+          saveWork();renderResults();
+          var again=document.getElementById('spotInput');
+          if(again){again.focus();try{again.setSelectionRange(caret,caret)}catch(err){}}
+        }}),
+    ]),
+    h('select',{class:'spot',style:{flex:'0 0 auto',width:'auto'},onchange:function(e){
+      C.sort=e.target.value;onChange(false);renderResults();
+    }},[
+      h('option',{value:'count',selected:C.sort==='count'?true:null,text:'Sort: match count'}),
+      h('option',{value:'alpha',selected:C.sort==='alpha'?true:null,text:'Sort: lineup / A–Z'}),
+      h('option',{value:'team',selected:C.sort==='team'?true:null,text:'Sort: team / game'}),
+    ]),
+  ]);
+  host.appendChild(hdr);
+
+  if(!rows.length){
+    host.appendChild(h('div',{class:'empty'},[h('b',{text:'no matches'}),
+      h('div',{text:'Silence is information. Widen the query — add ciphers, phrases, or stat lanes.'})]));
+    return;
+  }
+  var grid=h('div',{class:'grid'+(C.mode==='individual'?' individual':'')});
+  host.appendChild(grid);
+  /* Cards are appended in CHUNKS. Nothing is filtered, capped or dropped —
+     every row still renders — but a maximal query can produce a
+     half-million-node DOM, and building it in one synchronous pass locks the
+     tab. The first chunk paints immediately (and keeps the headless render
+     test synchronous); the rest streams in on animation frames so the page
+     stays interactive and Tony can start reading the top cards at once. */
+  /* The chunk is a LINE budget, not a card count: at maximal settings one
+     card can carry thousands of receipt lines, so "60 cards per frame" would
+     still build a half-million nodes in the first pass. Always at least one
+     card per frame so progress is guaranteed. */
+  var BUDGET=1200;
+  var idx=0;
+  var emit=function(){
+    var lines=0;
+    while(idx<rows.length){
+      grid.appendChild(renderCard(rows[idx]));
+      lines+=rows[idx].visibleCount+4;
+      idx++;
+      if(lines>=BUDGET)break;
+    }
+  };
+  emit();                       /* first frame is synchronous: instant paint */
+  updateTray();
+  if(idx<rows.length){
+    var note=h('div',{class:'banner info',id:'renderNote',
+      text:'rendering '+idx+' of '+rows.length+' cards…'});
+    host.appendChild(note);
+    var token=renderToken;
+    var raf=window.requestAnimationFrame||function(f){return setTimeout(f,16)};
+    var step=function(){
+      if(token!==renderToken)return;          /* a newer render superseded us */
+      emit();
+      if(idx<rows.length){
+        note.textContent='rendering '+idx+' of '+rows.length+' cards…';
+        raf(step);
+      }else if(note.parentNode)note.parentNode.removeChild(note);
+    };
+    raf(step);
+  }
+}
+
+/* §7.3 in-results filtering + spotlight + sort, all recomputed from cache. */
+function visibleResults(){
+  var W=A.work,C=A.cfg,spot=W.spotlight?+W.spotlight:null;
+  var rows=A.results.map(function(r){
+    var groups=[];
+    r.groups.forEach(function(g){
+      if(W.hiddenCounters.indexOf(g.counter.gid)>=0)return;
+      if(W.hiddenTypes.indexOf(g.counter.group)>=0)return;
+      var hits=g.hits.filter(function(x){return W.hiddenWords.indexOf(x.entry.text)<0});
+      groups.push({counter:g.counter,hits:hits});
+    });
+    var count=groups.reduce(function(a,g){return a+g.hits.length},0);
+    return{player:r.player,groups:groups,visibleCount:count,flags:r.flags,raw:r};
+  });
+  /* individual mode: one card, every counter shown even when unmatched (§7.6) */
+  if(C.mode==='individual'){
+    rows=rows.filter(function(r){return r.player.id===C.individualId});
+    return rows;
+  }
+  rows=rows.filter(function(r){return r.visibleCount>0});
+  if(spot!=null&&W.spotlight!==''){
+    rows=rows.filter(function(r){
+      return r.groups.some(function(g){
+        return g.counter.value===spot||g.hits.some(function(x){return x.value===spot||x.entry.v===spot});
+      });
+    });
+  }
+  var slate=A.slate;
+  rows.sort(function(a,b){
+    if(C.sort==='alpha')return a.player.fullName<b.player.fullName?-1:1;
+    if(C.sort==='team'){
+      var ta=(slate.teams[a.player.teamId]||{}).fullName||'',tb=(slate.teams[b.player.teamId]||{}).fullName||'';
+      if(ta!==tb)return ta<tb?-1:1;
+      return a.player.fullName<b.player.fullName?-1:1;
+    }
+    if(b.visibleCount!==a.visibleCount)return b.visibleCount-a.visibleCount;
+    return a.player.fullName<b.player.fullName?-1:1;
+  });
+  return rows;
+}
+
+/* label for receipt lines whose value is not a gematria value */
+var KIND_LABEL={date:'date calc',raw:'thread #',jersey:'jersey #',age:'age figure',
+  bdaySpan:'birthday span',founders:'founders span',clock:'career clock',
+  entity:'entity',phrase:'phrase',compose:'composed',probe:'probe'};
+var GROUP_CLASS={age:'g-age',bday:'g-bday',stat:'g-stat',date:'g-date',
+  founders:'g-founders',clock:'g-clock',team:'g-team'};
+
+function renderCard(r){
+  var p=r.player,C=A.cfg,slate=A.slate;
+  var team=slate.teams[p.teamId]||{},opp=slate.teams[p.oppTeamId]||{};
+  var game=slate.games.filter(function(g){return g.gameId===p.gameId})[0]||{};
+  var card=h('div',{class:'card'});
+
+  /* §7.1 header */
+  var nm=h('div',{class:'card-name'},[
+    h('span',{text:p.fullName}),
+    p.isPitcher?h('span',{class:'p-mark',title:p.isProbable?'probable starter':'pitcher',
+      text:p.isProbable?'P·prob':'P'}):null,
+    h('span',{class:'badge',text:String(r.visibleCount)}),
+  ]);
+  var away=(game.away&&(game.away.abbr||game.away.fullName))||'?';
+  var home=(game.home&&(game.home.abbr||game.home.fullName))||'?';
+  card.appendChild(h('div',{class:'card-hd'},[nm,
+    h('div',{class:'card-meta'},[
+      h('span',{text:team.abbr||team.fullName||'—'}),
+      h('span',{text:p.pos||'—'}),
+      h('span',{text:p.dob||'no DOB'}),
+      h('span',{text:away+' @ '+home}),
+      h('span',{text:slate.date}),
+    ])]));
+
+  var bd=h('div',{class:'card-bd'});
+
+  /* §7.4 strips */
+  if(C.card.ageStrip)bd.appendChild(ageStrip(p));
+  if(C.card.bdayStrip)bd.appendChild(bdayStrip(p));
+  if(C.card.statLine)bd.appendChild(statLine(p));
+
+  /* flags (jersey/DOB, founders anniversaries) */
+  r.flags.forEach(function(f){bd.appendChild(h('div',{class:'flagline',text:f.text}))});
+
+  /* §7.2 the sacred format */
+  if(C.card.groups){
+    var individual=C.mode==='individual';
+    var any=false;
+    r.groups.forEach(function(g){
+      /* SILENCE IS INFORMATION: zero-match counters do not render.
+         §7.6 inverts this in Individual mode. */
+      if(!g.hits.length&&!individual)return;
+      any=true;
+      bd.appendChild(renderGroup(g,individual));
+    });
+    if(!any&&!individual)bd.appendChild(h('div',{class:'nomatch',text:'no matches'}));
+  }
+
+  /* §7.4 opposing pitcher + team totals sections (Phase 2 content) */
+  PHASE2_CARD.forEach(function(fn){fn(bd,r,A.ctx)});
+
+  /* §7.5 probe */
+  bd.appendChild(renderProbe(r));
+  card.appendChild(bd);
+  return card;
+}
+
+function renderGroup(g,individual){
+  var c=g.counter;
+  var wrap=h('div',{class:'mgroup '+(GROUP_CLASS[c.group]||'')+(g.hits.length?'':' muted-counter')});
+  var spot=A.work.spotlight?+A.work.spotlight:null;
+  var head=h('div',{class:'mhead',title:'tap for counter options',
+    onclick:function(ev){counterMenu(ev,c)}},[
+    h('span',{text:c.label+':'}),
+    c.arith?h('span',{class:'arith',text:c.arith}):null,
+    /* §7.3 "matching values light gold" — the counter's own value is a
+       matching value when it is the spotlighted number. */
+    h('span',{class:'mval'+(spot!=null&&c.value===spot?' spot-hit':''),text:fmt(c.value)}),
+  ]);
+  wrap.appendChild(head);
+  if(c.detail&&individual)wrap.appendChild(h('div',{class:'nomatch',text:c.detail}));
+  if(!g.hits.length){
+    if(individual)wrap.appendChild(h('div',{class:'nomatch',text:'no matches'}));
+    return wrap;
+  }
+  g.hits.forEach(function(x){wrap.appendChild(renderLine(x,c))});
+  return wrap;
+}
+
+/* one receipt line — claim + receipt, ALWAYS together (§7.2). */
+function renderLine(x,counter){
+  var e=x.entry,spot=A.work.spotlight?+A.work.spotlight:null;
+  var isSpot=spot!=null&&(e.v===spot||x.value===spot||counter.value===spot);
+  var ciphers=e.ciphers&&e.ciphers.length?e.ciphers:(e.cipher?[e.cipher]:[]);
+  var kids=[];
+  if(x.depth>1&&x.chain)kids.push(h('span',{class:'chain',text:x.chain+' →'}));
+  kids.push(h('span',{class:'w',text:e.cipher||e.kind==='phrase'||e.kind==='compose'?'"'+e.text+'"':e.text}));
+  kids.push(h('span',{class:'eq',text:'='}));
+  kids.push(h('span',{class:'v',text:fmt(e.v)}));
+  if(ciphers.length){
+    kids.push(h('span',{class:'cip',
+      style:{color:CIPHER_COLOR[ciphers[0]]},
+      text:'('+ciphers.map(cl).join('/')+')',
+      title:'tap the cipher name to toggle it off everywhere',
+      onclick:function(ev){ev.stopPropagation();toggleCipher(ciphers[0])}}));
+  }else{
+    /* 7.2: "Never a match without its cipher label." A non-gematria value has
+       no cipher, and inventing one would be a lie — so it carries a KIND tag
+       instead. Every receipt line is labelled; none is ever bare. */
+    kids.push(h('span',{class:'cip kindtag',text:'('+(KIND_LABEL[e.kind]||e.kind)+')'}));
+  }
+  if(e.label&&e.kind==='date')kids.push(h('span',{class:'chain',text:'· '+e.label}));
+  if(x.depth>1)kids.push(h('span',{class:'depth-chip',text:'d'+x.depth}));
+  return h('div',{class:'mline'+(isSpot?' spot-hit':''),
+    title:'tap for options',
+    onclick:function(ev){lineMenu(ev,e,counter)}},kids);
+}
+
+/* §7.3 tap a cipher chip → toggle that cipher off globally, with undo. */
+function toggleCipher(c){
+  var was=A.cfg.ciphers[c];
+  A.cfg.ciphers[c]=!was;
+  onChange();
+  toast(cl(c)+(was?' off':' on'),'Undo',function(){
+    A.cfg.ciphers[c]=was;onChange();
+  });
+}
+/* §7.3 tap a match line → hide word / match type / counter. */
+/* Tap a match line -> options: hide this word / hide this match type /
+   hide this counter (QUERY-SPEC 7.3). Rendered as a real popover so it works
+   on a phone and can carry more choices than a browser prompt allows. */
+function popMenu(ev,title,items){
+  closeMenu();
+  var m=h('div',{class:'menu',id:'ctxMenu'},
+    [h('div',{class:'mtitle',text:title})].concat(items.map(function(it){
+      return h('button',{text:it[0],onclick:function(e){e.stopPropagation();closeMenu();it[1]()}});
+    })));
+  document.body.appendChild(m);
+  var x=(ev&&ev.clientX)||20,y=(ev&&ev.clientY)||20;
+  var r=m.getBoundingClientRect();
+  var vw=window.innerWidth||360,vh=window.innerHeight||640;
+  m.style.left=Math.max(8,Math.min(x,vw-r.width-8))+'px';
+  m.style.top=Math.max(8,Math.min(y,vh-r.height-8))+'px';
+  setTimeout(function(){document.addEventListener('click',closeMenu,{once:true})},0);
+}
+function closeMenu(){
+  var m=document.getElementById('ctxMenu');
+  if(m&&m.parentNode)m.parentNode.removeChild(m);
+}
+function spotlightValue(v){
+  A.work.spotlight=String(v);saveWork();renderResults();
+}
+function lineMenu(ev,e,counter){
+  popMenu(ev,'"'+e.text+'" = '+fmt(e.v)+(e.cipher?' ('+cl(e.cipher)+')':''),[
+    ['Hide this word',function(){hideItem('word',e.text,'"'+e.text+'"')}],
+    ['Hide this match type ('+counter.group+')',function(){hideItem('type',counter.group,'match type '+counter.group)}],
+    ['Hide this counter',function(){hideItem('counter',counter.gid,counter.label)}],
+    e.cipher?['Turn off '+cl(e.cipher)+' everywhere',function(){toggleCipher(e.cipher)}]:null,
+    ['Spotlight '+fmt(e.v),function(){spotlightValue(e.v)}],
+  ].filter(Boolean));
+}
+function counterMenu(ev,counter){
+  popMenu(ev,counter.label+' = '+fmt(counter.value),[
+    ['Hide this counter',function(){hideItem('counter',counter.gid,counter.label)}],
+    ['Hide this match type ('+counter.group+')',function(){hideItem('type',counter.group,'match type '+counter.group)}],
+    ['Spotlight '+fmt(counter.value),function(){spotlightValue(counter.value)}],
+  ]);
+}
+function hideItem(kind,val,label){
+  var W=A.work;
+  var arr=kind==='word'?W.hiddenWords:kind==='type'?W.hiddenTypes:W.hiddenCounters;
+  if(arr.indexOf(val)<0)arr.push(val);
+  saveWork();renderResults();
+  toast('Hid '+label,'Undo',function(){
+    var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);
+    saveWork();renderResults();
+  });
+}
+function updateTray(){
+  var W=A.work,n=W.hiddenWords.length+W.hiddenTypes.length+W.hiddenCounters.length;
+  var btn=document.getElementById('trayBtn');
+  btn.style.display=n?'block':'none';
+  btn.textContent='🗑 '+n+' hidden';
+  btn.onclick=function(){openDialog('card')};
+}
+
+/* §7.4 strips */
+function ageStrip(p){
+  var ck=A.ctx&&A.ctx.clockOf(p);
+  if(!ck)return h('div',{class:'strip'},[h('span',{class:'k',text:'AGE '}),
+    h('b',{text:p.dob?'—':'no DOB on file'})]);
+  return h('div',{class:'strip'},[
+    h('span',{class:'k',text:'AGE '}),
+    h('b',{text:ck.years+'y '+ck.since+'d'}),' · ',
+    h('b',{text:fmt(ck.totalDays)+' days'}),' · ',
+    h('b',{text:ck.weeks+'w '+ck.weekRem+'d'}),' · ',
+    h('b',{text:ck.months+'mo '+ck.monthRem+'d'}),
+  ]);
+}
+function bdayStrip(p){
+  var ck=A.ctx&&A.ctx.clockOf(p);
+  if(!ck)return h('div',{class:'strip'},[h('span',{class:'k',text:'BIRTHDAY '}),h('b',{text:'no DOB on file'})]);
+  return h('div',{class:'strip'},[
+    h('span',{class:'k',text:'BIRTHDAY '}),h('b',{text:p.dob}),' · ',
+    h('b',{text:ck.since+'d after'}),' · ',h('b',{text:ck.until+'d until'}),
+    ck.anniversary?h('b',{style:{color:'var(--c-bday)'},text:' · ⚑ BIRTHDAY TODAY'}):null,
+  ]);
+}
+function statLine(p){
+  var out=[h('span',{class:'k',text:'ENTERING '})];
+  var add=function(label,s,keys){
+    if(!s)return;
+    out.push(h('span',{class:'k',text:label+' '}));
+    keys.forEach(function(k){if(s[k]!=null)out.push(h('b',{text:k+' '+fmt(s[k])+'  '}))});
+  };
+  if(p.isBatter){
+    add('S',p.batting.season,['G','AB','H','HR','R','RBI','TB','SO','BB']);
+    add('| C',p.batting.career,['G','AB','H','HR','R','RBI','TB']);
+  }
+  if(p.isPitcher){
+    add('P·S',p.pitching.season,['G','GS','W','L','SO','BB','H','HR']);
+    add('| P·C',p.pitching.career,['G','GS','W','L','SO']);
+  }
+  out.push(h('span',{class:'k',text:' · as of '+(A.slate.fetchedAt?A.slate.fetchedAt.slice(11,16)+'Z':'—')+
+    ' (entering — excludes today)'}));
+  return h('div',{class:'strip'},out);
+}
+var PHASE2_CARD=[];
+/* ============================================================
+   16. CARD PROBE (§7.5) — ad-hoc follow-up on ONE player without
+   leaving the card or re-running the slate.
+============================================================ */
+var PROBE_TOKENS=[['{full name}','pName'],['{first}','pFirst'],['{last}','pLast'],
+                  ['{team}','tName'],['{opp}','oName']];
+
+function probeKey(p){return String(p.id)}
+function renderProbe(r){
+  var p=r.player,key=probeKey(p);
+  var open=A.cfg.mode==='individual'||A.work.openProbes[key];
+  if(!open)return h('button',{class:'probe-open',text:'🔍 Probe',
+    onclick:function(){A.work.openProbes[key]=true;saveWork();renderResults()}});
+
+  var wrap=h('div',{class:'probe'});
+  wrap.appendChild(h('div',{class:'probe-hd'},[h('span',{text:'PROBE'}),
+    A.cfg.mode==='individual'?null:h('button',{text:'close',onclick:function(){
+      A.work.openProbes[key]=false;saveWork();renderResults();
+    }})]));
+
+  var input=h('input',{type:'text',placeholder:'phrase or number…',
+    onkeydown:function(e){if(e.key==='Enter')submit()}});
+  var chips=h('div',{class:'probe-chips'},PROBE_TOKENS.map(function(t){
+    return h('button',{text:t[0],onclick:function(){
+      input.value=(input.value?input.value.replace(/\s+$/,'')+' ':'')+t[0]+' ';
+      input.focus();
+    }});
+  }));
+  wrap.appendChild(chips);
+  wrap.appendChild(h('div',{class:'probe-in'},[input,
+    h('button',{text:'Probe',onclick:submit})]));
+
+  function submit(){
+    var q=(input.value||'').trim();
+    if(!q)return;
+    var list=A.work.probes[key]=A.work.probes[key]||[];
+    if(list.indexOf(q)<0)list.push(q);
+    input.value='';
+    saveWork();renderResults();
+  }
+
+  (A.work.probes[key]||[]).forEach(function(q,i){
+    var res=runProbe(p,q);
+    var item=h('div',{class:'probe-item'});
+    item.appendChild(h('div',{class:'pq'},[
+      h('span',{text:'"'+expandTokens(q,p)+'"'}),
+      /* ⊕ promote — a probe that proves out graduates into the main query. */
+      h('button',{class:'promote',text:'⊕ promote',title:'add to Custom Phrases',
+        onclick:function(){
+          var txt=expandTokens(q,p);
+          if(/^\d+$/.test(txt)){
+            A.cfg.stat.raw=(A.cfg.stat.raw?A.cfg.stat.raw+' ':'')+txt;
+            A.cfg.stat.sources.raw=true;
+            toast('Promoted number '+txt+' to Stat Matching numbers');
+          }else{
+            if(A.cfg.custom.phrases.indexOf(txt)<0)A.cfg.custom.phrases.push(txt);
+            A.cfg.types.custom=true;
+            toast('Promoted "'+txt+'" to Custom Phrases');
+          }
+          onChange();
+        }}),
+      h('button',{text:'×',onclick:function(){
+        A.work.probes[key].splice(i,1);saveWork();renderResults();
+      }}),
+    ]));
+    if(!res.length)item.appendChild(h('div',{class:'nomatch',text:'no landing spots'}));
+    res.forEach(function(g){item.appendChild(renderGroup(g,false))});
+    wrap.appendChild(item);
+  });
+  return wrap;
+}
+function expandTokens(q,p){
+  var team=A.slate.teams[p.teamId]||{},opp=A.slate.teams[p.oppTeamId]||{};
+  return String(q)
+    .replace(/\{full name\}/gi,p.fullName||'')
+    .replace(/\{first\}/gi,p.firstName||'')
+    .replace(/\{last\}/gi,p.lastName||'')
+    .replace(/\{team\}/gi,team.fullName||'')
+    .replace(/\{opp\}/gi,opp.fullName||'')
+    .replace(/\s+/g,' ').trim();
+}
+
+/* A probe tests its value against EVERY counter this player has — all
+   batting/pitching stats in ALL THREE modes at once (Current, Next, and any
+   Custom offsets currently configured), plus AB/PA ALWAYS (house rule: they
+   advance every plate appearance — the confirmation layer), plus age/birthday
+   spans, plus team totals when enabled. */
+function runProbe(p,q){
+  if(!A.ctx)return[];
+  var txt=expandTokens(q,p);
+  if(!txt)return[];
+  var pool=[];
+  if(/^\d+$/.test(txt))poolAdd(pool,+txt,'number '+txt,null,'probe');
+  else addCiphered(pool,txt,'probe',A.cfg.ciphers);
+  if(!pool.length)return[];
+  var byValue={};
+  pool.forEach(function(e){(byValue[e.v]=byValue[e.v]||[]).push(e)});
+
+  var counters=probeCounters(p);
+  var out=[];
+  counters.forEach(function(c){
+    var hits=matchCounter(c,byValue,A.ctx.depth);
+    if(hits.length)out.push({counter:c,hits:hits});
+  });
+  return out;
+}
+/* the probe's counter set — deliberately WIDER than the main query's:
+   every mode at once, and AB/PA regardless of the stat dialog. */
+function probeCounters(p){
+  var ctx=A.ctx,cfg=A.cfg,out=[],acc={probe:true};
+  var push=function(group,gid,label,value,arith){
+    if(!(value>0))return;
+    out.push({group:group,gid:gid,label:label,value:value,arith:arith||null,accepts:acc});
+  };
+  var lanes=function(role,table,stats,conf){
+    ['season','career'].forEach(function(scope){
+      var src=stats&&stats[scope];if(!src)return;
+      table.forEach(function(row){
+        var label=row[0],key=row[1],base=src[key];
+        if(base==null||!(base>0))return;
+        var c=conf[scope+'-'+key]||{};
+        var always=(key==='AB'||key==='PA');
+        if(!c.on&&!always)return;
+        push('stat','pb-'+scope+'-'+key+'-cur',cap(scope)+' '+role+' '+label,base);
+        push('stat','pb-'+scope+'-'+key+'-nxt',cap(scope)+' '+role+' '+label+' (next)',base+1,
+          fmt(base)+' + 1 = '+fmt(base+1));
+        if(c.mode==='custom'&&+c.off){
+          var o=Math.round(+c.off);
+          push('stat','pb-'+scope+'-'+key+'-off',cap(scope)+' '+role+' '+label+' '+(o<0?'':'+')+o,
+            base+o,fmt(base)+' '+(o<0?'-':'+')+' '+Math.abs(o)+' = '+fmt(base+o));
+        }
+      });
+    });
+  };
+  if(p.isBatter)lanes('Batting',BAT_STATS,p.batting,cfg.stat.bat);
+  if(p.isPitcher)lanes('Pitching',PIT_STATS,p.pitching,cfg.stat.pit);
+  ageFigures(p,ctx).forEach(function(a){push('age','pb-age-'+a.key,a.label,a.value)});
+  bdayFigures(p,ctx).forEach(function(a){push('bday','pb-bday-'+a.key,a.label,a.value)});
+  ctx.dateVals.forEach(function(d){
+    push('date','pb-date-'+d.id+'-'+(d.cipher||'')+'-'+d.n,d.label,d.n);
+  });
+  PHASE2_PROBE.forEach(function(fn){fn(out,p,ctx,acc)});
+  return out;
+}
+var PHASE2_PROBE=[];
+
+/* ============================================================
+   17. SLATE LOAD + SCAN
+============================================================ */
+function loadSlate(dstr,force){
+  var sport=A.sport,ad=ADAPTERS[sport];
+  if(!ad){A.error='No adapter for '+sport;render();return Promise.resolve()}
+  var key=slateKey(sport,dstr);
+  if(!force){
+    var cached=lsGet(key,null);
+    if(cached&&cached.date===dstr){
+      A.slate=cached;A.error=null;render();
+      if(A.results.length||A.scanned)runScan();
+      return Promise.resolve(cached);
+    }
+  }
+  A.loading=true;A.progress='';A.error=null;render();
+  return ad.fetchSlate(dstr,function(m){A.progress=m;
+    var host=document.getElementById('results');
+    if(host&&host.firstChild&&A.loading)renderResults();
+  }).then(function(slate){
+    A.slate=slate;A.loading=false;A.error=null;
+    lsSet(key,slate);
+    render();
+    if(A.scanned)runScan();
+    return slate;
+  }).catch(function(e){
+    A.loading=false;
+    A.error='Slate fetch failed: '+e.message+' — the cached slate (if any) is still usable.';
+    var cached=lsGet(key,null);
+    if(cached)A.slate=cached;
+    render();
+  });
+}
+
+function runScan(){
+  if(!A.slate||!A.boot.ok)return;
+  var t0=(performance&&performance.now)?performance.now():Date.now();
+  var res=scanSlate(A.slate,A.cfg,A.founders);
+  var t1=(performance&&performance.now)?performance.now():Date.now();
+  A.results=res.results;A.ctx=res.ctx;A.scanned=true;A.scanMs=Math.round(t1-t0);
+  return A.scanMs;
+}
+function runButton(){
+  if(A.cfg.mode==='individual'&&A.cfg.individualId==null){
+    toast('Pick a player first');return;
+  }
+  runScan();render();
+}
+
+/* ============================================================
+   18. BANNERS + TOP-LEVEL RENDER
+============================================================ */
+function renderBanners(){
+  var host=document.getElementById('banners');
+  clear(host);
+  /* §9 — hard fail, visibly, before any number renders. */
+  if(!A.boot.ok){
+    host.appendChild(h('div',{class:'banner err',
+      text:'ENGINE CHECKSUM FAILED — JESUIT ORDER returned '+JSON.stringify(A.boot.got)+
+        ', expected '+JSON.stringify(A.boot.want)+'. No numbers will be rendered from a broken engine.'}));
+    return;
+  }
+  if(A.error)host.appendChild(h('div',{class:'banner err',text:A.error}));
+  /* §5.4 honest boundary on non-today dates. */
+  if(currentDate()!==todayISO()){
+    host.appendChild(h('div',{class:'banner warn',
+      text:'⚠ stats shown are current, not as-of this date. Lineups and probables resolve historically; entering stats do not. True historical snapshots need a stat store (future phase).'}));
+  }
+  /* §4.1 slate cache banner. */
+  if(A.slate&&A.slate.fetchedAt){
+    var t=new Date(A.slate.fetchedAt);
+    var hhmm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+    var b=h('div',{class:'banner info'},[
+      h('span',{text:'slate cached from '+hhmm+' · '+A.slate.games.length+' games · '}),
+      h('button',{text:'tap to refresh',onclick:function(){loadSlate(A.slate.date,true)}}),
+    ]);
+    var noLineups=A.slate.games.filter(function(g){
+      return g.lineupPosted&&!g.lineupPosted.away&&!g.lineupPosted.home;
+    }).length;
+    if(noLineups)b.appendChild(h('span',{
+      text:' · '+noLineups+' game'+(noLineups===1?'':'s')+' without posted lineups (active roster used)'}));
+    host.appendChild(b);
+  }
+  if(A.foundersErr)host.appendChild(h('div',{class:'banner warn',text:A.foundersErr}));
+  PHASE2_BANNERS.forEach(function(fn){fn(host)});
+}
+var PHASE2_BANNERS=[];
+
+function render(){
+  renderBanners();
+  renderRail();
+  renderResults();
+  var sub=document.getElementById('hdrSub');
+  clear(sub);
+  sub.appendChild(h('span',{class:'lg-pill',id:'hdrSport',text:SPORT_PROFILES[A.sport].label}));
+  sub.appendChild(h('span',{text:currentDate()}));
+  if(A.slate)sub.appendChild(h('span',{text:A.slate.games.length+' games'}));
+}
+
+/* ============================================================
+   19. BOOT
+============================================================ */
+function boot(){
+  A.sport=lsGet(LS.rail,{}).sport||'mlb';
+  if(!SPORT_PROFILES[A.sport])A.sport='mlb';
+  A.cfg=mergeCfg(defaultConfig(A.sport),lsGet(cfgKey(),null));
+  A.cfg.sport=A.sport;
+  A.work=mergeCfg({hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',
+    probes:{},openProbes:{},collapsed:{}},lsGet(workKey(),null));
+
+  document.getElementById('btnGear').onclick=function(){openDialog('card')};
+  /* §5: on mobile the rail's resting state is the sticky summary bar. Desktop
+     has no toggle, so it always starts open. Restored from storage when Tony
+     has expressed a preference. */
+  var railPref=lsGet(LS.rail,{});
+  var narrow=typeof window.matchMedia==='function'
+    &&window.matchMedia('(max-width:899px)').matches;
+  A.railOpen=(railPref.railOpen===undefined||railPref.railOpen===null)?!narrow:!!railPref.railOpen;
+  applyRail();
+  document.getElementById('railSum').onclick=function(){
+    A.railOpen=!A.railOpen;
+    applyRail();
+    persistRail();
+  };
+  /* beforeunload is unreliable on mobile (tab discard, app switch, PWA), so
+     rail-level state is written on every change as well — house rule is
+     auto-persist, and a lost sport selection is a lost session. */
+  window.addEventListener('beforeunload',function(){saveCfg();saveWork();persistRail()});
+  window.addEventListener('pagehide',function(){saveCfg();saveWork();persistRail()});
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    if(document.getElementById('ctxMenu'))closeMenu();
+    else if(openDlg)closeDialog();
+  });
+
+  render();
+  if(!A.boot.ok)return;               /* §9 — never fetch/render off a broken engine */
+  loadFounders();
+  loadSlate(currentDate());
+}
+
+/* founders layer is Phase 2 — the loader is defined there and no-ops here. */
+function loadFounders(){return PHASE2_FOUNDERS_LOAD?PHASE2_FOUNDERS_LOAD():Promise.resolve()}
+var PHASE2_FOUNDERS_LOAD=null;
+
+/* ############################################################
+   ##  PHASE 2 — THE EXCLUSIVE LAYERS                        ##
+   ##  §6.9 Founders & Spans · §6.10 Career Clocks           ##
+   ##  §6.11 Team Totals · §7.4 opp-pitcher + team sections  ##
+   ############################################################ */
+
+/* ---------------- founders data layer (§4.4) ----------------
+   ONLY date_status==="locked" entries with a source URL participate in
+   span math. The locked export already enforces that; this re-enforces it
+   so a hand-edited or older file can never leak an unsourced date in.
+   granularity==="year" entries are EXCLUDED from day-span calculations. */
+var FOUNDERS_LOCAL='/data/founders-locked.json';
+var FOUNDERS_RAW='https://raw.githubusercontent.com/taxwrities/realconvergy/main/data/decoder-exports/founders-locked.json';
+
+function normalizeFounders(raw){
+  var cats=[],byKey={},dropped={unlocked:0,nosource:0,nodate:0},yearOnly=0;
+  Object.keys(raw||{}).forEach(function(cat){
+    if(cat==='_meta')return;
+    var list=raw[cat];
+    if(!Array.isArray(list))return;
+    var out=[];
+    list.forEach(function(e,i){
+      /* the two hard gates — never relaxed */
+      if(e.date_status!=='locked'){dropped.unlocked++;return}
+      if(!e.source){dropped.nosource++;return}
+      if(!e.founded){dropped.nodate++;return}
+      var dayGran=e.granularity==='day'&&isISO(e.founded);
+      if(!dayGran)yearOnly++;
+      var ent={
+        key:cat+':'+(e.name||i),cat:cat,name:e.name||'(unnamed)',
+        founded:e.founded,granularity:e.granularity||null,
+        dayGranularity:dayGran,source:e.source,
+        ciphers:e.ciphers||null,
+        city:e.city||null,cityCiphers:e.city_ciphers||null,
+        nickname:e.nickname||null,nicknameCiphers:e.nickname_ciphers||null,
+        founder:e.founder||null,founderCiphers:e.founder_ciphers||null,
+        founderDob:(e.founder_dob&&isISO(e.founder_dob))?e.founder_dob:null,
+        founderDobDay:e.founder_dob_granularity==='day'&&isISO(e.founder_dob),
+        birthplace:e.founder_birthplace||null,birthplaceCiphers:e.birthplace_ciphers||null,
+        note:e.note||null,
+      };
+      out.push(ent);byKey[ent.key]=ent;
+    });
+    if(out.length)cats.push({id:cat,label:catLabel(cat),entities:out});
+  });
+  var all=cats.reduce(function(a,c){return a.concat(c.entities)},[]);
+  return{cats:cats,byKey:byKey,all:all,
+    dayCount:all.filter(function(e){return e.dayGranularity}).length,
+    yearOnly:yearOnly,dropped:dropped,
+    /* §6.9 feature-detect: these toggles only appear if the harvest landed. */
+    hasFounderDob:all.some(function(e){return e.founderDob&&e.founderDobDay}),
+    hasBirthplace:all.some(function(e){return e.birthplace&&e.birthplaceCiphers}),
+    version:(raw&&raw._meta&&raw._meta.version)||null};
+}
+function catLabel(c){
+  return({rituals:'Rituals',secret_societies:'Secret societies',institutional:'Institutional',
+    sports_founders:'Sports founders',tribute_figures:'Tribute figures',
+    mlb_teams:'MLB teams',wnba_teams:'WNBA teams',states:'States'})[c]||c;
+}
+
+PHASE2_FOUNDERS_LOAD=function(){
+  var cached=lsGet(LS.founders,null);
+  if(cached){applyFounders(cached,true)}
+  return fetch(FOUNDERS_LOCAL).then(function(r){
+    if(!r.ok)throw new Error('local '+r.status);
+    return r.json();
+  }).catch(function(){
+    /* bundled copy unreachable → try the repo raw URL (§4.4) */
+    return fetch(FOUNDERS_RAW).then(function(r){
+      if(!r.ok)throw new Error('raw '+r.status);
+      return r.json();
+    });
+  }).then(function(j){
+    lsSet(LS.founders,j);
+    applyFounders(j,false);
+    if(A.scanned)runScan();
+    render();
+  }).catch(function(e){
+    if(A.founders){
+      A.foundersErr='Founders file unreachable ('+e.message+') — using the cached copy from an earlier session.';
+    }else{
+      A.foundersErr='Founders file unreachable ('+e.message+'). Founders & Spans and franchise clocks are unavailable; every other engine still works.';
+      A.founders=null;
+    }
+    render();
+  });
+};
+function applyFounders(raw,fromCache){
+  A.founders=normalizeFounders(raw);
+  if(!fromCache)A.foundersErr=null;
+  /* §6.9 default: all entities ON — but only the categories this sport owns
+     (§6.4: cross-sport table leakage is a bug, not a feature). */
+  var prof=SPORT_PROFILES[A.sport];
+  A.founders.cats.forEach(function(c){
+    var allowed=prof.foundersCategories.indexOf(c.id)>=0;
+    if(A.cfg.founders.cats[c.id]===undefined)A.cfg.founders.cats[c.id]=allowed;
+    if(!allowed)A.cfg.founders.cats[c.id]=false;
+    c.entities.forEach(function(e){
+      if(A.cfg.founders.entities[e.key]===undefined)A.cfg.founders.entities[e.key]=true;
+    });
+  });
+}
+/* the entity set a scan actually consumes: sport-allowed category ON,
+   entity ON, and — for day math — day granularity. */
+function activeEntities(cfg,founders,dayOnly){
+  if(!founders)return[];
+  return founders.all.filter(function(e){
+    if(!cfg.founders.cats[e.cat])return false;
+    if(cfg.founders.entities[e.key]===false)return false;
+    if(dayOnly&&!e.dayGranularity)return false;
+    return true;
+  });
+}
+
+/* ---------------- §6.9 entity spans vs the analysis date ---------------- */
+function entitySpans(e,dstr,inclusive){
+  if(!e.dayGranularity)return null;              /* year-only: excluded, never faked */
+  return clockFrom(e.founded,dstr,inclusive);
+}
+/* computed once per scan, not per player */
+function foundersCtx(ctx){
+  if(ctx._fc)return ctx._fc;
+  var cfg=ctx.cfg,inc=cfg.age.inclusive;
+  var ents=cfg.types.founders?activeEntities(cfg,ctx.founders,false):[];
+  var rows=[];
+  ents.forEach(function(e){
+    var ck=entitySpans(e,ctx.slate.date,inc);
+    rows.push({e:e,ck:ck});
+  });
+  ctx._fc=rows;
+  return rows;
+}
+
+/* founders spans join the POOL (§6.9) — testable against stats, names,
+   phrases, date calcs, birthday spans. */
+/* founders spans + entity gematria depend only on the ANALYSIS DATE and the
+   entity set — never on the player — so they are produced once per scan. */
+PHASE2_SHARED_POOL.push(function(out,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders)return;
+  var S=cfg.founders.spans;
+  foundersCtx(ctx).forEach(function(r){
+    if(!r.ck)return;
+    var nm=r.e.name;
+    if(S.since)pushF(out,r.ck.totalDays,nm+' — days since founding',r.e.key);
+    if(S.sinceAnn)pushF(out,r.ck.since,nm+' — days since anniversary',r.e.key);
+    if(S.untilAnn)pushF(out,r.ck.until,nm+' — days until anniversary',r.e.key);
+  });
+  /* §6.9 "Founders gematria as values" toggle */
+  if(cfg.founders.gematria)activeEntities(cfg,ctx.founders,false).forEach(function(e){
+    addEntityCiphers(out,e.ciphers,e.name,cfg.ciphers,e.key);
+    addEntityCiphers(out,e.cityCiphers,e.city,cfg.ciphers,e.key);
+    addEntityCiphers(out,e.nicknameCiphers,e.nickname,cfg.ciphers,e.key);
+    /* §6.9: "name/founder/city/nickname ciphers, already in the JSON" all ride
+       the one Founders-gematria toggle. Birthplace is separate because it only
+       exists when the historian's harvest landed. */
+    addEntityCiphers(out,e.founderCiphers,e.founder,cfg.ciphers,e.key);
+    if(cfg.founders.birthplace)addEntityCiphers(out,e.birthplaceCiphers,e.birthplace,cfg.ciphers,e.key);
+  });
+  function pushF(o,v,text,key){
+    if(!(v>0))return;
+    var ent={v:v,text:text,cipher:null,kind:'founders',label:null,entityKey:key};
+    o.push(ent);
+  }
+});
+/* entity ciphers come PRECOMPUTED in the JSON (regenerated through
+   gematria-core — never hand-edited), so we read them rather than
+   recompute: one source of truth with the decoder export. */
+function addEntityCiphers(out,ciphers,name,enabled,key){
+  if(!ciphers||!name)return;
+  ALL_CIPHERS.forEach(function(c){
+    if(!enabled[c]||!(ciphers[c]>0))return;
+    out.push({v:ciphers[c],text:name,cipher:c,kind:'entity',label:null,entityKey:key});
+  });
+}
+
+/* founders spans are also COUNTERS — the `⚑ Jesuit Order — N days since
+   founding` grouping in §7.2. */
+PHASE2_COUNTERS.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders)return;
+  var S=cfg.founders.spans,acc=foundersAccepts(cfg);
+  foundersCtx(ctx).forEach(function(r){
+    if(!r.ck)return;
+    var nm=r.e.name;
+    var add=function(v,label,sfx){
+      if(!(v>0))return;
+      out.push({group:'founders',gid:'fnd-'+r.e.key+'-'+sfx,entityKey:r.e.key,
+        label:'⚑ '+nm+' — '+label,value:v,detail:'founded '+r.e.founded,accepts:acc});
+    };
+    if(S.since)add(r.ck.totalDays,'days since founding','since');
+    if(S.sinceAnn)add(r.ck.since,'days since anniversary','ann');
+    if(S.untilAnn)add(r.ck.until,'days until anniversary','until');
+  });
+  /* §6.9 direct date-to-date convergence — player dates x entity dates,
+     independent of today. */
+  if(cfg.founders.crossDates)crossDateCounters(out,p,ctx,acc);
+});
+/* one shared, frozen kind map — allocating a fresh one per player per entity
+   was measurable at maximal settings. */
+var FOUNDERS_ACCEPTS={pName:true,pFirst:true,pLast:true,tName:true,tLoc:true,tMascot:true,
+  oName:true,oLoc:true,oMascot:true,compose:true,phrase:true,date:true,raw:true,
+  bdaySpan:true,age:true,jersey:true,entity:true};
+function foundersAccepts(cfg){return FOUNDERS_ACCEPTS}
+
+/* §6.9 "Player dates x entity dates" */
+function crossDateCounters(out,p,ctx,acc){
+  var cfg=ctx.cfg,inc=cfg.age.inclusive;
+  var anchors=[{d:p.dob,tag:'birth'}];
+  if(cfg.types.clocks&&cfg.founders.debutCross&&p.debut)anchors.push({d:p.debut,tag:'debut'});
+  anchors.forEach(function(a){
+    if(!a.d)return;
+    foundersCtx(ctx).forEach(function(r){
+      var e=r.e;
+      if(!e.dayGranularity)return;
+      var pairs=[[e.founded,e.name,'']];
+      /* founder DOB spans — only when the harvest landed AND the toggle is on */
+      if(cfg.founders.founderDob&&e.founderDob&&e.founderDobDay)
+        pairs.push([e.founderDob,e.founder+' (b.)','fdob']);
+      pairs.forEach(function(pr){
+        var from=pr[0],nm=pr[1],sfx=pr[2];
+        /* days from entity date to the player's date (either direction) */
+        var span=daysBetween(from,a.d);
+        if(span==null)return;
+        var abs=Math.abs(span)+(inc?1:0);
+        var dir=span>=0?'after':'before';
+        if(abs>0)out.push({group:'founders',gid:'fx-'+e.key+sfx+'-'+a.tag+'-days',entityKey:e.key,
+          label:'⚑ '+nm+' → '+a.tag+' date — '+abs.toLocaleString()+' days '+dir,
+          value:abs,detail:from+' → '+a.d,accepts:acc});
+        if(abs>=7)out.push({group:'founders',gid:'fx-'+e.key+sfx+'-'+a.tag+'-weeks',entityKey:e.key,
+          label:'⚑ '+nm+' → '+a.tag+' date — weeks',value:Math.floor(abs/7),
+          detail:Math.floor(abs/7)+'w '+(abs%7)+'d',accepts:acc});
+        var mo=monthsBetween(from,a.d);
+        if(mo>0)out.push({group:'founders',gid:'fx-'+e.key+sfx+'-'+a.tag+'-months',entityKey:e.key,
+          label:'⚑ '+nm+' → '+a.tag+' date — months',value:mo,detail:from+' → '+a.d,accepts:acc});
+        /* offset alignment: how far the player's date sits from the entity's
+           anniversary. No hardcoded offsets — the pool decides what is hot,
+           which is how "born 322 days after X" surfaces. */
+        var off=annOffset(from,a.d,inc);
+        if(off.after>0)out.push({group:'founders',gid:'fx-'+e.key+sfx+'-'+a.tag+'-offA',entityKey:e.key,
+          label:'⚑ '+a.tag+' date is '+off.after+' days AFTER the '+nm+' anniversary',
+          value:off.after,detail:'anniversary '+from.slice(5),accepts:acc});
+        if(off.before>0)out.push({group:'founders',gid:'fx-'+e.key+sfx+'-'+a.tag+'-offB',entityKey:e.key,
+          label:'⚑ '+a.tag+' date is '+off.before+' days BEFORE the '+nm+' anniversary',
+          value:off.before,detail:'anniversary '+from.slice(5),accepts:acc});
+      });
+    });
+  });
+}
+/* whole calendar months between two dates (day-of-month aware) */
+function monthsBetween(a,b){
+  var A2=new Date(utc(a)),B2=new Date(utc(b));
+  if(isNaN(A2)||isNaN(B2))return 0;
+  var m=(B2.getUTCFullYear()-A2.getUTCFullYear())*12+(B2.getUTCMonth()-A2.getUTCMonth());
+  if(B2.getUTCDate()<A2.getUTCDate())m--;
+  return Math.abs(m);
+}
+/* distance from `target`'s month/day to `origin`'s month/day, both directions */
+function annOffset(origin,target,inclusive){
+  var O=new Date(utc(origin)),T=new Date(utc(target));
+  if(isNaN(O)||isNaN(T))return{after:0,before:0};
+  var y=T.getUTCFullYear();
+  var ann=Date.UTC(y,O.getUTCMonth(),O.getUTCDate());
+  var tt=utc(target),add=inclusive?1:0;
+  var after,before;
+  if(tt>=ann){
+    after=Math.round((tt-ann)/864e5);
+    before=Math.round((Date.UTC(y+1,O.getUTCMonth(),O.getUTCDate())-tt)/864e5);
+  }else{
+    after=Math.round((tt-Date.UTC(y-1,O.getUTCMonth(),O.getUTCDate()))/864e5);
+    before=Math.round((ann-tt)/864e5);
+  }
+  return{after:after?after+add:0,before:before?before+add:0};
+}
+
+/* §6.9 anniversary alignment → an explicit FLAG line, not a silent value. */
+PHASE2_FLAGS.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders||!cfg.founders.crossDates)return;
+  var anchors=[{d:p.dob,tag:'born'}];
+  if(cfg.types.clocks&&cfg.founders.debutCross&&p.debut)anchors.push({d:p.debut,tag:'debuted'});
+  anchors.forEach(function(a){
+    if(!a.d)return;
+    activeEntities(cfg,ctx.founders,true).forEach(function(e){
+      if(e.founded.slice(5)===a.d.slice(5))
+        out.push({kind:'founders',text:'⚑ '+a.tag+' on the '+e.name+' anniversary ('+e.founded.slice(5)+')'});
+      if(cfg.founders.founderDob&&e.founderDob&&e.founderDobDay&&e.founderDob.slice(5)===a.d.slice(5))
+        out.push({kind:'founders',text:'⚑ '+a.tag+' on '+e.founder+"'s birthday ("+e.founderDob.slice(5)+')'});
+    });
+  });
+});
+
+/* ---------------- §6.10 Career Clocks ---------------- */
+PHASE2_COUNTERS.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.clocks)return;
+  var K=cfg.clocks,inc=cfg.age.inclusive,acc=foundersAccepts(cfg);
+  /* player: debut clocks. debutDate rides the slate people hydrate — no
+     extra fetch (statsapi mlbDebutDate). */
+  if(p.debut){
+    var ck=clockFrom(p.debut,ctx.slate.date,inc);
+    if(ck){
+      if(K.debutSince)out.push({group:'clock',gid:'clk-debut-since',
+        label:'Days since MLB debut',value:ck.totalDays,detail:'debut '+p.debut,accepts:acc});
+      if(K.debutAnnSince)out.push({group:'clock',gid:'clk-debut-ann',
+        label:'Days since debut anniversary',value:ck.since,detail:'debut '+p.debut,accepts:acc});
+      if(K.debutAnnUntil)out.push({group:'clock',gid:'clk-debut-until',
+        label:'Days until debut anniversary',value:ck.until,detail:'debut '+p.debut,accepts:acc});
+    }
+  }
+  /* franchise clocks — founding dates come from the founders layer's
+     mlb_teams. ONLY day-granularity entries qualify (§4.4); a year-only
+     founding produces NOTHING rather than a faked Jan-1. */
+  if(K.franchise&&ctx.founders){
+    var team=ctx.slate.teams[p.teamId];
+    var ent=team&&franchiseEntity(ctx.founders,team,ctx.cfg);
+    if(ent&&ent.dayGranularity){
+      var fk=clockFrom(ent.founded,ctx.slate.date,inc);
+      if(fk){
+        out.push({group:'clock',gid:'clk-fr-days',
+          label:team.fullName+' — days since franchise founding',value:fk.totalDays,
+          detail:'founded '+ent.founded,accepts:acc});
+        out.push({group:'clock',gid:'clk-fr-weeks',
+          label:team.fullName+' — weeks since franchise founding',value:fk.weeks,
+          detail:fk.weeks+'w '+fk.weekRem+'d',accepts:acc});
+      }
+    }
+  }
+  /* TODO (§6.10, explicitly OPTIONAL): H2H meeting counts. data/mlb-h2h.json
+     is a 209KB build-time import in the four-tab app and is NOT served to
+     this page; wiring it would mean shipping another static file. The spec
+     says skip if it requires new heavy fetches — skipped, noted here. */
+});
+function franchiseEntity(founders,team,cfg){
+  var cats=founders.cats.filter(function(c){return c.id==='mlb_teams'||c.id==='wnba_teams'});
+  for(var i=0;i<cats.length;i++){
+    if(!cfg.founders.cats[cats[i].id])continue;
+    var hit=cats[i].entities.filter(function(e){return e.name===team.fullName})[0];
+    if(hit)return hit;
+  }
+  return null;
+}
+/* career-clock spans also join the pool */
+PHASE2_POOL.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.clocks||!p.debut)return;
+  var ck=clockFrom(p.debut,ctx.slate.date,cfg.age.inclusive);
+  if(!ck)return;
+  var K=cfg.clocks;
+  if(K.debutSince&&ck.totalDays>0)out.push({v:ck.totalDays,text:'days since debut = '+ck.totalDays,
+    cipher:null,kind:'clock',label:'debut '+p.debut});
+  if(K.debutAnnSince&&ck.since>0)out.push({v:ck.since,text:'days since debut anniversary = '+ck.since,
+    cipher:null,kind:'clock',label:'debut '+p.debut});
+  if(K.debutAnnUntil&&ck.until>0)out.push({v:ck.until,text:'days until debut anniversary = '+ck.until,
+    cipher:null,kind:'clock',label:'debut '+p.debut});
+});
+
+/* ---------------- §6.11 Team Totals ---------------- */
+function teamCounters(team,cfg,acc){
+  var out=[];
+  if(!team||!team.seasonTotals)return out;
+  TEAM_STATS.forEach(function(row){
+    var label=row[0],key=row[1],c=cfg.teamTotals[key];
+    if(!c||!c.on)return;
+    var base=team.seasonTotals[key];
+    if(base==null||!(base>0))return;
+    var off=c.mode==='current'?0:(c.mode==='next'?1:Math.round(+c.off||0));
+    var val=base+off;
+    if(!(val>0))return;
+    out.push({group:'team',gid:'team-'+team.id+'-'+key,
+      label:(team.abbr||team.fullName)+' season '+label+(off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
+      value:val,
+      arith:off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString(),
+      detail:null,accepts:acc});
+  });
+  return out;
+}
+PHASE2_COUNTERS.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.simple.teamTotals)return;
+  var team=ctx.slate.teams[p.teamId];
+  teamCounters(team,cfg,statAccepts(cfg)).forEach(function(c){out.push(c)});
+});
+
+/* ---------------- §7.4 card sections ---------------- */
+PHASE2_CARD.push(function(bd,r,ctx){
+  if(!ctx)return;
+  var cfg=A.cfg,p=r.player;
+  /* opposing pitcher section — batter cards get the probable's name
+     gematria + his relevant stat counters, same claim+receipt format. */
+  if(cfg.card.oppPitcher&&p.isBatter){
+    var game=A.slate.games.filter(function(g){return g.gameId===p.gameId})[0];
+    var oppSide=p.side==='away'?'home':'away';
+    var spId=game&&game.probables[oppSide];
+    var sp=spId!=null&&A.slate.players[spId];
+    var sect=h('div',{class:'sect'});
+    sect.appendChild(h('div',{class:'sect-hd'},[h('span',{text:'Opposing pitcher'})]));
+    if(!sp){
+      sect.appendChild(h('div',{class:'nomatch',text:'no probable announced'}));
+    }else{
+      sect.appendChild(h('div',{class:'strip'},[
+        h('b',{text:sp.fullName}),h('span',{class:'k',text:' · '+(sp.pos||'P')+
+          (sp.dob?' · '+sp.dob:'')+(sp.jersey!=null?' · #'+sp.jersey:'')})]));
+      var pool=[];
+      addCiphered(pool,sp.fullName,'phrase',cfg.ciphers);
+      addCiphered(pool,sp.firstName,'phrase',cfg.ciphers);
+      addCiphered(pool,sp.lastName,'phrase',cfg.ciphers);
+      var byValue={};
+      pool.forEach(function(e){(byValue[e.v]=byValue[e.v]||[]).push(e)});
+      /* his relevant stat counters, matched against the BATTER's pool */
+      var batPool={};
+      (r.raw?r.raw.pool:[]).forEach(function(e){(batPool[e.v]=batPool[e.v]||[]).push(e)});
+      var acc=statAccepts(cfg);acc.phrase=true;
+      var spCounters=[];
+      pushStatCounters(spCounters,cfg.stat.pit,PIT_STATS,sp.pitching,'Pitching',acc);
+      var any=false;
+      spCounters.forEach(function(c){
+        c.label='SP '+c.label;
+        var hits=matchCounter(c,batPool,ctx.depth);
+        if(hits.length){any=true;sect.appendChild(renderGroup({counter:c,hits:hits},false))}
+      });
+      /* the pitcher's own name values landing on the batter's counters */
+      r.groups.forEach(function(g){
+        var hits=matchCounter(g.counter,byValue,ctx.depth);
+        if(!hits.length)return;
+        any=true;
+        var c2=Object.assign({},g.counter);c2.label='vs SP · '+c2.label;
+        sect.appendChild(renderGroup({counter:c2,hits:hits},false));
+      });
+      if(!any)sect.appendChild(h('div',{class:'nomatch',text:'no matches'}));
+    }
+    bd.appendChild(sect);
+  }
+  /* team totals collapsible */
+  if(cfg.card.teamTotals){
+    var team=A.slate.teams[p.teamId];
+    var key='tt-'+p.id;
+    var open=!A.work.collapsed[key];
+    var s2=h('div',{class:'sect'});
+    s2.appendChild(h('div',{class:'sect-hd'},[h('span',{text:'Team totals — '+((team&&(team.abbr||team.fullName))||'?')}),
+      h('button',{text:open?'hide':'show',onclick:function(){
+        A.work.collapsed[key]=open;saveWork();renderResults();
+      }})]));
+    if(open){
+      if(!team||!team.seasonTotals){
+        s2.appendChild(h('div',{class:'nomatch',text:'team season totals unavailable'}));
+      }else{
+        s2.appendChild(h('div',{class:'strip'},TEAM_STATS.map(function(row){
+          var v=team.seasonTotals[row[1]];
+          return h('span',{},[h('span',{class:'k',text:row[0]+' '}),h('b',{text:fmt(v)+'  '})]);
+        })));
+        var tc=teamCounters(team,cfg,statAccepts(cfg));
+        var byV={};
+        (r.raw?r.raw.pool:[]).forEach(function(e){(byV[e.v]=byV[e.v]||[]).push(e)});
+        var hit=false;
+        tc.forEach(function(c){
+          var hits=matchCounter(c,byV,ctx.depth);
+          if(hits.length){hit=true;s2.appendChild(renderGroup({counter:c,hits:hits},false))}
+        });
+        if(!hit)s2.appendChild(h('div',{class:'nomatch',text:'no team-total matches'}));
+      }
+    }
+    bd.appendChild(s2);
+  }
+});
+
+/* team totals join the probe's counter set when enabled (§7.5) */
+PHASE2_PROBE.push(function(out,p,ctx,acc){
+  if(!A.cfg.simple.teamTotals)return;
+  var team=ctx.slate.teams[p.teamId];
+  teamCounters(team,A.cfg,acc).forEach(function(c){
+    c.gid='pb-'+c.gid;c.accepts=acc;out.push(c);
+  });
+});
+/* founders + clock counters are already produced by PHASE2_COUNTERS; the
+   probe re-runs them against the probe value so "does 62 land anywhere on
+   this guy" really means anywhere. */
+PHASE2_PROBE.push(function(out,p,ctx,acc){
+  if(!A.cfg.types.founders&&!A.cfg.types.clocks)return;
+  var tmp=[];
+  PHASE2_COUNTERS.forEach(function(fn){fn(tmp,p,ctx)});
+  tmp.forEach(function(c){
+    if(c.group!=='founders'&&c.group!=='clock')return;
+    var c2=Object.assign({},c);c2.gid='pb-'+c.gid;c2.accepts=acc;
+    out.push(c2);
+  });
+});
+
+/* ---------------- §6.9 dialog ---------------- */
+DIALOGS.founders={
+  title:'Founders & Spans',
+  footer:function(){
+    var F=A.founders;
+    if(!F)return[];
+    return[h('button',{class:'btn',text:'All entities',onclick:function(){
+        F.all.forEach(function(e){A.cfg.founders.entities[e.key]=true});onChange();renderDialog();
+      }}),
+      h('button',{class:'btn',text:'None',onclick:function(){
+        F.all.forEach(function(e){A.cfg.founders.entities[e.key]=false});onChange();renderDialog();
+      }})];
+  },
+  body:function(bd){
+    var F=A.founders,G=A.cfg.founders,prof=SPORT_PROFILES[A.sport];
+    if(!F){
+      bd.appendChild(h('p',{class:'hint',text:A.foundersErr||'Founders file not loaded yet.'}));
+      bd.appendChild(h('button',{class:'btn',text:'Retry load',onclick:function(){
+        A.foundersErr=null;PHASE2_FOUNDERS_LOAD().then(renderDialog);
+      }}));
+      return;
+    }
+    bd.appendChild(h('p',{class:'hint',text:
+      F.all.length+' locked, sourced entities (v'+F.version+') · '+F.dayCount+
+      ' with day granularity participate in day-span math · '+F.yearOnly+
+      ' are year-only and are EXCLUDED from day spans (never back-filled to Jan 1).'}));
+    /* category pills + per-entity checkboxes */
+    var pills=h('div',{class:'pills'});
+    F.cats.forEach(function(c){
+      var allowed=prof.foundersCategories.indexOf(c.id)>=0;
+      pills.appendChild(h('button',{class:'pill'+(G.cats[c.id]?' on':''),
+        title:allowed?'':'not in the '+prof.label+' profile (§6.4)',
+        style:allowed?null:{opacity:'.4'},
+        text:c.label+' ('+c.entities.length+')',
+        onclick:function(){
+          if(!allowed){toast(c.label+' is not in the '+prof.label+' profile');return}
+          G.cats[c.id]=!G.cats[c.id];onChange();renderDialog();
+        }}));
+    });
+    bd.appendChild(sec('Categories',[pills]));
+    F.cats.forEach(function(c){
+      if(!G.cats[c.id])return;
+      var list=h('div',{class:'entlist'});
+      c.entities.forEach(function(e){
+        list.appendChild(h('div',{class:'entrow'+(e.dayGranularity?'':' excluded')},[
+          h('input',{type:'checkbox',checked:G.entities[e.key]!==false?true:null,
+            onchange:function(ev){G.entities[e.key]=ev.target.checked;onChange()}}),
+          h('span',{text:e.name}),
+          h('span',{class:'g-year',title:e.dayGranularity?'day granularity':'year only — excluded from day spans',
+            text:e.dayGranularity?e.founded:e.founded+' (year)'}),
+        ]));
+      });
+      bd.appendChild(sec(c.label+' — select all',[
+        h('div',{class:'row-btns',style:{marginBottom:'5px'}},[
+          h('button',{class:'mini-btn',text:'All',onclick:function(){
+            c.entities.forEach(function(e){G.entities[e.key]=true});onChange();renderDialog();
+          }}),
+          h('button',{class:'mini-btn',text:'None',onclick:function(){
+            c.entities.forEach(function(e){G.entities[e.key]=false});onChange();renderDialog();
+          }}),
+        ]),list]));
+    });
+    bd.appendChild(sec('Spans vs the analysis date',[
+      crow('Days since founding (total)',G.spans.since,function(e){G.spans.since=e.target.checked;onChange()}),
+      crow('Days since last anniversary',G.spans.sinceAnn,function(e){G.spans.sinceAnn=e.target.checked;onChange()}),
+      crow('Days until next anniversary',G.spans.untilAnn,function(e){G.spans.untilAnn=e.target.checked;onChange()}),
+      h('p',{class:'hint',text:'An anniversary (0 days) raises a flag line on the card. All spans respect the End-date-included toggle in Player Total Age.'}),
+    ]));
+    bd.appendChild(sec('Direct date-to-date convergence',[
+      crow('Player dates × entity dates',G.crossDates,function(e){G.crossDates=e.target.checked;onChange();renderDialog()}),
+      h('p',{class:'hint',text:'Spans computed BETWEEN a player’s dates and an entity’s dates, independent of today: total days / weeks / months, anniversary alignment (flag line), and offset alignment — no hardcoded offsets, the pool decides what is hot.'}),
+      G.crossDates?crow('Also use the player’s MLB debut date (needs Career Clocks)',G.debutCross,
+        function(e){G.debutCross=e.target.checked;onChange()}):null,
+    ]));
+    var extras=[crow('Founders gematria as values',G.gematria,function(e){
+      G.gematria=e.target.checked;onChange();
+    })];
+    /* §6.9 feature-detect: hide, do not error, when the harvest is absent. */
+    if(F.hasFounderDob)extras.push(crow('Founder-birthday spans',G.founderDob,function(e){
+      G.founderDob=e.target.checked;onChange();
+    }));
+    if(F.hasBirthplace)extras.push(crow('Founder birthplace city gematria',G.birthplace,function(e){
+      G.birthplace=e.target.checked;onChange();
+    }));
+    if(!F.hasFounderDob&&!F.hasBirthplace)extras.push(h('p',{class:'hint',
+      text:'The historian’s founder_dob / birthplace harvest is not in this founders file, so those toggles are hidden (feature-detected, not an error).'}));
+    bd.appendChild(sec('Extra value sources',extras));
+  }
+};
+
+/* ---------------- §6.10 dialog ---------------- */
+DIALOGS.clocks={
+  title:'Career Clocks',
+  body:function(bd){
+    var K=A.cfg.clocks,L=A.cfg.age.lanes;
+    bd.appendChild(sec('Player',[
+      crow('Days since MLB debut',K.debutSince,function(e){K.debutSince=e.target.checked;onChange()}),
+      crow('Days since debut anniversary',K.debutAnnSince,function(e){K.debutAnnSince=e.target.checked;onChange()}),
+      crow('Days until debut anniversary',K.debutAnnUntil,function(e){K.debutAnnUntil=e.target.checked;onChange()}),
+      h('p',{class:'hint',text:'Debut date rides the slate hydrate (statsapi mlbDebutDate) — no extra fetch.'}),
+    ]));
+    /* §6.10: birthday spans are ONE implementation surfaced in BOTH dialogs.
+       These are the very same lane objects Player Total Age edits. */
+    bd.appendChild(sec('Birthday spans (shared with Player Total Age)',[
+      crow('Days since last birthday',L.bdaySince.on,function(e){L.bdaySince.on=e.target.checked;onChange();renderDialog()}),
+      crow('Days until next birthday',L.bdayUntil.on,function(e){L.bdayUntil.on=e.target.checked;onChange();renderDialog()}),
+      h('p',{class:'hint',text:'One implementation, two surfaces — flipping these flips the same switches in the Player Total Age dialog.'}),
+    ]));
+    var F=A.founders;
+    var frNote='Franchise founding dates come from the founders layer’s team table.';
+    if(F){
+      var mt=(F.cats.filter(function(c){return c.id==='mlb_teams'})[0]||{entities:[]}).entities;
+      var day=mt.filter(function(e){return e.dayGranularity}).length;
+      frNote+=' '+day+' of '+mt.length+' MLB franchises carry a day-granularity founding date; the rest are year-only and produce NO day span (never back-filled).';
+    }
+    bd.appendChild(sec('Franchise',[
+      crow('Days / weeks since franchise founding',K.franchise,function(e){K.franchise=e.target.checked;onChange();renderDialog()}),
+      h('p',{class:'hint',text:frNote}),
+      h('p',{class:'hint',text:'TODO (§6.10, optional): H2H meeting counts are skipped — data/mlb-h2h.json is a build-time import in the four-tab app and is not served to this page.'}),
+    ]));
+  }
+};
+
+/* ---------------- §6.11 Team Totals config ---------------- */
+DIALOGS.teamTotals={
+  title:'Team Totals',
+  footer:function(){return[h('button',{class:'btn',text:'Bulk Apply…',onclick:bulkApply})]},
+  body:function(bd){
+    bd.appendChild(h('p',{class:'hint',text:'Team season counting stats as matchable counters, with the same Current / Next / Custom modes as player stats. Hits attach to the TEAM and render in the team-totals card section and the per-game team summary row.'}));
+    var wrap=h('div',{class:'dsec'},[h('h3',{text:'Season totals'})]);
+    var grid=h('div',{class:'statwrap'});
+    TEAM_STATS.forEach(function(row){
+      var label=row[0],key=row[1],c=A.cfg.teamTotals[key];
+      var card=h('div',{class:'statcard'+(c.on?' on':'')});
+      card.appendChild(h('div',{class:'sc-hd'},[
+        h('input',{type:'checkbox',checked:c.on?true:null,onchange:function(e){
+          c.on=e.target.checked;onChange();renderDialog();
+        }}),h('span',{text:label})]));
+      if(c.on){
+        card.appendChild(h('div',{class:'modes'},[
+          h('button',{class:c.mode==='current'?'on':'',text:'Current',onclick:function(){c.mode='current';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='next'?'on':'',text:'Next',onclick:function(){c.mode='next';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='custom'?'on':'',text:'Custom',onclick:function(){c.mode='custom';onChange();renderDialog()}}),
+        ]));
+        if(c.mode==='custom')card.appendChild(h('input',{class:'off',type:'number',value:c.off,
+          onchange:function(e){c.off=Math.round(+e.target.value||0);onChange();renderDialog()}}));
+      }
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    bd.appendChild(wrap);
+  }
+};
+/* Team Totals is listed under §6.1 "simple sources" but §6.11 gives it
+   per-stat modes, so it gets a Configure button too — §0: more control. */
+SIMPLE_SOURCES.filter(function(s){return s.id==='teamTotals'})
+  .forEach(function(s){s.cfg='teamTotals'});
+
+/* the master dialog renders Configure on any simple source that declares one */
+(function patchTypesDialog(){
+  var orig=DIALOGS.types.body;
+  DIALOGS.types.body=function(bd){
+    orig(bd);
+    var secs=bd.querySelectorAll('.dsec');
+    var simpleSec=secs[secs.length-2];
+    if(!simpleSec)return;
+    var rows=simpleSec.querySelectorAll('.crow');
+    SIMPLE_SOURCES.forEach(function(s,i){
+      if(!s.cfg||!rows[i])return;
+      rows[i].appendChild(h('button',{class:'cfg',text:'Configure',
+        onclick:function(){openDialog(s.cfg)}}));
+    });
+  };
+})();
+
+/* founders status line under the banners */
+PHASE2_BANNERS.push(function(host){
+  if(!A.founders||!A.cfg.types.founders)return;
+  var F=A.founders,n=activeEntities(A.cfg,F,true).length;
+  host.appendChild(h('div',{class:'banner info',
+    text:'founders layer v'+F.version+' · '+n+' day-granularity entities active of '+
+      F.all.length+' locked+sourced · year-only entries excluded from day spans'}));
+});
+
+/* expose the pure engine for the headless tests (node/jsdom). */
+var API={calcAll:calcAll,checksum:checksum,ALL_CIPHERS:ALL_CIPHERS,cl:cl,normText:normText,
+  isPrime:isPrime,primeIndex:primeIndex,compositeIndex:compositeIndex,
+  nthPrime:nthPrime,nthComposite:nthComposite,chainSteps:chainSteps,
+  utc:utc,ymd:ymd,daysBetween:daysBetween,shiftDate:shiftDate,dayOfYear:dayOfYear,
+  clockFrom:clockFrom,dateCalcs:dateCalcs,DATE_FORMULAS:DATE_FORMULAS,
+  defaultConfig:defaultConfig,mergeCfg:mergeCfg,
+  buildPool:buildPool,buildCounters:buildCounters,scanPlayer:scanPlayer,
+  scanSlate:scanSlate,makeCtx:makeCtx,matchCounter:matchCounter,parseNums:parseNums,
+  ageFigures:ageFigures,bdayFigures:bdayFigures,dedupePool:dedupePool,
+  SPORT_PROFILES:SPORT_PROFILES,ADAPTERS:ADAPTERS,state:A,
+  render:render,runScan:runScan,boot:boot,
+  /* Phase 2 surface */
+  normalizeFounders:normalizeFounders,activeEntities:activeEntities,
+  entitySpans:entitySpans,annOffset:annOffset,monthsBetween:monthsBetween,
+  teamCounters:teamCounters,franchiseEntity:franchiseEntity,
+  applyFounders:applyFounders,loadFounders:loadFounders,
+  TEAM_STATS:TEAM_STATS,BAT_STATS:BAT_STATS,PIT_STATS:PIT_STATS};
+if(typeof window!=='undefined'){
+  window.__QUERY__=API;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+}
+
+})();
+</script>
+</body>
+</html>

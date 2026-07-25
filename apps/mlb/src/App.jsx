@@ -52,6 +52,12 @@ export default function App(){
           <div className="shell-sub">{date}<span className="lg-pill">MLB</span></div>
         </div>
         <div className="shell-actions">
+          {/* QUERY-SPEC §1.4 / §3: the ONE addition to the existing four-tab app —
+              a link to the Slate Query Engine page (public/query.html, deployed
+              alongside index.html). Nothing else in this app changes. */}
+          <a className="icon-btn" href="/query.html" aria-label="Daily Matches query"
+            title="Daily Matches — slate query engine"
+            style={{textDecoration:'none'}}>⌗</a>
           <button className="icon-btn" aria-label="Search" onClick={()=>setSearchOpen(true)}>⌕</button>
           <button className="icon-btn" aria-label="Quick add" onClick={()=>setSheet('quickadd')}>＋</button>
           <button className="icon-btn" aria-label="Settings" onClick={()=>setSheet('settings')}>⚙</button>
