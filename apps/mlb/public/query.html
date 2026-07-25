@@ -3448,6 +3448,13 @@ function hookCtxOf(ctx){
     if(cfg.founders.widen[e.cat])add(hk.slate,e.key,'manual','category widened');
     if(phrases.some(function(ph){return wordIn(ph,e.name)}))
       add(hk.slate,e.key,'manual','theme: named in a custom phrase');
+    /* Tony 2026-07-25: STATES never date-hook slate-wide. A state's founding
+       span landing in the day pool put e.g. Minnesota on a WSH@ARI card.
+       States are geographic — they admit per game via routing (team state,
+       venue state, city bridge) or per player via birth state. Manual hook,
+       widened category, or a custom phrase (all explicit picks) still carry
+       a state across the whole slate. */
+    if(e.cat==='states')return;
     /* 1.1 date hooks -- slate-level */
     if(e.dayGranularity){
       if(e.founded.slice(5)===md)add(hk.slate,e.key,'date','anniversary today');
