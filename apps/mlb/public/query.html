@@ -880,12 +880,30 @@ function statDefaults(table){
     o['season-'+r[1]]={on:true,mode:'current',off:1,scope:'overall'};
     o['career-'+r[1]]={on:true,mode:'current',off:1,scope:'overall'};
   });
+  /* Tony 2026-07-26: total bases default to the +1–4 spread — one hit adds
+     1..4 bases, so a single "next" under-tests the lane. */
+  if(o['season-TB'])o['season-TB'].mode='spread';
+  if(o['career-TB'])o['career-TB'].mode='spread';
   return o;
 }
 function teamDefaults(){
   var o={};
   TEAM_STATS.forEach(function(r){o[r[1]]={on:true,mode:'current',off:1}});
+  o.TB.mode='spread';
   return o;
+}
+/* one-time upgrade: saved configs predate 'spread' — flip TB lanes onto it
+   unless the user had already customised them to an offset. */
+function migrateTbSpread(cfg){
+  if(cfg._tbSpread)return cfg;
+  cfg._tbSpread=1;
+  ['season-TB','career-TB'].forEach(function(k){
+    var c=cfg.stat&&cfg.stat.bat&&cfg.stat.bat[k];
+    if(c&&(c.mode==='current'||c.mode==='next'))c.mode='spread';
+  });
+  var t=cfg.teamTotals&&cfg.teamTotals.TB;
+  if(t&&(t.mode==='current'||t.mode==='next'))t.mode='spread';
+  return cfg;
 }
 
 /* ============================================================
@@ -1460,6 +1478,15 @@ function statScopeSrc(stats,scope,laneScope,p){
   return{src:(sp&&sp[loc])||null,
     tag:laneScope==='venue'?'venue·'+loc:loc};
 }
+/* Tony 2026-07-26: mode 'spread' tests +1..+4 in one lane (built for TB —
+   a single hit adds 1–4 bases — but available on any counting lane). */
+function laneOffsets(c){
+  if(!c)return[0];
+  if(c.mode==='next')return[1];
+  if(c.mode==='spread')return[1,2,3,4];
+  if(c.mode==='custom')return[Math.round(+c.off||0)];
+  return[0];
+}
 function pushStatCounters(out,conf,table,stats,role,acc,p){
   ['season','career'].forEach(function(scope){
     table.forEach(function(row){
@@ -1472,16 +1499,18 @@ function pushStatCounters(out,conf,table,stats,role,acc,p){
       /* §6.8: zero-value stats are skipped for the other role (a pitcher's
          empty batting line produces no counters). null = never fabricated. */
       if(base==null||!(base>0))return;
-      var off=c.mode==='current'?0:(c.mode==='next'?1:Math.round(+c.off||0));
-      var val=base+off;
-      if(!(val>0))return;
-      var arith=off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString();
-      /* FIX-1 3.2: receipts NAME non-overall scopes -- "Season H (home)" */
-      out.push({group:'stat',gid:'stat-'+scope+'-'+key+'-'+role+(rs.tag?'-'+rs.tag:''),
-        label:cap(scope)+' '+role+' '+label+(rs.tag?' ('+rs.tag+')':'')+
-          (off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
-        value:val,detail:null,arith:arith,accepts:acc,
-        statKey:key,splitScope:rs.tag});
+      laneOffsets(c).forEach(function(off){
+        var val=base+off;
+        if(!(val>0))return;
+        var arith=off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString();
+        /* FIX-1 3.2: receipts NAME non-overall scopes -- "Season H (home)" */
+        out.push({group:'stat',gid:'stat-'+scope+'-'+key+'-'+role+(rs.tag?'-'+rs.tag:'')+
+            (c.mode==='spread'?'-o'+off:''),
+          label:cap(scope)+' '+role+' '+label+(rs.tag?' ('+rs.tag+')':'')+
+            (off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
+          value:val,detail:null,arith:arith,accepts:acc,
+          statKey:key,splitScope:rs.tag});
+      });
     });
   });
 }
@@ -1890,7 +1919,7 @@ function switchSport(s){
   if(!SPORT_PROFILES[s])return;
   saveCfg();
   A.sport=s;
-  A.cfg=mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null));
+  A.cfg=migrateTbSpread(mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null)));
   A.cfg.sport=s;
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},lsGet(LS.work+s,null));
@@ -2234,6 +2263,8 @@ function statSection(title,table,conf){
             onclick:function(){c.mode='current';onChange();renderDialog()}}),
           h('button',{class:c.mode==='next'?'on':'',text:'Next',
             onclick:function(){c.mode='next';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='spread'?'on':'',text:'+1–4',
+            onclick:function(){c.mode='spread';onChange();renderDialog()}}),
           h('button',{class:c.mode==='custom'?'on':'',text:'Custom',
             onclick:function(){c.mode='custom';onChange();renderDialog()}}),
         ]));
@@ -2260,12 +2291,13 @@ function statSection(title,table,conf){
 }
 /* §6.8 Bulk Apply — one mode across ALL enabled stats. */
 function bulkApply(){
-  var m=prompt('Bulk apply mode to all ENABLED stats:\n  current | next | <number offset>','next');
+  var m=prompt('Bulk apply mode to all ENABLED stats:\n  current | next | spread (+1–4) | <number offset>','next');
   if(m==null)return;
   m=String(m).trim().toLowerCase();
   var mode,off=1;
   if(m==='current')mode='current';
   else if(m==='next')mode='next';
+  else if(m==='spread'||m==='1-4'||m==='+1-4')mode='spread';
   else if(/^-?\d+$/.test(m)){mode='custom';off=+m}
   else{toast('Not a mode: '+m);return}
   [A.cfg.stat.bat,A.cfg.stat.pit,A.cfg.teamTotals].forEach(function(conf){
@@ -3127,7 +3159,12 @@ function probeCounters(p){
         push('stat','pb-'+scope+'-'+key+'-cur',cap(scope)+' '+role+' '+label,base);
         push('stat','pb-'+scope+'-'+key+'-nxt',cap(scope)+' '+role+' '+label+' (next)',base+1,
           fmt(base)+' + 1 = '+fmt(base+1));
-        if(c.mode==='custom'&&+c.off){
+        if(c.mode==='spread'){
+          [2,3,4].forEach(function(o){
+            push('stat','pb-'+scope+'-'+key+'-o'+o,cap(scope)+' '+role+' '+label+' +'+o,
+              base+o,fmt(base)+' + '+o+' = '+fmt(base+o));
+          });
+        }else if(c.mode==='custom'&&+c.off){
           var o=Math.round(+c.off);
           push('stat','pb-'+scope+'-'+key+'-off',cap(scope)+' '+role+' '+label+' '+(o<0?'':'+')+o,
             base+o,fmt(base)+' '+(o<0?'-':'+')+' '+Math.abs(o)+' = '+fmt(base+o));
@@ -3252,7 +3289,7 @@ function render(){
 function boot(){
   A.sport=lsGet(LS.rail,{}).sport||'mlb';
   if(!SPORT_PROFILES[A.sport])A.sport='mlb';
-  A.cfg=mergeCfg(defaultConfig(A.sport),lsGet(cfgKey(),null));
+  A.cfg=migrateTbSpread(mergeCfg(defaultConfig(A.sport),lsGet(cfgKey(),null)));
   A.cfg.sport=A.sport;
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{}},lsGet(workKey(),null));
@@ -3915,14 +3952,15 @@ function teamCounters(team,cfg,acc){
     if(!c||!c.on)return;
     var base=team.seasonTotals[key];
     if(base==null||!(base>0))return;
-    var off=c.mode==='current'?0:(c.mode==='next'?1:Math.round(+c.off||0));
-    var val=base+off;
-    if(!(val>0))return;
-    out.push({group:'team',gid:'team-'+team.id+'-'+key,
-      label:(team.abbr||team.fullName)+' season '+label+(off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
-      value:val,
-      arith:off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString(),
-      detail:null,accepts:acc});
+    laneOffsets(c).forEach(function(off){
+      var val=base+off;
+      if(!(val>0))return;
+      out.push({group:'team',gid:'team-'+team.id+'-'+key+(c.mode==='spread'?'-o'+off:''),
+        label:(team.abbr||team.fullName)+' season '+label+(off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
+        value:val,
+        arith:off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString(),
+        detail:null,accepts:acc});
+    });
   });
   return out;
 }
@@ -4179,6 +4217,7 @@ DIALOGS.teamTotals={
         card.appendChild(h('div',{class:'modes'},[
           h('button',{class:c.mode==='current'?'on':'',text:'Current',onclick:function(){c.mode='current';onChange();renderDialog()}}),
           h('button',{class:c.mode==='next'?'on':'',text:'Next',onclick:function(){c.mode='next';onChange();renderDialog()}}),
+          h('button',{class:c.mode==='spread'?'on':'',text:'+1–4',onclick:function(){c.mode='spread';onChange();renderDialog()}}),
           h('button',{class:c.mode==='custom'?'on':'',text:'Custom',onclick:function(){c.mode='custom';onChange();renderDialog()}}),
         ]));
         if(c.mode==='custom')card.appendChild(h('input',{class:'off',type:'number',value:c.off,
