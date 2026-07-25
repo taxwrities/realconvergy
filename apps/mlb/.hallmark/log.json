@@ -2,6 +2,14 @@
   {
     "date": "2026-07-25",
     "scope": "app",
+    "macrostructure": "Workbench (unchanged)",
+    "theme": "custom (broadcast-dark) + bold-contrast variant",
+    "enrichment": "none",
+    "brief": "design.md Variants amendment from hallmark study of gematriacodes.com: weight 800 heads, lane-colored equation values, amber wells, solid-gold conv badge"
+  },
+  {
+    "date": "2026-07-25",
+    "scope": "app",
     "macrostructure": "Workbench (locked LAYOUT-SPEC shell + query rail/results)",
     "theme": "custom (broadcast-dark, locked pre-existing brand)",
     "theme_axes": "dark / grotesk-data (Fustat + JetBrains Mono, Manufacturing Consent wordmark) / cool-purple accent",

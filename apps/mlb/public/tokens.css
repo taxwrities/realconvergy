@@ -16,6 +16,9 @@
   --sf-sel: #202634;          /* selected row */
   --well: rgba(10, 12, 17, 0.55);   /* recessed inset panels */
   --well-2: rgba(10, 12, 17, 0.6);
+  /* bold-contrast variant (design.md § Variants): warm amber-tinted well
+     behind gold/hit content — richer than the neutral well under gold ink */
+  --well-gold: color-mix(in srgb, #ffb02e 8%, rgba(10, 12, 17, 0.55));
 
   /* hairlines + solid edges */
   --sf-line: rgba(148, 158, 180, 0.14);
@@ -45,6 +48,7 @@
   /* per-app brand accent (MLB: purple) */
   --cvg-acc: var(--cvg-purple);
   --cvg-acc-ink: #1d0526;
+  --cvg-gold-ink: #241700;  /* dark ink for solid-gold fills */
 
   /* focus ring — blue reads as system-neutral against the purple accent */
   --color-focus: var(--cvg-blue);

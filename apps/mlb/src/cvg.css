@@ -100,7 +100,7 @@ body {
 
 .chip {
   background: var(--card-grad); border: 1px solid var(--sf-line); color: var(--ink);
-  border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 500; cursor: pointer;
+  border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
   font-family: inherit;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
@@ -174,7 +174,7 @@ body {
 }
 .panel h3 {
   font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
-  color: var(--ink-3); margin-bottom: 8px; font-weight: 700;
+  color: var(--ink-3); margin-bottom: 8px; font-weight: 800;
 }
 .mono { font-family: var(--cvg-mono); }
 .muted { color: var(--ink-2); }
@@ -235,7 +235,7 @@ body {
 .batter-row:active { transform: scale(.996); }
 .batter-row.skip { opacity: .4; }
 .batter-row .rrow { display: flex; align-items: center; gap: 8px; }
-.batter-row .nm { font-size: 13px; font-weight: 600; line-height: 1.25; flex: 1 1 auto; min-width: 0; }
+.batter-row .nm { font-size: 13px; font-weight: 700; line-height: 1.25; flex: 1 1 auto; min-width: 0; }
 .batter-row .nm .jer {
   margin-left: 7px; font-family: var(--cvg-mono); font-size: 10px; font-weight: 700; color: var(--ink-2);
 }
@@ -259,7 +259,9 @@ body {
 .badge.cyan { color: var(--cvg-cyan); }
 /* pitcher-convergence pill (Tony 2026-07-23): the gold ⚡N sits first in the
    badge row; a heavier fill sets it apart from lane badges without adding size. */
-.badge.conv { background: color-mix(in srgb, currentColor 22%, transparent); }
+/* bold-contrast variant: the ⚡ pitcher-convergence badge commits to a solid
+   gold fill + dark ink — the strongest signal on the row reads strongest. */
+.badge.conv { background: var(--cvg-gold); border-color: var(--cvg-gold); color: var(--cvg-gold-ink); }
 .badge.founder { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
 
 /* FOUNDER badge popover (long-press, spec: founders-historian) — mini
@@ -363,7 +365,7 @@ body {
   display: flex; align-items: baseline; gap: 7px; font-family: var(--cvg-mono); font-size: 12.5px;
   padding: 4px 7px; border-radius: 7px;
 }
-.rung.hit { background: var(--well); }
+.rung.hit { background: var(--well-gold); }
 /* rung matches the active context chip — the "why did this batter match" row */
 .rung.hit.flt { background: color-mix(in srgb, var(--cvg-blue) 10%, var(--well-2)); box-shadow: 0 0 0 1px var(--cvg-blue) inset; }
 /* pattern-tile selection — gold twin of .flt (blue = context chip) */
@@ -486,7 +488,7 @@ body {
 .fact-row {
   display: flex; align-items: baseline; gap: 6px; padding: 4px 10px; font-size: 12px;
 }
-.fact-row.hit { background: var(--well); }
+.fact-row.hit { background: var(--well-gold); }
 .fact-row .ptag { font-size: 9.5px; font-weight: 800; letter-spacing: .4px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; font-family: var(--cvg-mono); flex: 0 0 auto; }
 .fact-row .why { font-size: 10.5px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bday-line .rungnum { color: var(--ink-hi); }

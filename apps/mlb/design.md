@@ -88,6 +88,25 @@ sticky 20 · shell 30 · dock 40 (drawer = dock−1) · sheet 60(+1) · popover 
 - Density knobs (query cards are tighter than Board panels).
 - Per-app accent: WNBA or other sports swap `--cvg-acc` only.
 
+## Variants — bold-contrast (adopted 2026-07-25)
+
+Studied DNA, folded into the base system. Provenance: `hallmark study` of
+gematriacodes.com (public reference; user's stated taste: "bold fonts and
+color contrast"). Adopted moves only — the reference's purple-gradient hero,
+pure-black paper, accent flood, and ambient pulse animations were rejected
+as anti-patterns.
+
+- **Weight commitment.** Card/player names and equation heads: 800 (was 700).
+  Panel labels: 800. Chips: 600 floor. Names in list rows: 700.
+- **Lane-colored values.** In equation-style rows (query.html `.mline`), the
+  matched VALUE renders in its counter-lane hue at weight 800 inside the white
+  sentence; words stay ink, color does the explaining.
+- **Amber wells.** `--well-gold` (8% gold over the neutral well) replaces the
+  neutral well behind gold/hit content (`.rung.hit`, `.fact-row.hit`).
+- **Solid-gold strongest signal.** The ⚡ pitcher-convergence badge is a solid
+  gold fill + `--cvg-gold-ink` dark ink; lesser badges stay outline+tint so
+  the hierarchy holds.
+
 ## Exports
 ### tokens.css
 Canonical file: [`public/tokens.css`](public/tokens.css) — served at
