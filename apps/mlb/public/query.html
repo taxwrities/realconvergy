@@ -1509,7 +1509,7 @@ function pushStatCounters(out,conf,table,stats,role,acc,p){
           label:cap(scope)+' '+role+' '+label+(rs.tag?' ('+rs.tag+')':'')+
             (off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
           value:val,detail:null,arith:arith,accepts:acc,
-          statKey:key,splitScope:rs.tag});
+          statKey:key,splitScope:rs.tag,off:off});
       });
     });
   });
@@ -1608,7 +1608,9 @@ function parseNums(s){
 }
 
 /* scanPlayer -> {player, groups:[{group,label,value,...,lines:[]}], count, flags} */
-function scanPlayer(p,ctx){
+/* the player's pool as value-keyed maps — used by the scan AND rebuilt
+   on demand by the counter tap-menu's +1..+4 preview. */
+function playerMaps(p,ctx){
   var pool=buildPool(p,ctx);
   var byValue={};
   pool.forEach(function(e){(byValue[e.v]=byValue[e.v]||[]).push(e)});
@@ -1625,16 +1627,20 @@ function scanPlayer(p,ctx){
       if(e.v>0)(byValue[e.v]=byValue[e.v]||[]).push(e);
     });
   }
+  return{maps:[byValue,sharedByValue(ctx)],pool:pool};
+}
+function scanPlayer(p,ctx){
+  var pm=playerMaps(p,ctx);
   var counters=buildCounters(p,ctx);
-  var maps=[byValue,sharedByValue(ctx)];
   var groups=[],count=0;
   counters.forEach(function(c){
-    var hits=matchCounter(c,maps,ctx.depth);
+    c._p=p;   /* tap-menu previews need the owning player */
+    var hits=matchCounter(c,pm.maps,ctx.depth);
     count+=hits.length;
     groups.push({counter:c,hits:hits});
   });
   return{player:p,groups:groups,count:count,flags:playerFlags(p,ctx),
-    pool:pool.concat(sharedPool(ctx))};
+    pool:pm.pool.concat(sharedPool(ctx))};
 }
 
 /* §6.1 "Jersey Birthday Match" — jersey equals a DOB day/month figure.
@@ -2756,8 +2762,25 @@ function counterMenu(ev,counter){
   if(counter.arith)rows.push(counter.arith);
   if(counter.detail)rows.push(counter.detail);
   if(counter.hook)rows.push('hook: '+counter.hook.why);
-  popMenu(ev,counter.label+' = '+fmt(counter.value),
-    [['Spotlight '+fmt(counter.value),function(){spotlightValue(counter.value)}]],rows);
+  var acts=[['Spotlight '+fmt(counter.value),function(){spotlightValue(counter.value)}]];
+  /* Tony 2026-07-26: tapping a stat counter previews the next 1–4 increments
+     against this player's own pool — which of base+1..+4 would land, and on
+     what. Hitting increments get their own Spotlight action. */
+  if(counter.group==='stat'&&counter._p&&A.ctx){
+    var base=counter.value-(counter.off||0);
+    var maps=playerMaps(counter._p,A.ctx).maps;
+    [1,2,3,4].forEach(function(o){
+      var v=base+o;
+      var hits=matchCounter({value:v,accepts:counter.accepts,group:counter.group,
+        statKey:counter.statKey},maps,A.ctx.depth);
+      if(!hits.length){rows.push('+'+o+' → '+fmt(v)+' · no match');return}
+      var words=hits.slice(0,2).map(function(hx){return hx.entry.text});
+      rows.push('+'+o+' → '+fmt(v)+' ✓ '+words.join(' · ')+
+        (hits.length>2?' · +'+(hits.length-2)+' more':''));
+      acts.push(['Spotlight '+fmt(v)+' (+'+o+')',function(){spotlightValue(v)}]);
+    });
+  }
+  popMenu(ev,counter.label+' = '+fmt(counter.value),acts,rows);
 }
 /* FIX-1 section 2: word-level mutes are typed in the sheet's Hidden-words
    section; family hides live there too. The undo toast stays. */
