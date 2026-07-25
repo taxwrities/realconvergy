@@ -144,7 +144,7 @@
     "infobox_birth_place": "[[Payns]], [[County of Champagne]]",
     "wikidata_url": "https://www.wikidata.org/wiki/Q297576",
     "precision": 11,
-    "founder_dob": "1074-02-09",
+    "founder_dob": "1070",
     "place_detail": {
       "city": "Pagani",
       "admin": "Province of Salerno",
@@ -157,10 +157,10 @@
       "country": "Italy",
       "place_qid": "Q81263"
     },
-    "founder_birthplace": "Pagani, Italy",
+    "founder_birthplace": "Payns, County of Champagne",
     "infobox_agrees": false,
-    "date_status": "verify",
-    "note": "CONFLICT: Wikidata P569 = 1074-02-09 and P19 = Pagani, Italy; Wikipedia infobox = c.1070 (comment: 'could be as late as 1074') and birth_place = Payns, County of Champagne (France). Date AND place both disputed — the Wikidata place claim looks like a Payns/Pagani conflation. Needs Tony's call."
+    "date_status": "locked",
+    "note": "CIRCA — Wikipedia gives only {{c.|1070}} (comment: \"could be as late as 1074\"), so there is NO month-day and no anniversary probe is possible; year-granularity only. Wikidata's 1074-02-09 was NOT adopted per Tony's Wikipedia-first ruling. Birthplace corrected to the Wikipedia value — Wikidata's P19 \"Pagani, Italy\" is a Payns/Pagani conflation."
   },
   {
     "seed_founder": "Prince Bernhard",
@@ -269,8 +269,8 @@
     "infobox_birth_place": "[[Free City of Frankfurt]], Holy Roman Empire",
     "wikidata_url": "https://www.wikidata.org/wiki/Q76988",
     "precision": 9,
-    "founder_dob": "1743",
-    "note": "CONFLICT: Wikidata P569 = 1743 (year precision only); Wikipedia infobox = 1743-02-23 'or 1744' per NDB. Wikidata country label also resolved to the historical 'Francia' rather than Germany (infobox: Free City of Frankfurt, Holy Roman Empire). Needs Tony's call.",
+    "founder_dob": "1743-02-23",
+    "note": "Wikipedia infobox 1743-02-23 adopted per Tony's ruling — it supplies the month-day Wikidata lacked (P569 was year-precision 1743 only). NDB records \"or 1744\"; that year ambiguity affects year-spans only, not the anniversary. Birthplace taken from the same infobox (Wikidata's country label resolved to the historical \"Francia\").",
     "place_detail": {
       "city": "Frankfurt",
       "admin": "Darmstadt Government Region",
@@ -283,9 +283,9 @@
       "country": "Francia",
       "place_qid": "Q1794"
     },
-    "founder_birthplace": "Frankfurt, Francia",
+    "founder_birthplace": "Frankfurt, Holy Roman Empire",
     "infobox_agrees": false,
-    "date_status": "verify"
+    "date_status": "locked"
   },
   {
     "seed_founder": "John D Rockefeller",
@@ -348,7 +348,7 @@
     "infobox_birth_place": "[[Norwalk, Ohio]], U.S.",
     "wikidata_url": "https://www.wikidata.org/wiki/Q766590",
     "precision": 11,
-    "founder_dob": "1865-01-05",
+    "founder_dob": "1864-01-05",
     "place_detail": {
       "city": "Norwalk",
       "admin": "Ohio",
@@ -362,8 +362,8 @@
     },
     "founder_birthplace": "Norwalk, Ohio",
     "infobox_agrees": false,
-    "date_status": "verify",
-    "note": "CONFLICT: Wikidata P569 = 1865-01-05; Wikipedia infobox = 1864-01-05. Same month/day, year differs by one. Birthplace agrees across both (Norwalk, Ohio). Needs Tony's call."
+    "date_status": "locked",
+    "note": "Wikipedia infobox 1864-01-05 adopted per Tony's ruling (Wikipedia is tiebreaker). Wikidata P569 gives 1865-01-05 — month-day is IDENTICAL (01-05), only the year differs, so the anniversary probe is unaffected. Year-spans carry +/-1yr uncertainty."
   },
   {
     "seed_founder": "Maurice Podoloff",

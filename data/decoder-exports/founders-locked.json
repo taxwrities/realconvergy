@@ -390,9 +390,11 @@
       "source": "https://en.wikipedia.org/wiki/Knights_Templar",
       "founder": "Hugues de Payens",
       "note": "Ruling: 1118 (page's explicit founding statement). Some accounts date the Hugues de Payens approach to Baldwin II at 1119.",
-      "founder_dob_status": "verify",
+      "founder_dob": "1070",
+      "founder_birthplace": "Payns, County of Champagne",
+      "founder_dob_status": "locked",
       "founder_dob_source": "https://en.wikipedia.org/wiki/Hugues_de_Payens",
-      "founder_dob_note": "CONFLICT: Wikidata P569 = 1074-02-09 and P19 = Pagani, Italy; Wikipedia infobox = c.1070 (comment: 'could be as late as 1074') and birth_place = Payns, County of Champagne (France). Date AND place both disputed — the Wikidata place claim looks like a Payns/Pagani conflation. Needs Tony's call.",
+      "founder_dob_note": "CIRCA — Wikipedia gives only {{c.|1070}} (comment: \"could be as late as 1074\"), so there is NO month-day and no anniversary probe is possible; year-granularity only. Wikidata's 1074-02-09 was NOT adopted per Tony's Wikipedia-first ruling. Birthplace corrected to the Wikipedia value — Wikidata's P19 \"Pagani, Italy\" is a Payns/Pagani conflation.",
       "ciphers": {
         "Ord": 173,
         "Red": 65,
@@ -415,7 +417,19 @@
         "Sept": 63,
         "Latin": 1115
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 75,
+        "Red": 21,
+        "Rev": 60,
+        "RR": 24,
+        "Sat": 250,
+        "RevSat": 235,
+        "Chal": 18,
+        "Sept": 13,
+        "Latin": 591
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "year"
     },
     {
       "name": "Bohemian Club",
@@ -746,9 +760,11 @@
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/American_League",
       "founder": "Ban Johnson",
-      "founder_dob_status": "verify",
+      "founder_dob": "1864-01-05",
+      "founder_birthplace": "Norwalk, Ohio",
+      "founder_dob_status": "locked",
       "founder_dob_source": "https://en.wikipedia.org/wiki/Ban_Johnson",
-      "founder_dob_note": "CONFLICT: Wikidata P569 = 1865-01-05; Wikipedia infobox = 1864-01-05. Same month/day, year differs by one. Birthplace agrees across both (Norwalk, Ohio). Needs Tony's call.",
+      "founder_dob_note": "Wikipedia infobox 1864-01-05 adopted per Tony's ruling (Wikipedia is tiebreaker). Wikidata P569 gives 1865-01-05 — month-day is IDENTICAL (01-05), only the year differs, so the anniversary probe is unaffected. Year-spans carry +/-1yr uncertainty.",
       "ciphers": {
         "Ord": 115,
         "Red": 61,
@@ -771,7 +787,19 @@
         "Sept": 26,
         "Latin": 921
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 94,
+        "Red": 31,
+        "Rev": 95,
+        "RR": 41,
+        "Sat": 339,
+        "RevSat": 340,
+        "Chal": 26,
+        "Sept": 18,
+        "Latin": 1101
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "National Basketball Association",
