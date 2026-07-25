@@ -247,6 +247,11 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .mline .v{font-weight:700}
 .mline .cip{font-size:10.5px}
 .mline .kindtag{color:var(--ink-3);font-style:italic}
+/* FIX-1 section 4 provenance suffix; truncates gracefully on mobile, the
+   tap popover always carries the full chain */
+.mline .prov{color:var(--ink-3);font-size:10px;font-style:italic;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:58vw}
+@media(min-width:900px){.mline .prov{max-width:none;white-space:normal}}
 .mline.spot-hit{background:rgba(255,176,46,.14);border-left-color:var(--gold);border-radius:0 6px 6px 0}
 .mval.spot-hit{color:var(--gold)!important;background:rgba(255,176,46,.16);
   border-radius:5px;padding:0 4px}
@@ -259,6 +264,8 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .menu button:active{background:var(--sf-2)}
 .menu .mtitle{font-family:var(--mono);font-size:10px;color:var(--ink-3);padding:5px 10px 3px;
   word-break:break-word}
+.menu .minfo{font-family:var(--mono);font-size:11px;color:var(--ink-2);padding:3px 10px;
+  word-break:break-word;border-left:2px solid var(--line);margin:2px 6px}
 .mline.spot-hit .v{color:var(--gold)}
 .mline .chain{color:var(--ink-3);font-size:10.5px}
 .depth-chip{font-family:var(--mono);font-size:9px;font-weight:800;border-radius:4px;
@@ -274,6 +281,8 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .g-age .mhead{color:var(--c-age)} .g-age .mline{border-left-color:color-mix(in srgb,var(--c-age) 35%,transparent)}
 .g-bday .mhead{color:var(--c-bday)} .g-bday .mline{border-left-color:color-mix(in srgb,var(--c-bday) 35%,transparent)}
 .g-stat .mhead{color:var(--c-stat)} .g-stat .mline{border-left-color:color-mix(in srgb,var(--c-stat) 35%,transparent)}
+/* FIX-1 3.2: split-scoped stat counters -- a distinct shade of the stat color */
+.g-stat-sp .mhead{color:#ffd27a} .g-stat-sp .mline{border-left-color:color-mix(in srgb,#ffd27a 40%,transparent)}
 .g-date .mhead{color:var(--c-date)} .g-date .mline{border-left-color:color-mix(in srgb,var(--c-date) 35%,transparent)}
 .g-founders .mhead{color:var(--c-founders)} .g-founders .mline{border-left-color:color-mix(in srgb,var(--c-founders) 35%,transparent)}
 .g-clock .mhead{color:var(--c-clock)} .g-clock .mline{border-left-color:color-mix(in srgb,var(--c-clock) 35%,transparent)}
@@ -397,9 +406,44 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc);flex:0 0 aut
   padding:9px 13px;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);
   display:flex;gap:11px;align-items:center;max-width:calc(100vw - 24px)}
 .toast button{color:var(--acc);font-weight:700;font-size:12.5px}
-.tray-btn{position:fixed;right:12px;bottom:14px;z-index:70;background:var(--sf-3);
-  border:1px solid var(--line-hi);border-radius:22px;padding:8px 13px;font-family:var(--mono);
-  font-size:11.5px;color:var(--ink-2);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+/* ---------------- FIX-1 section 2: filter sheet ----------------
+   bottom sheet on mobile (~85% height, grid visible behind), right panel
+   on desktop. Dark, sectioned, chip toggles; counts per section; no Apply
+   -- every toggle recomputes live. */
+.sheet-scrim{position:fixed;inset:0;z-index:90;background:rgba(6,8,12,.35)}
+.sheet{position:fixed;z-index:95;background:var(--sf-3);border:1px solid var(--line-hi);
+  display:flex;flex-direction:column;box-shadow:0 -12px 40px rgba(0,0,0,.55)}
+@media(max-width:899px){
+  .sheet{left:0;right:0;bottom:0;height:85vh;border-radius:16px 16px 0 0}
+}
+@media(min-width:900px){
+  .sheet{top:0;right:0;bottom:0;width:400px;border-radius:0;
+    box-shadow:-12px 0 40px rgba(0,0,0,.5)}
+}
+.sheet-hd{display:flex;align-items:center;gap:8px;padding:12px 14px;
+  border-bottom:1px solid var(--line)}
+.sheet-hd h2{margin:0;font-size:15px;font-weight:700}
+.sheet-hd .cnt{font-family:var(--mono);font-size:11px;color:var(--acc)}
+.sheet-bd{flex:1;overflow-y:auto;padding:10px 14px 20px;-webkit-overflow-scrolling:touch}
+.sheet-ft{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.ssec{margin-bottom:14px}
+.ssec-hd{display:flex;align-items:baseline;gap:7px;margin-bottom:6px}
+.ssec-hd h3{margin:0;font-size:10.5px;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--ink-3)}
+.ssec-hd .scount{font-family:var(--mono);font-size:10px;color:var(--acc)}
+.ssec-hd .sreset{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:16px;
+  border:1px solid var(--line);color:var(--ink-3);background:var(--sf-1)}
+.chip.on{color:var(--ink);border-color:var(--line-hi);background:var(--sf-2)}
+.filters-btn{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;
+  padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--sf-1);
+  color:var(--ink-2);flex:0 0 auto}
+.filters-btn .fbadge{background:var(--acc);color:var(--acc-ink);border-radius:9px;
+  padding:0 6px;font-weight:800;font-size:10.5px}
+.hook-tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);
+  border-radius:4px;padding:0 4px;color:var(--ink-3);margin-left:auto;flex:0 0 auto}
+.tray-btn{display:none!important}
 
 .empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-family:var(--mono);font-size:12.5px;
   line-height:1.6}
@@ -436,6 +480,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc);flex:0 0 aut
 </div>
 
 <div id="dialogHost"></div>
+<div id="sheetHost"></div>
 <div id="toastHost"></div>
 <button class="tray-btn" id="trayBtn" style="display:none"></button>
 
@@ -627,9 +672,9 @@ function dateCalcs(dstr,on,ciphers){
   var dstr2=function(n){return String(n).split('').join('+')};
   var doy=dayOfYear(dstr),left=(isLeap(YYYY)?366:365)-doy;
   var out=[],want=function(id){return!on||on[id]};
-  var push=function(id,label,calc,n,cipher){
+  var push=function(id,label,calc,n,cipher,word){
     if(!(n>0))return;
-    out.push({id:id,label:label,calc:calc,n:n,cipher:cipher||null});
+    out.push({id:id,label:label,calc:calc,n:n,cipher:cipher||null,word:word||null});
   };
   if(want('doy'))push('doy','Day of Year','day '+doy+' of '+YYYY,doy);
   if(want('left'))push('left','Days Left in Year',(isLeap(YYYY)?366:365)+' - '+doy,left);
@@ -651,11 +696,11 @@ function dateCalcs(dstr,on,ciphers){
     var rl=RULERS[dn];
     if(want('dayName')){
       var dv=calcAll(dn);
-      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('dayName','Day name gematria','"'+dn+'"',dv[c],c)});
+      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('dayName','day name','"'+dn+'"',dv[c],c,dn)});
     }
     if(want('ruler')){
       var rv=calcAll(rl);
-      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('ruler','Ruling planet ('+rl+')','"'+rl+'"',rv[c],c)});
+      ALL_CIPHERS.forEach(function(c){if(!ciphers||ciphers[c])push('ruler','ruling planet','"'+rl+'"',rv[c],c,rl)});
     }
   }
   return out;
@@ -787,7 +832,11 @@ function defaultConfig(sport){
     founders:{cats:{},entities:{},
               spans:{since:true,sinceAnn:true,untilAnn:true},
               gematria:false,founderDob:false,birthplace:false,
-              crossDates:false,debutCross:false},
+              crossDates:false,debutCross:false,
+              /* FIX-1 1.3: manual hooks (slate-wide) + per-category
+                 widen-scope overrides. Widen defaults OFF for every
+                 category -- the old always-on admission is gone. */
+              manual:{},widen:{}},
     /* §6.10 Career Clocks (Phase 2) */
     clocks:{debutSince:true,debutAnnSince:true,debutAnnUntil:true,
             bdaySince:false,bdayUntil:false,franchise:true},
@@ -806,8 +855,9 @@ function defaultConfig(sport){
 function statDefaults(table){
   var o={};
   table.forEach(function(r){
-    o['season-'+r[1]]={on:true,mode:'current',off:1};
-    o['career-'+r[1]]={on:true,mode:'current',off:1};
+    /* FIX-1 3.2: scope Overall (default) / home / away / venue */
+    o['season-'+r[1]]={on:true,mode:'current',off:1,scope:'overall'};
+    o['career-'+r[1]]={on:true,mode:'current',off:1,scope:'overall'};
   });
   return o;
 }
@@ -852,6 +902,20 @@ function mergeCfg(base,saved){
    8. ADAPTERS (§4.2) — the engine reads a NORMALIZED slate (§4.3) and
    never calls a sport API directly.
 ============================================================ */
+/* USPS abbreviation -> the founders registry's full state names (static
+   civics, not model-memory dates). DC included; territories absent from the
+   registry simply never hook. */
+var ABBR2STATE={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',
+  ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',
+  LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',
+  MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',
+  NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',
+  NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',
+  PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',
+  TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',
+  WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',DC:'Washington DC'};
+
 var ADAPTERS={};
 
 /* ---------------- adapters/mlb — LIVE ---------------- */
@@ -884,7 +948,7 @@ ADAPTERS.mlb=(function(){
     var season=dstr.slice(0,4);
     var slate={sport:'mlb',date:dstr,fetchedAt:null,games:[],teams:{},players:{}};
     prog('Schedule…');
-    return jget(API+'/schedule?sportId=1&date='+dstr+'&hydrate=probablePitcher,lineups,venue')
+    return jget(API+'/schedule?sportId=1&date='+dstr+'&hydrate=probablePitcher,lineups,venue(location)')
     .then(function(sched){
       var raw=(sched.dates&&sched.dates[0]&&sched.dates[0].games)||[];
       /* EMPTY SLATE is a legitimate state, not an error (off-day, All-Star
@@ -899,6 +963,9 @@ ADAPTERS.mlb=(function(){
           away:{id:g.teams.away.team.id,fullName:g.teams.away.team.name},
           home:{id:g.teams.home.team.id,fullName:g.teams.home.team.name},
           venue:(g.venue&&g.venue.name)||null,
+          /* FIX-1 §1.2 routing hooks need the venue's state */
+          venueState:(g.venue&&g.venue.location&&g.venue.location.state)||null,
+          venueStateAbbrev:(g.venue&&g.venue.location&&g.venue.location.stateAbbrev)||null,
           status:(g.status&&g.status.abstractGameState)||'',
           detailedState:(g.status&&g.status.detailedState)||'',
           gameDate:g.gameDate||null,
@@ -916,11 +983,15 @@ ADAPTERS.mlb=(function(){
       slate.games.forEach(function(g){
         [g.away.id,g.home.id].forEach(function(id){if(teamIds.indexOf(id)<0)teamIds.push(id)});
       });
-      return jget(API+'/teams?teamIds='+teamIds.join(',')+'&sportId=1').then(function(td){
+      return jget(API+'/teams?teamIds='+teamIds.join(',')+'&sportId=1&hydrate=venue(location)').then(function(td){
         (td.teams||[]).forEach(function(t){
           slate.teams[t.id]={id:t.id,fullName:t.name,city:t.locationName||null,
             nickname:t.teamName||null,abbr:t.abbreviation||null,
-            league:(t.league&&t.league.id)||null,seasonTotals:null};
+            league:(t.league&&t.league.id)||null,seasonTotals:null,
+            /* FIX-1 §1.2: the team's home state = its venue's state (full name +
+               abbrev; Toronto yields ON, which simply matches no US state entity) */
+            state:(t.venue&&t.venue.location&&t.venue.location.state)||null,
+            stateAbbrev:(t.venue&&t.venue.location&&t.venue.location.stateAbbrev)||null};
         });
         slate.games.forEach(function(g){
           ['away','home'].forEach(function(sd){
@@ -966,6 +1037,12 @@ ADAPTERS.mlb=(function(){
                 isPitcher:false,isBatter:false,
                 jersey:pp.primaryNumber?+pp.primaryNumber:null,
                 dob:isISO(pp.birthDate)?pp.birthDate:null,
+                /* FIX-1 §1.2: birth state hooks that state entity for THIS
+                   player's card. statsapi gives the abbreviation ("CA");
+                   ABBR2STATE resolves it to the registry's full name. A
+                   foreign player has none — no hook, no error. */
+                birthCity:pp.birthCity||null,
+                birthState:ABBR2STATE[pp.birthStateProvince]||null,
                 debut:isISO(pp.mlbDebutDate)?pp.mlbDebutDate:null,
                 batting:{season:null,career:null},pitching:{season:null,career:null},
               };
@@ -979,6 +1056,70 @@ ADAPTERS.mlb=(function(){
               slate.players[pp.id]=rec;
             });
           }).catch(function(){/* degrade this chunk; other players still scan */});
+        });
+      }).then(function(){
+        /* ============================================================
+           FIX-1 §3 SPLITS — VERIFIED SYNTAX (live statsapi, 2026-07-25).
+           Season:  hydrate=stats(group=[hitting],type=[statSplits],sitCodes=[h,a],season=YYYY)
+           Career:  same call, type=[statSplits,careerStatSplits]
+           VERIFIED RESPONSE SNIPPET (personId 592450 Aaron Judge):
+             stats:[{type:{displayName:"statSplits"},group:{displayName:"hitting"},
+               splits:[{season:"2026",split:{code:"h",description:"Home Games"},
+                        stat:{gamesPlayed:26,hits:26,homeRuns:10,atBats:97,strikeOuts:33}},
+                       {season:"2026",split:{code:"a",description:"Away Games"},
+                        stat:{gamesPlayed:33,hits:27,homeRuns:7,atBats:117,...}}]},
+              {type:{displayName:"careerStatSplits"},...
+               splits:[{split:{code:"h"},stat:{gamesPlayed:596,hits:630,homeRuns:199,...}},
+                       {split:{code:"a"},stat:{gamesPlayed:608,hits:628,...}}, <dupes>]}]
+           QUIRKS ENCODED HERE (both live-verified):
+           1. careerStatSplits rows arrive DUPLICATED (2x). Idempotent mapping
+              by split.code absorbs that.
+           2. With group=[hitting,pitching] in ONE call, careerStatSplits leaks
+              the OTHER group's rows into each block (Ohtani group=hitting
+              carried G=61/W=27 pitching rows beside G=557 hitting rows).
+              Single-group calls are clean — Ohtani group=[hitting] only:
+              h G=557 H=578 AB=2020 (no IP, no W) / a G=556 H=576 AB=2074.
+              So hitting and pitching splits are fetched in SEPARATE calls.
+           Failure of either call degrades that group's splits to null:
+           Overall keeps working, split scopes read "unavailable" (§3.2).
+        ============================================================ */
+        function splitsCall(idList,group,assign){
+          var chunks=[];
+          for(var i=0;i<idList.length;i+=50)chunks.push(idList.slice(i,i+50));
+          return seq(chunks,function(chunk,ci){
+            prog('Splits '+group+' '+Math.min((ci+1)*50,idList.length)+'/'+idList.length+'…');
+            return jget(API+'/people?personIds='+chunk.join(',')+'&season='+season+
+              '&hydrate=stats(group=['+group+'],type=[statSplits,careerStatSplits],sitCodes=[h,a],season='+season+')')
+            .then(function(d){
+              (d.people||[]).forEach(function(pp){
+                var rec=slate.players[pp.id];if(!rec)return;
+                (pp.stats||[]).forEach(function(st){
+                  var t=st.type&&st.type.displayName;
+                  var scope=t==='statSplits'?'seasonSplits':(t==='careerStatSplits'?'careerSplits':null);
+                  if(!scope)return;
+                  (st.splits||[]).forEach(function(sp){
+                    var code=sp.split&&sp.split.code;
+                    var loc=code==='h'?'home':(code==='a'?'away':null);
+                    if(!loc||!sp.stat)return;
+                    assign(rec,scope,loc,sp.stat);
+                  });
+                });
+              });
+            }).catch(function(){/* this group's splits stay null — §3.2 degradation */});
+          });
+        }
+        var allIds2=Object.keys(slate.players).map(Number);
+        var pitchIds=allIds2.filter(function(id){
+          var r=slate.players[id];return r.pitching&&(r.pitching.season||r.pitching.career);
+        });
+        return splitsCall(allIds2,'hitting',function(rec,scope,loc,stat){
+          rec.batting[scope]=rec.batting[scope]||{home:null,away:null};
+          rec.batting[scope][loc]=bat(stat);
+        }).then(function(){
+          return splitsCall(pitchIds,'pitching',function(rec,scope,loc,stat){
+            rec.pitching[scope]=rec.pitching[scope]||{home:null,away:null};
+            rec.pitching[scope][loc]=pit(stat);
+          });
         });
       }).then(function(){
         /* attach roles + team/game/opponent refs */
@@ -1143,7 +1284,9 @@ function buildPool(p,ctx){
   /* the cipher is NOT baked into the text — renderLine prints it as the
      receipt's label, and embedding it here printed it twice. */
   if(cfg.types.date)ctx.dateVals.forEach(function(d){
-    poolAdd(out,d.n,d.label,d.cipher,'date',d.calc);
+    var e={v:d.n,text:d.word||d.label,cipher:d.cipher,kind:'date',
+      label:d.label,calc:d.calc};
+    if(e.v>0)out.push(e);
   });
   /* §6.8 free-entry thread numbers. */
   if(cfg.types.stat&&cfg.stat.sources.raw)ctx.rawNums.forEach(function(n){
@@ -1259,8 +1402,8 @@ function buildCounters(p,ctx){
   /* §6.8 stat counters, with Current / Next / Custom modes. */
   if(cfg.types.stat){
     var sacc=statAccepts(cfg);
-    if(p.isBatter)pushStatCounters(out,cfg.stat.bat,BAT_STATS,p.batting,'Batting',sacc);
-    if(p.isPitcher)pushStatCounters(out,cfg.stat.pit,PIT_STATS,p.pitching,'Pitching',sacc);
+    if(p.isBatter)pushStatCounters(out,cfg.stat.bat,BAT_STATS,p.batting,'Batting',sacc,p);
+    if(p.isPitcher)pushStatCounters(out,cfg.stat.pit,PIT_STATS,p.pitching,'Pitching',sacc,p);
   }
   /* Phase 2 counters (founders spans / career clocks / team totals). */
   PHASE2_COUNTERS.forEach(function(fn){fn(out,p,ctx)});
@@ -1284,13 +1427,26 @@ function statAccepts(cfg){
   return acc;
 }
 /* §7.2: Custom-offset stats show their arithmetic ("59 + 3 = 62"). */
-function pushStatCounters(out,conf,table,stats,role,acc){
+/* FIX-1 3.2: resolve a lane's stat source for its configured scope.
+   'venue' auto-resolves to home or away from where this player's game is
+   (p.side) -- the scope Tony actually uses pregame. Missing splits: null,
+   the lane contributes nothing, zero errors (3.2 degradation). */
+function statScopeSrc(stats,scope,laneScope,p){
+  if(!stats)return{src:null,tag:null};
+  if(!laneScope||laneScope==='overall')return{src:stats[scope],tag:null};
+  var loc=laneScope==='venue'?(p&&p.side==='home'?'home':'away'):laneScope;
+  var sp=stats[scope+'Splits'];
+  return{src:(sp&&sp[loc])||null,
+    tag:laneScope==='venue'?'venue·'+loc:loc};
+}
+function pushStatCounters(out,conf,table,stats,role,acc,p){
   ['season','career'].forEach(function(scope){
-    var src=stats&&stats[scope];
-    if(!src)return;
     table.forEach(function(row){
       var label=row[0],key=row[1],c=conf[scope+'-'+key];
       if(!c||!c.on)return;
+      var rs=statScopeSrc(stats,scope,c.scope,p);
+      var src=rs.src;
+      if(!src)return;
       var base=src[key];
       /* §6.8: zero-value stats are skipped for the other role (a pitcher's
          empty batting line produces no counters). null = never fabricated. */
@@ -1299,9 +1455,12 @@ function pushStatCounters(out,conf,table,stats,role,acc){
       var val=base+off;
       if(!(val>0))return;
       var arith=off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString();
-      out.push({group:'stat',gid:'stat-'+scope+'-'+key+'-'+role,
-        label:cap(scope)+' '+role+' '+label+(off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
-        value:val,detail:null,arith:arith,accepts:acc});
+      /* FIX-1 3.2: receipts NAME non-overall scopes -- "Season H (home)" */
+      out.push({group:'stat',gid:'stat-'+scope+'-'+key+'-'+role+(rs.tag?'-'+rs.tag:''),
+        label:cap(scope)+' '+role+' '+label+(rs.tag?' ('+rs.tag+')':'')+
+          (off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
+        value:val,detail:null,arith:arith,accepts:acc,
+        statKey:key,splitScope:rs.tag});
     });
   });
 }
@@ -1485,8 +1644,11 @@ var A={
   scanMs:0,
   boot:checksum(),
   /* §7.3 working state — persisted, never discarded on refresh. */
-  work:{hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',probes:{},
+  /* FIX-1 section 2: hiddenFamilies replaces the old tap-to-hide type/counter
+     lists (migrated at boot); hiddenWords is now typed in the sheet. */
+  work:{hiddenWords:[],hiddenFamilies:[],spotlight:'',probes:{},
         openProbes:{},collapsed:{}},
+  sheetOpen:false,
   undo:null,
   railOpen:null,   /* null = not yet resolved; boot() picks per viewport */
 };
@@ -1511,6 +1673,9 @@ function onChange(rescan){
   saveCfg();
   if(rescan!==false&&A.scanned)runScan();
   render();
+  /* the FIX-1 sheet stays open across recomputes -- the grid updates live
+     behind it. render() never touches sheetHost. */
+  if(A.sheetOpen)renderSheet();
 }
 
 /* ============================================================
@@ -1706,7 +1871,7 @@ function switchSport(s){
   A.sport=s;
   A.cfg=mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null));
   A.cfg.sport=s;
-  A.work=mergeCfg({hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',
+  A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{}},lsGet(LS.work+s,null));
   A.slate=null;A.results=[];A.scanned=false;A.error=null;
   persistRail();                 /* the sport IS rail state — save it now */
@@ -2053,6 +2218,18 @@ function statSection(title,table,conf){
         ]));
         if(c.mode==='custom')card.appendChild(h('input',{class:'off',type:'number',value:c.off,
           onchange:function(e){c.off=Math.round(+e.target.value||0);onChange();renderDialog()}}));
+        /* FIX-1 3.2 scope row. When the slate carries no splits at all the
+           split scopes read unavailable -- muted, not hidden, zero errors. */
+        var hasSplits=slateHasSplits();
+        var srow=h('div',{class:'modes'},['overall','home','away','venue'].map(function(sc){
+          var lbl=sc==='overall'?'All':sc==='venue'?'Ven':cap(sc).slice(0,4);
+          return h('button',{class:(c.scope||'overall')===sc?'on':'',
+            text:lbl,
+            title:sc==='overall'?'Overall':(hasSplits?('Scope: '+sc):'splits unavailable for this slate'),
+            style:(sc!=='overall'&&!hasSplits)?{opacity:'.35'}:null,
+            onclick:function(){c.scope=sc;onChange();renderDialog()}});
+        }));
+        card.appendChild(srow);
       }
       grid.appendChild(card);
     });
@@ -2093,32 +2270,12 @@ DIALOGS.card={
     ]));
     bd.appendChild(h('p',{class:'hint',text:'Saved with presets.'}));
     /* §7.3 hidden-items tray lives here too so everything is reversible. */
-    bd.appendChild(renderTray());
+    bd.appendChild(h('p',{class:'hint',
+      text:'Hiding (words, counter families, entities) lives in the Filters sheet on the results header.'}));
   }
 };
-function renderTray(){
-  var W=A.work;
-  var items=[];
-  W.hiddenWords.forEach(function(w){items.push(['word',w,'word "'+w+'"'])});
-  W.hiddenTypes.forEach(function(t){items.push(['type',t,'match type '+t])});
-  W.hiddenCounters.forEach(function(c){items.push(['counter',c,'counter '+c])});
-  var wrap=h('div',{class:'dsec'},[h('h3',{text:'Hidden items ('+items.length+')'})]);
-  if(!items.length){wrap.appendChild(h('p',{class:'hint',text:'Nothing hidden. Tap any match line on a card to hide a word, a match type or a counter — everything lands here and is reversible.'}));return wrap}
-  items.forEach(function(it){
-    wrap.appendChild(h('div',{class:'crow'},[
-      h('label',{},[h('span',{text:it[2]})]),
-      h('button',{class:'cfg',text:'Unhide',onclick:function(){
-        var arr=it[0]==='word'?W.hiddenWords:it[0]==='type'?W.hiddenTypes:W.hiddenCounters;
-        var i=arr.indexOf(it[1]);if(i>=0)arr.splice(i,1);
-        saveWork();render();renderDialog();
-      }}),
-    ]));
-  });
-  wrap.appendChild(h('button',{class:'mini-btn',text:'Unhide all',onclick:function(){
-    W.hiddenWords=[];W.hiddenTypes=[];W.hiddenCounters=[];saveWork();render();renderDialog();
-  }}));
-  return wrap;
-}
+/* renderTray retired by FIX-1 -- the filter sheet owns hide state */
+
 
 /* ============================================================
    15. RESULTS (§7)
@@ -2189,6 +2346,11 @@ function renderResults(){
       h('option',{value:'alpha',selected:C.sort==='alpha'?true:null,text:'Sort: lineup / A–Z'}),
       h('option',{value:'team',selected:C.sort==='team'?true:null,text:'Sort: team / game'}),
     ]),
+    (function(){
+      var nf=filterCount();
+      return h('button',{class:'filters-btn',onclick:function(){A.sheetOpen=true;renderSheet()}},
+        [h('span',{text:'Filters'}),nf?h('span',{class:'fbadge',text:String(nf)}):null]);
+    })(),
   ]);
   host.appendChild(hdr);
 
@@ -2246,10 +2408,12 @@ function visibleResults(){
   var rows=A.results.map(function(r){
     var groups=[];
     r.groups.forEach(function(g){
-      if(W.hiddenCounters.indexOf(g.counter.gid)>=0)return;
-      if(W.hiddenTypes.indexOf(g.counter.group)>=0)return;
+      var c=g.counter;
+      /* FIX-1 sheet: family-level hides -- whole groups, or one stat lane */
+      if(W.hiddenFamilies.indexOf(c.group)>=0)return;
+      if(c.group==='stat'&&c.statKey&&W.hiddenFamilies.indexOf('stat:'+c.statKey)>=0)return;
       var hits=g.hits.filter(function(x){return W.hiddenWords.indexOf(x.entry.text)<0});
-      groups.push({counter:g.counter,hits:hits});
+      groups.push({counter:c,hits:hits});
     });
     var count=groups.reduce(function(a,g){return a+g.hits.length},0);
     return{player:r.player,groups:groups,visibleCount:count,flags:r.flags,raw:r};
@@ -2285,6 +2449,35 @@ function visibleResults(){
 var KIND_LABEL={date:'date calc',raw:'thread #',jersey:'jersey #',age:'age figure',
   bdaySpan:'birthday span',founders:'founders span',clock:'career clock',
   entity:'entity',phrase:'phrase',compose:'composed',probe:'probe'};
+/* FIX-1 section 4: every receipt line answers "what even is this". Names are
+   self-evident (the quoted word IS the player's or a team's name) -- no
+   suffix. Everything else names its source chain. */
+var FIELD_LABEL={name:'name',founder:'founder',city:'city',nickname:'nickname',
+  birthplace:'birthplace',state:'state',span:'span'};
+var SELF_EVIDENT={pName:1,pFirst:1,pLast:1,tName:1,tLoc:1,tMascot:1,oName:1,oLoc:1,oMascot:1};
+function provParts(e){
+  if(e.kind==='entity'&&e.src){
+    var ent=A.founders&&A.founders.byKey[e.src.entityKey];
+    return['⚑ '+((ent&&ent.name)||'entity')+' — '+(FIELD_LABEL[e.src.field]||e.src.field),
+           e.hook?'hooked: '+e.hook.why:null];
+  }
+  if(e.kind==='founders')return[e.hook?'hooked: '+e.hook.why:null];
+  if(e.kind==='phrase')return[e.fromTheme?'theme':'custom phrase'];
+  if(e.kind==='compose')return['composed phrase'];
+  if(e.kind==='date')return['date calc'+(e.word||e.cipher?' · '+(e.label||''):'')];
+  if(e.kind==='jersey')return['jersey'];
+  if(e.kind==='raw')return['thread #'];
+  if(e.kind==='age')return['age figure'];
+  if(e.kind==='bdaySpan')return['birthday span'];
+  if(e.kind==='clock')return['career clock'];
+  if(e.kind==='probe')return['probe'];
+  return SELF_EVIDENT[e.kind]?[]:[KIND_LABEL[e.kind]||e.kind];
+}
+function provSuffix(e){
+  var parts=provParts(e).filter(Boolean);
+  if(!parts.length)return null;
+  return h('span',{class:'prov',text:'· '+parts.join(' · ')});
+}
 var GROUP_CLASS={age:'g-age',bday:'g-bday',stat:'g-stat',date:'g-date',
   founders:'g-founders',clock:'g-clock',team:'g-team'};
 
@@ -2347,7 +2540,8 @@ function renderCard(r){
 
 function renderGroup(g,individual){
   var c=g.counter;
-  var wrap=h('div',{class:'mgroup '+(GROUP_CLASS[c.group]||'')+(g.hits.length?'':' muted-counter')});
+  var wrap=h('div',{class:'mgroup '+(GROUP_CLASS[c.group]||'')+
+    (c.splitScope?' g-stat-sp':'')+(g.hits.length?'':' muted-counter')});
   var spot=A.work.spotlight?+A.work.spotlight:null;
   var head=h('div',{class:'mhead',title:'tap for counter options',
     onclick:function(ev){counterMenu(ev,c)}},[
@@ -2383,17 +2577,16 @@ function renderLine(x,counter){
       text:'('+ciphers.map(cl).join('/')+')',
       title:'tap the cipher name to toggle it off everywhere',
       onclick:function(ev){ev.stopPropagation();toggleCipher(ciphers[0])}}));
-  }else{
-    /* 7.2: "Never a match without its cipher label." A non-gematria value has
-       no cipher, and inventing one would be a lie — so it carries a KIND tag
-       instead. Every receipt line is labelled; none is ever bare. */
-    kids.push(h('span',{class:'cip kindtag',text:'('+(KIND_LABEL[e.kind]||e.kind)+')'}));
   }
+  /* non-gematria values carry no cipher chip; the FIX-1 provenance suffix
+     (appended below) is their label -- no line is ever bare. */
   if(e.label&&e.kind==='date')kids.push(h('span',{class:'chain',text:'· '+e.label}));
   if(x.depth>1)kids.push(h('span',{class:'depth-chip',text:'d'+x.depth}));
+  var pv=provSuffix(e);
+  if(pv)kids.push(pv);
   return h('div',{class:'mline'+(isSpot?' spot-hit':''),
-    title:'tap for options',
-    onclick:function(ev){lineMenu(ev,e,counter)}},kids);
+    title:'tap for context',
+    onclick:function(ev){provPopover(ev,e,counter)}},kids);
 }
 
 /* §7.3 tap a cipher chip → toggle that cipher off globally, with undo. */
@@ -2409,10 +2602,12 @@ function toggleCipher(c){
 /* Tap a match line -> options: hide this word / hide this match type /
    hide this counter (QUERY-SPEC 7.3). Rendered as a real popover so it works
    on a phone and can carry more choices than a browser prompt allows. */
-function popMenu(ev,title,items){
+function popMenu(ev,title,items,infoRows){
   closeMenu();
   var m=h('div',{class:'menu',id:'ctxMenu'},
-    [h('div',{class:'mtitle',text:title})].concat(items.map(function(it){
+    [h('div',{class:'mtitle',text:title})]
+    .concat((infoRows||[]).map(function(r){return h('div',{class:'minfo',text:r})}))
+    .concat(items.map(function(it){
       return h('button',{text:it[0],onclick:function(e){e.stopPropagation();closeMenu();it[1]()}});
     })));
   document.body.appendChild(m);
@@ -2430,39 +2625,69 @@ function closeMenu(){
 function spotlightValue(v){
   A.work.spotlight=String(v);saveWork();renderResults();
 }
-function lineMenu(ev,e,counter){
-  popMenu(ev,'"'+e.text+'" = '+fmt(e.v)+(e.cipher?' ('+cl(e.cipher)+')':''),[
-    ['Hide this word',function(){hideItem('word',e.text,'"'+e.text+'"')}],
-    ['Hide this match type ('+counter.group+')',function(){hideItem('type',counter.group,'match type '+counter.group)}],
-    ['Hide this counter',function(){hideItem('counter',counter.gid,counter.label)}],
-    e.cipher?['Turn off '+cl(e.cipher)+' everywhere',function(){toggleCipher(e.cipher)}]:null,
-    ['Spotlight '+fmt(e.v),function(){spotlightValue(e.v)}],
-  ].filter(Boolean));
+/* FIX-1 section 4: tap any receipt line -> context popover. One tap from
+   "what is this" to answered. Tap-to-HIDE is gone (section 2) -- hiding
+   lives in the filter sheet. */
+function provPopover(ev,e,counter){
+  var rows=[],acts=[];
+  var ent=(e.src&&A.founders&&A.founders.byKey[e.src.entityKey])||
+          (e.entityKey&&A.founders&&A.founders.byKey[e.entityKey])||null;
+  if(ent){
+    rows.push(catLabel(ent.cat)+' \u00b7 founded '+ent.founded+
+      (ent.dayGranularity?'':' (year only)'));
+    if(ent.founder)rows.push('founder: '+ent.founder+
+      (ent.founderDob?' \u00b7 b. '+ent.founderDob:''));
+    if(ent.birthplace)rows.push('birthplace: '+ent.birthplace);
+    var ck=A.ctx&&entitySpans(ent,A.slate.date,A.cfg.age.inclusive);
+    if(ck)rows.push('vs today: '+fmt(ck.totalDays)+'d since \u00b7 '+
+      ck.since+'d since ann \u00b7 '+ck.until+'d until ann');
+    if(e.hook)rows.push('hook: '+e.hook.why);
+    else if(counter&&counter.hook)rows.push('hook: '+counter.hook.why);
+    if(ent.source)acts.push(['View source \u2197',function(){
+      window.open(ent.source,'_blank','noopener');
+    }]);
+  }else if(e.kind==='date'){
+    rows.push('date calc \u00b7 '+(e.label||''));
+    if(e.calc)rows.push(e.calc);
+  }else if(e.kind==='phrase'){
+    rows.push('custom phrase \u2014 lives in Custom Matching');
+  }else if(e.kind==='compose'){
+    rows.push('composed at scan time from a structural field + your word');
+  }else if(e.kind==='age'||e.kind==='bdaySpan'){
+    rows.push((e.kind==='age'?'age figure':'birthday span')+
+      (e.label?' \u00b7 '+e.label:''));
+  }else if(e.kind==='clock'){
+    rows.push('career clock'+(e.label?' \u00b7 '+e.label:''));
+  }else if(e.kind==='raw'){
+    rows.push('from your specific-numbers list (Stat Matching)');
+  }else if(e.kind==='jersey'){
+    rows.push('jersey number');
+  }
+  acts.push(['Spotlight '+fmt(e.v),function(){spotlightValue(e.v)}]);
+  popMenu(ev,'"'+e.text+'" = '+fmt(e.v)+(e.cipher?' ('+cl(e.cipher)+')':''),
+    acts,rows);
 }
 function counterMenu(ev,counter){
-  popMenu(ev,counter.label+' = '+fmt(counter.value),[
-    ['Hide this counter',function(){hideItem('counter',counter.gid,counter.label)}],
-    ['Hide this match type ('+counter.group+')',function(){hideItem('type',counter.group,'match type '+counter.group)}],
-    ['Spotlight '+fmt(counter.value),function(){spotlightValue(counter.value)}],
-  ]);
+  var rows=[];
+  if(counter.arith)rows.push(counter.arith);
+  if(counter.detail)rows.push(counter.detail);
+  if(counter.hook)rows.push('hook: '+counter.hook.why);
+  popMenu(ev,counter.label+' = '+fmt(counter.value),
+    [['Spotlight '+fmt(counter.value),function(){spotlightValue(counter.value)}]],rows);
 }
-function hideItem(kind,val,label){
-  var W=A.work;
-  var arr=kind==='word'?W.hiddenWords:kind==='type'?W.hiddenTypes:W.hiddenCounters;
-  if(arr.indexOf(val)<0)arr.push(val);
-  saveWork();renderResults();
-  toast('Hid '+label,'Undo',function(){
-    var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);
-    saveWork();renderResults();
+/* FIX-1 section 2: word-level mutes are typed in the sheet's Hidden-words
+   section; family hides live there too. The undo toast stays. */
+function muteWord(w){
+  w=(w||'').trim();
+  if(!w)return;
+  if(A.work.hiddenWords.indexOf(w)<0)A.work.hiddenWords.push(w);
+  saveWork();renderResults();renderSheet();
+  toast('Muted "'+w+'"','Undo',function(){
+    var i=A.work.hiddenWords.indexOf(w);if(i>=0)A.work.hiddenWords.splice(i,1);
+    saveWork();renderResults();renderSheet();
   });
 }
-function updateTray(){
-  var W=A.work,n=W.hiddenWords.length+W.hiddenTypes.length+W.hiddenCounters.length;
-  var btn=document.getElementById('trayBtn');
-  btn.style.display=n?'block':'none';
-  btn.textContent='🗑 '+n+' hidden';
-  btn.onclick=function(){openDialog('card')};
-}
+function updateTray(){/* retired -- the FIX-1 filter sheet owns hide state */}
 
 /* §7.4 strips */
 function ageStrip(p){
@@ -2505,7 +2730,223 @@ function statLine(p){
     ' (entering — excludes today)'}));
   return h('div',{class:'strip'},out);
 }
+function slateHasSplits(){
+  if(!A.slate)return false;
+  var ids=Object.keys(A.slate.players);
+  for(var i=0;i<ids.length;i++){
+    var b=A.slate.players[ids[i]].batting,q=A.slate.players[ids[i]].pitching;
+    if((b&&(b.seasonSplits||b.careerSplits))||(q&&(q.seasonSplits||q.careerSplits)))return true;
+  }
+  return false;
+}
 var PHASE2_CARD=[];
+/* ============================================================
+   FIX-1 SECTION 2 -- THE FILTER SHEET.
+   Runtime filtering surface: ciphers, match types, counter families,
+   hooked entities, word mutes. No Apply button -- every toggle recomputes
+   instantly against the cached slate; the grid updates live behind the
+   sheet. All of it is working state: persisted, captured by presets.
+============================================================ */
+function filterCount(){
+  var C=A.cfg,W=A.work,prof=SPORT_PROFILES[A.sport],nf=0;
+  ALL_CIPHERS.forEach(function(c){if(!!C.ciphers[c]!==!!prof.base[c])nf++});
+  MATCH_TYPES.forEach(function(t){if(!C.types[t.id])nf++});
+  SIMPLE_SOURCES.forEach(function(x){if(!C.simple[x.id])nf++});
+  nf+=W.hiddenFamilies.length+W.hiddenWords.length;
+  nf+=Object.keys(C.founders.manual).filter(function(k){return C.founders.manual[k]}).length;
+  nf+=Object.keys(C.founders.widen).filter(function(k){return C.founders.widen[k]}).length;
+  nf+=Object.keys(C.founders.entities).filter(function(k){return C.founders.entities[k]===false}).length;
+  return nf;
+}
+function ssec(title,count,onReset,kids){
+  return h('div',{class:'ssec'},[
+    h('div',{class:'ssec-hd'},[h('h3',{text:title}),
+      count?h('span',{class:'scount',text:String(count)}):null,
+      h('button',{class:'sreset',text:'reset',onclick:onReset})]),
+  ].concat(kids));
+}
+function chip(label,on,fn,color){
+  return h('button',{class:'chip'+(on?' on':''),
+    style:on&&color?{color:color,borderColor:color}:null,
+    text:label,onclick:fn});
+}
+function renderSheet(){
+  var host=document.getElementById('sheetHost');
+  clear(host);
+  if(!A.sheetOpen)return;
+  var C=A.cfg,W=A.work,prof=SPORT_PROFILES[A.sport];
+  var bd=h('div',{class:'sheet-bd'});
+
+  /* 1. Ciphers -- the runtime surface of 6.2 (the rail dialog remains
+     the pre-query config) */
+  var cOff=ALL_CIPHERS.filter(function(c){return!C.ciphers[c]}).length;
+  bd.appendChild(ssec('Ciphers',countOn(C.ciphers)+' of '+ALL_CIPHERS.length,
+    function(){ALL_CIPHERS.forEach(function(c){C.ciphers[c]=!!prof.base[c]});onChange();renderSheet()},
+    [h('div',{class:'chips'},ALL_CIPHERS.map(function(c){
+      return chip(cl(c),!!C.ciphers[c],function(){C.ciphers[c]=!C.ciphers[c];onChange();renderSheet()},CIPHER_COLOR[c]);
+    })),
+    h('div',{class:'row-btns',style:{marginTop:'5px'}},[
+      h('button',{class:'mini-btn',text:'Select Base',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){C.ciphers[c]=!!prof.base[c]});onChange();renderSheet()}}),
+      h('button',{class:'mini-btn',text:'All',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){C.ciphers[c]=true});onChange();renderSheet()}}),
+      h('button',{class:'mini-btn',text:'Clear',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){C.ciphers[c]=false});onChange();renderSheet()}}),
+    ])]));
+
+  /* 2. Match types */
+  var mtOff=MATCH_TYPES.filter(function(t){return!C.types[t.id]}).length+
+            SIMPLE_SOURCES.filter(function(x){return!C.simple[x.id]}).length;
+  bd.appendChild(ssec('Match types',mtOff?mtOff+' off':null,
+    function(){MATCH_TYPES.forEach(function(t){C.types[t.id]=true});
+      SIMPLE_SOURCES.forEach(function(x){C.simple[x.id]=true});onChange();renderSheet()},
+    [h('div',{class:'chips'},
+      MATCH_TYPES.map(function(t){
+        return chip(t.label,C.types[t.id],function(){C.types[t.id]=!C.types[t.id];onChange();renderSheet()});
+      }).concat(SIMPLE_SOURCES.map(function(x){
+        return chip(x.label,C.simple[x.id],function(){C.simple[x.id]=!C.simple[x.id];onChange();renderSheet()});
+      })))]));
+
+  /* 3. Counter types -- hide whole families, or one stat lane */
+  var FAMS=[['age','Age clocks'],['bday','Birthday spans'],['date','Date calcs'],
+            ['founders','Founders spans'],['clock','Career clocks'],['team','Team totals']];
+  var statKeys=[];
+  BAT_STATS.concat(PIT_STATS).forEach(function(r){if(statKeys.indexOf(r[1])<0)statKeys.push(r[1])});
+  bd.appendChild(ssec('Counter types',W.hiddenFamilies.length?W.hiddenFamilies.length+' hidden':null,
+    function(){W.hiddenFamilies=[];saveWork();renderResults();renderSheet()},
+    [h('div',{class:'chips'},FAMS.map(function(f){
+      var hid=W.hiddenFamilies.indexOf(f[0])>=0;
+      return chip(f[1],!hid,function(){
+        var i=W.hiddenFamilies.indexOf(f[0]);
+        if(i>=0)W.hiddenFamilies.splice(i,1);else W.hiddenFamilies.push(f[0]);
+        saveWork();renderResults();renderSheet();
+      });
+    })),
+    h('p',{class:'hint',style:{margin:'6px 0 3px'},text:'Stat rungs, by stat:'}),
+    h('div',{class:'chips'},statKeys.map(function(k){
+      var fam='stat:'+k,hid=W.hiddenFamilies.indexOf(fam)>=0;
+      return chip(k,!hid,function(){
+        var i=W.hiddenFamilies.indexOf(fam);
+        if(i>=0)W.hiddenFamilies.splice(i,1);else W.hiddenFamilies.push(fam);
+        saveWork();renderResults();renderSheet();
+      });
+    }))]));
+
+  /* 4. Entities -- hooked for this slate, grouped by hook type; search to
+     manually hook anything; per-category widen-scope */
+  var entKids=[];
+  if(A.ctx&&A.founders){
+    var hooked=hookedForSlate(A.ctx);
+    var groupsBy={date:[],routing:[],manual:[]};
+    Object.keys(hooked).forEach(function(k){
+      var ent=A.founders.byKey[k];if(!ent)return;
+      groupsBy[hooked[k][0].type].push({e:ent,why:hooked[k][0].why});
+    });
+    [['date','Date-hooked'],['routing','Routing-hooked'],['manual','Manually hooked']].forEach(function(gt){
+      var list=groupsBy[gt[0]];
+      if(!list.length)return;
+      entKids.push(h('p',{class:'hint',style:{margin:'6px 0 3px'},text:gt[1]+' ('+list.length+')'}));
+      list.sort(function(a,b){return a.e.name<b.e.name?-1:1});
+      list.forEach(function(it){
+        var off=C.founders.entities[it.e.key]===false;
+        entKids.push(h('div',{class:'entrow'+(off?' excluded':'')},[
+          h('input',{type:'checkbox',checked:off?null:true,onchange:function(ev){
+            C.founders.entities[it.e.key]=ev.target.checked;onChange();renderSheet();
+          }}),
+          h('span',{text:it.e.name}),
+          h('span',{class:'hook-tag',title:it.why,text:it.why.length>26?it.why.slice(0,24)+'\u2026':it.why}),
+        ]));
+      });
+    });
+    if(!entKids.length)entKids.push(h('p',{class:'hint',
+      text:'No entities are hooked for this slate. Hook one manually below, or widen a category.'}));
+    /* search -> manual hook */
+    var res=h('div',{});
+    entKids.push(h('input',{class:'ctl',type:'text',placeholder:'search registry to hook\u2026',
+      style:{marginTop:'6px'},
+      oninput:function(ev){
+        clear(res);
+        var q=norm(ev.target.value);
+        if(q.length<2)return;
+        A.founders.all.filter(function(e){return norm(e.name).indexOf(q)>=0}).slice(0,8)
+        .forEach(function(e){
+          var on=!!C.founders.manual[e.key];
+          res.appendChild(h('div',{class:'entrow'},[
+            h('span',{text:e.name}),
+            h('span',{class:'g-year',text:e.founded}),
+            h('button',{class:'mini-btn'+(on?' on':''),text:on?'hooked':'hook',
+              onclick:function(){C.founders.manual[e.key]=!on;onChange();renderSheet()}}),
+          ]));
+        });
+      }}));
+    entKids.push(res);
+    /* widen scope, per category, default OFF */
+    entKids.push(h('p',{class:'hint',style:{margin:'8px 0 3px'},
+      text:'Widen scope \u2014 hook an entire category for this slate:'}));
+    entKids.push(h('div',{class:'chips'},A.founders.cats
+      .filter(function(c){return prof.foundersCategories.indexOf(c.id)>=0})
+      .map(function(c){
+        return chip(c.label,!!C.founders.widen[c.id],function(){
+          C.founders.widen[c.id]=!C.founders.widen[c.id];onChange();renderSheet();
+        });
+      })));
+  }else{
+    entKids.push(h('p',{class:'hint',text:'Run a scan first \u2014 hooks are computed per slate.'}));
+  }
+  var entActive=Object.keys(C.founders.manual).filter(function(k){return C.founders.manual[k]}).length+
+                Object.keys(C.founders.widen).filter(function(k){return C.founders.widen[k]}).length;
+  bd.appendChild(ssec('Entities',entActive?entActive+' manual':null,
+    function(){C.founders.manual={};C.founders.widen={};
+      Object.keys(C.founders.entities).forEach(function(k){C.founders.entities[k]=true});
+      onChange();renderSheet()},entKids));
+
+  /* 5. Hidden words */
+  var wordsKids=[
+    h('div',{class:'probe-in'},[
+      h('input',{id:'muteInput',type:'text',placeholder:'type a word to mute slate-wide\u2026',
+        onkeydown:function(ev){if(ev.key==='Enter'){muteWord(ev.target.value);ev.target.value=''}}}),
+      h('button',{text:'Mute',onclick:function(){
+        var el=document.getElementById('muteInput');muteWord(el.value);el.value='';
+      }}),
+    ]),
+  ];
+  W.hiddenWords.forEach(function(w){
+    wordsKids.push(h('div',{class:'entrow'},[
+      h('span',{text:'"'+w+'"'}),
+      h('button',{class:'mini-btn',style:{marginLeft:'auto'},text:'un-mute',onclick:function(){
+        var i=W.hiddenWords.indexOf(w);if(i>=0)W.hiddenWords.splice(i,1);
+        saveWork();renderResults();renderSheet();
+      }}),
+    ]));
+  });
+  bd.appendChild(ssec('Hidden words',W.hiddenWords.length||null,
+    function(){W.hiddenWords=[];saveWork();renderResults();renderSheet()},wordsKids));
+
+  var sheet=h('div',{class:'sheet',role:'dialog','aria-label':'Filters'},[
+    h('div',{class:'sheet-hd'},[h('h2',{text:'Filters'}),
+      h('span',{class:'cnt',text:filterCount()?filterCount()+' active':''}),
+    ]),
+    bd,
+    h('div',{class:'sheet-ft'},[
+      h('button',{class:'btn',text:'Clear all',onclick:function(){
+        ALL_CIPHERS.forEach(function(c){A.cfg.ciphers[c]=!!prof.base[c]});
+        MATCH_TYPES.forEach(function(t){A.cfg.types[t.id]=true});
+        SIMPLE_SOURCES.forEach(function(x){A.cfg.simple[x.id]=true});
+        W.hiddenFamilies=[];W.hiddenWords=[];
+        A.cfg.founders.manual={};A.cfg.founders.widen={};
+        Object.keys(A.cfg.founders.entities).forEach(function(k){A.cfg.founders.entities[k]=true});
+        saveWork();onChange();renderSheet();
+      }}),
+      h('div',{class:'grow'}),
+      h('button',{class:'btn pri',text:'Done',onclick:function(){A.sheetOpen=false;renderSheet()}}),
+    ]),
+  ]);
+  host.appendChild(h('div',{class:'sheet-scrim',onclick:function(ev){
+    if(ev.target===ev.currentTarget){A.sheetOpen=false;renderSheet()}
+  }}));
+  host.appendChild(sheet);
+}
+
 /* ============================================================
    16. CARD PROBE (§7.5) — ad-hoc follow-up on ONE player without
    leaving the card or re-running the slate.
@@ -2622,11 +3063,13 @@ function probeCounters(p){
   };
   var lanes=function(role,table,stats,conf){
     ['season','career'].forEach(function(scope){
-      var src=stats&&stats[scope];if(!src)return;
       table.forEach(function(row){
-        var label=row[0],key=row[1],base=src[key];
+        var label=row[0],key=row[1],c=conf[scope+'-'+key]||{};
+        var rs=statScopeSrc(stats,scope,c.scope,p);
+        var src=rs.src;if(!src)return;
+        if(rs.tag)label=label+' ('+rs.tag+')';
+        var base=src[key];
         if(base==null||!(base>0))return;
-        var c=conf[scope+'-'+key]||{};
         var always=(key==='AB'||key==='PA');
         if(!c.on&&!always)return;
         push('stat','pb-'+scope+'-'+key+'-cur',cap(scope)+' '+role+' '+label,base);
@@ -2759,8 +3202,18 @@ function boot(){
   if(!SPORT_PROFILES[A.sport])A.sport='mlb';
   A.cfg=mergeCfg(defaultConfig(A.sport),lsGet(cfgKey(),null));
   A.cfg.sport=A.sport;
-  A.work=mergeCfg({hiddenWords:[],hiddenTypes:[],hiddenCounters:[],spotlight:'',
+  A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{}},lsGet(workKey(),null));
+  /* migrate pre-FIX-1 tap-to-hide state: old type-level hides become family
+     hides; counter-gid hides had no family equivalent and are retired. Never
+     silently discard working state without a mapping (house rule). */
+  if(Array.isArray(A.work.hiddenTypes)&&A.work.hiddenTypes.length){
+    A.work.hiddenTypes.forEach(function(t){
+      if(A.work.hiddenFamilies.indexOf(t)<0)A.work.hiddenFamilies.push(t);
+    });
+  }
+  delete A.work.hiddenTypes;delete A.work.hiddenCounters;
+  saveWork();
 
   document.getElementById('btnGear').onclick=function(){openDialog('card')};
   /* §5: on mobile the rail's resting state is the sticky summary bar. Desktop
@@ -2785,6 +3238,7 @@ function boot(){
     if(e.key!=='Escape')return;
     if(document.getElementById('ctxMenu'))closeMenu();
     else if(openDlg)closeDialog();
+    else if(A.sheetOpen){A.sheetOpen=false;renderSheet()}
   });
 
   render();
@@ -2932,46 +3386,227 @@ function foundersCtx(ctx){
 
 /* founders spans join the POOL (§6.9) — testable against stats, names,
    phrases, date calcs, birthday spans. */
+/* ============================================================
+   FIX-1 SECTION 1 -- THE HOOK MODEL. An entity enters a game's match pool
+   ONLY through at least one active hook. No hook -> no gematria values, no
+   spans, no date convergences from that entity on that game's cards.
+   Hooks are ROUTING (does this entity belong here?), not value judgments:
+   QUERY-SPEC section 0 neutrality still governs everything after admission.
+============================================================ */
+var norm=function(x){return normText(x||'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim()};
+function wordIn(hay,needle){
+  if(!hay||!needle)return false;
+  return(' '+norm(hay)+' ').indexOf(' '+norm(needle)+' ')>=0;
+}
+/* base pool (1.1): date calcs enabled in 6.6 + custom-phrase cipher values
+   + the 6.8 specific-numbers list. Deliberately slate-level -- no per-player
+   values, so date-hooked entities apply to every game equally. */
+function baseHookPool(ctx){
+  var set={};
+  ctx.dateVals.forEach(function(d){set[d.n]=true});
+  if(ctx.cfg.types.custom)ctx.cfg.custom.phrases.forEach(function(ph){
+    if(!ph)return;
+    var v=calcAll(ph);
+    ALL_CIPHERS.forEach(function(c){if(ctx.cfg.ciphers[c]&&v[c]>0)set[v[c]]=true});
+  });
+  ctx.rawNums.forEach(function(v){set[v]=true});
+  return set;
+}
+/* the active-entity lists cannot change mid-scan; filtering 127 entities
+   twice per player was the visible cost at maximal settings. */
+function activeOf(ctx,dayOnly){
+  var k=dayOnly?'_actD':'_actA';
+  if(!ctx[k])ctx[k]=activeEntities(ctx.cfg,ctx.founders,dayOnly);
+  return ctx[k];
+}
+function hookCtxOf(ctx){
+  if(ctx._hk)return ctx._hk;
+  var cfg=ctx.cfg,F=ctx.founders;
+  var hk={slate:{},game:{},player:{},base:{}};
+  ctx._hk=hk;
+  if(!cfg.types.founders||!F)return hk;
+  hk.base=baseHookPool(ctx);
+  var md=ctx.slate.date.slice(5);
+  var phrases=(cfg.types.custom?cfg.custom.phrases:[]).filter(Boolean);
+  var add=function(map,key,type,why){
+    (map[key]=map[key]||[]).push({type:type,why:why});
+  };
+  activeOf(ctx,false).forEach(function(e){
+    /* 1.3 manual hooks -- slate-wide */
+    if(cfg.founders.manual[e.key])add(hk.slate,e.key,'manual','hooked by you');
+    if(cfg.founders.widen[e.cat])add(hk.slate,e.key,'manual','category widened');
+    if(phrases.some(function(ph){return wordIn(ph,e.name)}))
+      add(hk.slate,e.key,'manual','theme: named in a custom phrase');
+    /* 1.1 date hooks -- slate-level */
+    if(e.dayGranularity){
+      if(e.founded.slice(5)===md)add(hk.slate,e.key,'date','anniversary today');
+      var ck=entitySpans(e,ctx.slate.date,cfg.age.inclusive);
+      if(ck){
+        if(hk.base[ck.totalDays])add(hk.slate,e.key,'date','days since founding = '+ck.totalDays);
+        else if(hk.base[ck.since])add(hk.slate,e.key,'date','days since anniversary = '+ck.since);
+        else if(hk.base[ck.until])add(hk.slate,e.key,'date','days until anniversary = '+ck.until);
+      }
+    }
+    if(e.founderDob&&e.founderDobDay){
+      if(e.founderDob.slice(5)===md)add(hk.slate,e.key,'date',e.founder+"'s birthday today");
+      var fk=clockFrom(e.founderDob,ctx.slate.date,cfg.age.inclusive);
+      if(fk&&(hk.base[fk.totalDays]||hk.base[fk.since]||hk.base[fk.until]))
+        add(hk.slate,e.key,'date','founder-birthday span in the pool');
+    }
+  });
+  /* 1.2 routing hooks -- per game */
+  ctx.slate.games.forEach(function(g){
+    var map=hk.game[g.gameId]={};
+    var away=ctx.slate.teams[g.away.id]||{},home=ctx.slate.teams[g.home.id]||{};
+    var states={};[away.state,home.state,g.venueState].forEach(function(st){if(st)states[st]=true});
+    activeOf(ctx,false).forEach(function(e){
+      if(e.cat==='mlb_teams'||e.cat==='wnba_teams'){
+        if(e.name===away.fullName)add(map,e.key,'routing','away team');
+        else if(e.name===home.fullName)add(map,e.key,'routing','home team');
+      }else if(e.cat==='states'){
+        if(states[e.name])add(map,e.key,'routing',
+          e.name===g.venueState?'venue state':'team state');
+      }
+      /* city bridge: entity geography shares the game's geography */
+      var geo=e.city||e.birthplace;
+      if(geo){
+        [away,home].forEach(function(t){
+          if(wordIn(geo,t.city)||wordIn(geo,t.state))
+            add(map,e.key,'routing','city bridge: '+geo+' ~ '+(t.abbr||t.fullName));
+        });
+      }
+    });
+  });
+  return hk;
+}
+/* per-player hooks (birth state, cross-date convergence) -- lazy per player */
+function playerHooks(ctx,p){
+  var hk=hookCtxOf(ctx);
+  if(hk.player[p.id])return hk.player[p.id];
+  var map=hk.player[p.id]={};
+  var cfg=ctx.cfg,F=ctx.founders;
+  if(!cfg.types.founders||!F)return map;
+  var add=function(key,type,why){(map[key]=map[key]||[]).push({type:type,why:why})};
+  if(p.birthState){
+    activeOf(ctx,false).forEach(function(e){
+      if(e.cat==='states'&&e.name===p.birthState)
+        add(e.key,'routing','birth state ('+(p.birthCity?p.birthCity+', ':'')+p.birthState+')');
+    });
+  }
+  /* 1.1 last bullet: a direct date-to-date CONVERGENCE admits the entity for
+     this card. Judgment call, documented in the handoff: "participates in a
+     convergence" means month/day alignment with the player's dob/debut, OR a
+     cross-date span value landing in the base pool -- a merely computable span
+     between any two dates is not a convergence and hooks nothing. */
+  if(cfg.founders.crossDates){
+    var anchors=[p.dob];
+    if(cfg.types.clocks&&cfg.founders.debutCross&&p.debut)anchors.push(p.debut);
+    activeOf(ctx,true).forEach(function(e){
+      var aligned=anchors.some(function(d){return d&&e.founded.slice(5)===d.slice(5)});
+      if(!aligned&&cfg.founders.founderDob&&e.founderDob&&e.founderDobDay)
+        aligned=anchors.some(function(d){return d&&e.founderDob.slice(5)===d.slice(5)});
+      if(aligned){add(e.key,'date','date-to-date alignment');return}
+      var xs=crossDateOf(p,ctx).filter(function(c){return c.entityKey===e.key});
+      if(xs.some(function(c){return hk.base[c.value]}))
+        add(e.key,'date','cross-date span in the pool');
+    });
+  }
+  return map;
+}
+/* the union any producer consults: is this entity admitted for this player? */
+function hookFor(ctx,p,entityKey){
+  var hk=hookCtxOf(ctx);
+  var m=hk.player[p.id]||playerHooks(ctx,p);
+  if(m[entityKey])return m[entityKey][0];
+  var g=hk.game[p.gameId];
+  if(g&&g[entityKey])return g[entityKey][0];
+  if(hk.slate[entityKey])return hk.slate[entityKey][0];
+  return null;
+}
+/* everything hooked anywhere on the slate -- the filter sheet's Entities list */
+function hookedForSlate(ctx){
+  var hk=hookCtxOf(ctx),out={};
+  var take=function(map){Object.keys(map).forEach(function(k){
+    (out[k]=out[k]||[]).push.apply(out[k],map[k]);
+  })};
+  take(hk.slate);
+  Object.keys(hk.game).forEach(function(gid){take(hk.game[gid])});
+  Object.keys(hk.player).forEach(function(pid){take(hk.player[pid])});
+  return out;
+}
+
 /* founders spans + entity gematria depend only on the ANALYSIS DATE and the
    entity set — never on the player — so they are produced once per scan. */
+/* one place that turns an ADMITTED entity into pool entries, so the shared
+   (slate-hooked) and per-player (game/player-hooked) producers cannot drift.
+   Every entry carries FIX-1 section 4 provenance: the entity, the field that
+   produced the word, and the hook that admitted it. */
+function entityPoolEntries(out,e,hook,ctx){
+  var cfg=ctx.cfg,S=cfg.founders.spans;
+  var ck=entitySpans(e,ctx.slate.date,cfg.age.inclusive);
+  var pushSpan=function(v,text){
+    if(!(v>0))return;
+    out.push({v:v,text:text,cipher:null,kind:'founders',label:'founded '+e.founded,
+      entityKey:e.key,src:{entityKey:e.key,field:'span'},hook:hook});
+  };
+  if(ck){
+    if(S.since)pushSpan(ck.totalDays,e.name+' \u2014 days since founding');
+    if(S.sinceAnn)pushSpan(ck.since,e.name+' \u2014 days since anniversary');
+    if(S.untilAnn)pushSpan(ck.until,e.name+' \u2014 days until anniversary');
+  }
+  if(cfg.founders.founderDob&&e.founderDob&&e.founderDobDay){
+    var fk=clockFrom(e.founderDob,ctx.slate.date,cfg.age.inclusive);
+    if(fk){
+      if(S.since)pushSpan(fk.totalDays,e.founder+' \u2014 days since birth');
+      if(S.sinceAnn)pushSpan(fk.since,e.founder+' \u2014 days since birthday');
+      if(S.untilAnn)pushSpan(fk.until,e.founder+' \u2014 days until birthday');
+    }
+  }
+  if(cfg.founders.gematria){
+    var addC=function(ciphers,name,field){
+      if(!ciphers||!name)return;
+      ALL_CIPHERS.forEach(function(c){
+        if(!cfg.ciphers[c]||!(ciphers[c]>0))return;
+        out.push({v:ciphers[c],text:name,cipher:c,kind:'entity',label:null,
+          entityKey:e.key,src:{entityKey:e.key,field:field},hook:hook});
+      });
+    };
+    addC(e.ciphers,e.name,'name');
+    addC(e.cityCiphers,e.city,'city');
+    addC(e.nicknameCiphers,e.nickname,'nickname');
+    addC(e.founderCiphers,e.founder,'founder');
+    if(cfg.founders.birthplace)addC(e.birthplaceCiphers,e.birthplace,'birthplace');
+  }
+}
+/* SLATE-hooked entities (date hooks, manual hooks) apply to every game
+   equally (FIX-1 1.1 note), so their entries live in the shared pool. */
 PHASE2_SHARED_POOL.push(function(out,ctx){
   var cfg=ctx.cfg;
   if(!cfg.types.founders||!ctx.founders)return;
-  var S=cfg.founders.spans;
-  foundersCtx(ctx).forEach(function(r){
-    if(!r.ck)return;
-    var nm=r.e.name;
-    if(S.since)pushF(out,r.ck.totalDays,nm+' — days since founding',r.e.key);
-    if(S.sinceAnn)pushF(out,r.ck.since,nm+' — days since anniversary',r.e.key);
-    if(S.untilAnn)pushF(out,r.ck.until,nm+' — days until anniversary',r.e.key);
+  var hk=hookCtxOf(ctx);
+  activeOf(ctx,false).forEach(function(e){
+    var h=hk.slate[e.key];
+    if(!h)return;
+    entityPoolEntries(out,e,h[0],ctx);
   });
-  /* §6.9 "Founders gematria as values" toggle */
-  if(cfg.founders.gematria)activeEntities(cfg,ctx.founders,false).forEach(function(e){
-    addEntityCiphers(out,e.ciphers,e.name,cfg.ciphers,e.key);
-    addEntityCiphers(out,e.cityCiphers,e.city,cfg.ciphers,e.key);
-    addEntityCiphers(out,e.nicknameCiphers,e.nickname,cfg.ciphers,e.key);
-    /* §6.9: "name/founder/city/nickname ciphers, already in the JSON" all ride
-       the one Founders-gematria toggle. Birthplace is separate because it only
-       exists when the historian's harvest landed. */
-    addEntityCiphers(out,e.founderCiphers,e.founder,cfg.ciphers,e.key);
-    if(cfg.founders.birthplace)addEntityCiphers(out,e.birthplaceCiphers,e.birthplace,cfg.ciphers,e.key);
-  });
-  function pushF(o,v,text,key){
-    if(!(v>0))return;
-    var ent={v:v,text:text,cipher:null,kind:'founders',label:null,entityKey:key};
-    o.push(ent);
-  }
 });
-/* entity ciphers come PRECOMPUTED in the JSON (regenerated through
-   gematria-core — never hand-edited), so we read them rather than
-   recompute: one source of truth with the decoder export. */
-function addEntityCiphers(out,ciphers,name,enabled,key){
-  if(!ciphers||!name)return;
-  ALL_CIPHERS.forEach(function(c){
-    if(!enabled[c]||!(ciphers[c]>0))return;
-    out.push({v:ciphers[c],text:name,cipher:c,kind:'entity',label:null,entityKey:key});
+/* GAME-routing-hooked + PLAYER-hooked entities are admitted per card only. */
+PHASE2_POOL.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders)return;
+  var hk=hookCtxOf(ctx);
+  var g=hk.game[p.gameId]||{};
+  var pm=playerHooks(ctx,p);
+  activeOf(ctx,false).forEach(function(e){
+    if(hk.slate[e.key])return;               /* already in the shared pool */
+    var h=(pm[e.key]&&pm[e.key][0])||(g[e.key]&&g[e.key][0]);
+    if(!h)return;
+    entityPoolEntries(out,e,h,ctx);
   });
-}
+});
+/* (entity ciphers come PRECOMPUTED in the JSON — regenerated through
+   gematria-core, never hand-edited — and entityPoolEntries reads them
+   rather than recomputing: one source of truth with the decoder export.) */
 
 /* founders spans are also COUNTERS — the `⚑ Jesuit Order — N days since
    founding` grouping in §7.2. */
@@ -2981,11 +3616,15 @@ PHASE2_COUNTERS.push(function(out,p,ctx){
   var S=cfg.founders.spans,acc=foundersAccepts(cfg);
   foundersCtx(ctx).forEach(function(r){
     if(!r.ck)return;
+    /* FIX-1 section 1: no hook, no counter on this card */
+    var hook=hookFor(ctx,p,r.e.key);
+    if(!hook)return;
     var nm=r.e.name;
     var add=function(v,label,sfx){
       if(!(v>0))return;
       out.push({group:'founders',gid:'fnd-'+r.e.key+'-'+sfx,entityKey:r.e.key,
-        label:'⚑ '+nm+' — '+label,value:v,detail:'founded '+r.e.founded,accepts:acc});
+        label:'⚑ '+nm+' — '+label,value:v,detail:'founded '+r.e.founded,
+        hook:hook,accepts:acc});
     };
     if(S.since)add(r.ck.totalDays,'days since founding','since');
     if(S.sinceAnn)add(r.ck.since,'days since anniversary','ann');
@@ -2993,7 +3632,11 @@ PHASE2_COUNTERS.push(function(out,p,ctx){
   });
   /* §6.9 direct date-to-date convergence — player dates x entity dates,
      independent of today. */
-  if(cfg.founders.crossDates)crossDateOf(p,ctx).forEach(function(c){out.push(c)});
+  if(cfg.founders.crossDates)crossDateOf(p,ctx).forEach(function(c){
+    /* the convergence itself may be the hook; any other hook also admits */
+    if(!hookFor(ctx,p,c.entityKey))return;
+    out.push(c);
+  });
 });
 /* Both the counter side and the pool side need the same cross-date set, and
    at maximal settings it is the single most expensive thing on the page — so
@@ -3016,8 +3659,11 @@ PHASE2_POOL.push(function(out,p,ctx){
   if(!cfg.types.founders||!ctx.founders||!cfg.founders.crossDates)return;
   crossDateOf(p,ctx).forEach(function(c){
     if(!(c.value>0))return;
+    var hook=hookFor(ctx,p,c.entityKey);
+    if(!hook)return;
     out.push({v:c.value,text:c.label.replace(/^⚑ /,''),cipher:null,
-      kind:'founders',label:c.detail,entityKey:c.entityKey});
+      kind:'founders',label:c.detail,entityKey:c.entityKey,
+      src:{entityKey:c.entityKey,field:'span'},hook:hook});
   });
 });
 /* one shared, frozen kind map — allocating a fresh one per player per entity
@@ -3125,7 +3771,8 @@ PHASE2_FLAGS.push(function(out,p,ctx){
   if(cfg.types.clocks&&cfg.founders.debutCross&&p.debut)anchors.push({d:p.debut,tag:'debuted'});
   anchors.forEach(function(a){
     if(!a.d)return;
-    activeEntities(cfg,ctx.founders,true).forEach(function(e){
+    activeOf(ctx,true).forEach(function(e){
+      if(!hookFor(ctx,p,e.key))return;   /* FIX-1: unhooked entities are silent */
       if(e.founded.slice(5)===a.d.slice(5))
         out.push({kind:'founders',text:'⚑ '+a.tag+' on the '+e.name+' anniversary ('+e.founded.slice(5)+')'});
       if(cfg.founders.founderDob&&e.founderDob&&e.founderDobDay&&e.founderDob.slice(5)===a.d.slice(5))
@@ -3158,6 +3805,7 @@ PHASE2_COUNTERS.push(function(out,p,ctx){
   if(K.franchise&&ctx.founders){
     var team=ctx.slate.teams[p.teamId];
     var ent=team&&franchiseEntity(ctx.founders,team,ctx.cfg);
+    if(ent&&!hookFor(ctx,p,ent.key))ent=null;  /* FIX-1: sheet can unhook it */
     if(ent&&ent.dayGranularity){
       var fk=clockFrom(ent.founded,ctx.slate.date,inc);
       if(fk){
@@ -3256,7 +3904,7 @@ PHASE2_CARD.push(function(bd,r,ctx){
       (r.raw?r.raw.pool:[]).forEach(function(e){(batPool[e.v]=batPool[e.v]||[]).push(e)});
       var acc=statAccepts(cfg);acc.phrase=true;
       var spCounters=[];
-      pushStatCounters(spCounters,cfg.stat.pit,PIT_STATS,sp.pitching,'Pitching',acc);
+      pushStatCounters(spCounters,cfg.stat.pit,PIT_STATS,sp.pitching,'Pitching',acc,sp);
       var any=false;
       spCounters.forEach(function(c){
         c.label='SP '+c.label;
@@ -3531,7 +4179,12 @@ var API={calcAll:calcAll,checksum:checksum,ALL_CIPHERS:ALL_CIPHERS,cl:cl,normTex
   entitySpans:entitySpans,annOffset:annOffset,monthsBetween:monthsBetween,
   teamCounters:teamCounters,franchiseEntity:franchiseEntity,
   applyFounders:applyFounders,loadFounders:loadFounders,
-  TEAM_STATS:TEAM_STATS,BAT_STATS:BAT_STATS,PIT_STATS:PIT_STATS};
+  TEAM_STATS:TEAM_STATS,BAT_STATS:BAT_STATS,PIT_STATS:PIT_STATS,
+  /* FIX-1 surface */
+  hookCtxOf:hookCtxOf,hookFor:hookFor,playerHooks:playerHooks,
+  hookedForSlate:hookedForSlate,baseHookPool:baseHookPool,
+  statScopeSrc:statScopeSrc,filterCount:filterCount,renderSheet:renderSheet,
+  provParts:provParts,muteWord:muteWord,ABBR2STATE:ABBR2STATE};
 if(typeof window!=='undefined'){
   window.__QUERY__=API;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);

@@ -243,11 +243,14 @@ t('every receipt line shows claim + receipt, and NO line is ever unlabelled',()=
   lines.forEach(l=>{
     assert.ok(l.querySelector('.v'),'receipt line without a value');
     assert.ok(l.querySelector('.w'),'receipt line without a claim');
-    /* §7.2 "never a match without its cipher label": a gematria receipt names
-       its cipher; a non-gematria value names its kind. Never bare. */
-    const cip=l.querySelector('.cip');
-    assert.ok(cip,'unlabelled receipt line: '+l.textContent);
-    assert.ok(cip.textContent.trim().length>2,'empty label: '+l.textContent);
+    /* §7.2 + FIX-1 §4: a gematria receipt names its cipher; everything that
+       is not a self-evident name carries a provenance suffix. Never bare. */
+    const cip=l.querySelector('.cip'),prov=l.querySelector('.prov');
+    const word=l.querySelector('.w').textContent.replace(/"/g,'');
+    const selfEvident=/^(Babe Ruth|Babe|Ruth|No Birthday|No|Birthday|Cy Young|Cy|Young|Boston Red Sox|Boston|Red Sox|New York Yankees|New York|Yankees)$/.test(word);
+    assert.ok(cip||prov||selfEvident,'unlabelled receipt line: '+l.textContent);
+    if(cip&&!selfEvident&&!prov)
+      assert.ok(cip.textContent.trim().length>2,'empty label: '+l.textContent);
   });
 });
 t('every counter head shows its value (never a counter without one)',()=>{
