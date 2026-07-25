@@ -66,6 +66,12 @@ function build() {
       if (e.founder) r.founder_ciphers = c(e.founder);
       if (e.city) { r.city_ciphers = c(e.city); }
       if (e.nickname) { r.nickname_ciphers = c(e.nickname); }
+      // founder_birthplace is stored "City, State/Country" — cipher the city only,
+      // matching how city_ciphers treats a team's city.
+      if (e.founder_birthplace) {
+        const city = e.founder_birthplace.split(",")[0].trim();
+        if (city) r.birthplace_ciphers = c(city);
+      }
       return r;
     });
   }
@@ -84,7 +90,17 @@ function build() {
     if (cat === "_meta") continue;
     const keep = items
       .filter((e) => e.date_status === "locked" && e.source)
-      .map((e) => ({ ...e, granularity: /^\d{4}-\d{2}-\d{2}$/.test(e.founded) ? "day" : "year" }));
+      .map((e) => {
+        const r = { ...e, granularity: /^\d{4}-\d{2}-\d{2}$/.test(e.founded) ? "day" : "year" };
+        // Same prime directive applied to the founder DOB layer: an unverified DOB
+        // must not reach the decoder. Drop the fields unless locked WITH a source.
+        if (r.founder_dob && !(r.founder_dob_status === "locked" && r.founder_dob_source)) {
+          delete r.founder_dob; delete r.birthplace_ciphers; delete r.founder_birthplace;
+        } else if (r.founder_dob) {
+          r.founder_dob_granularity = /^\d{4}-\d{2}-\d{2}$/.test(r.founder_dob) ? "day" : "year";
+        }
+        return r;
+      });
     if (keep.length) { locked[cat] = keep; ln += keep.length; }
   }
   const ltmp = LOCKED_OUT + ".tmp";

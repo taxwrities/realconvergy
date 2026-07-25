@@ -1,0 +1,551 @@
+[
+  {
+    "seed_founder": "Anton LaVey",
+    "wikipedia_title": "Anton LaVey",
+    "resolved_title": "Anton LaVey",
+    "shortdesc": "American writer and Satanist (1930–1997)",
+    "source": "https://en.wikipedia.org/wiki/Anton_LaVey",
+    "infobox_birth_date": "{{birth date|1930|4|11}}",
+    "infobox_birth_place": "[[Chicago]], Illinois, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q26168",
+    "precision": 11,
+    "founder_dob": "1930-04-11",
+    "place_detail": {
+      "city": "Chicago",
+      "admin": "Illinois",
+      "state": "Illinois",
+      "admin_chain": [
+        "Cook County",
+        "Illinois"
+      ],
+      "country": "United States",
+      "place_qid": "Q1297"
+    },
+    "founder_birthplace": "Chicago, Illinois",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Ignatius of Loyola",
+    "wikipedia_title": "Ignatius of Loyola",
+    "resolved_title": "Ignatius of Loyola",
+    "shortdesc": "Basque Spaniard Catholic priest and theologian (1491–1556)",
+    "source": "https://en.wikipedia.org/wiki/Ignatius_of_Loyola",
+    "infobox_birth_date": "{{birth date|1491|10|23|df=yes}}",
+    "infobox_birth_place": "[[Azpeitia]], [[Gipuzkoa]], {{avoid wrap|[[Crown of Castile]]}}<ref>{{Cite web|url=https://www.britannica.com/biography/St-Ignatius-of-Loyola|title=St. Ignatius of Loyola &#124; Biography, Jesuits, Patron Saint Of, Feast Day, & Facts &#124; Britannica|date=10 September 2025|website=www.britannica.com}}</ref>",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q44281",
+    "precision": 11,
+    "founder_dob": "1491-10-23",
+    "place_detail": {
+      "city": "Oratory of the Holy House of Loyola",
+      "admin": "Azpeitia",
+      "state": null,
+      "admin_chain": [
+        "Azpeitia",
+        "Urola Kosta",
+        "Gipuzkoa",
+        "Basque Country",
+        "Spain"
+      ],
+      "country": "Spain",
+      "place_qid": "Q137795320"
+    },
+    "founder_birthplace": "Azpeitia, Spain",
+    "infobox_agrees": true,
+    "date_status": "locked",
+    "note": "Wikidata P19 resolves to a building (Oratory of the Holy House of Loyola); municipality taken from the same fetch — P131 chain[0] and the Wikipedia infobox both give Azpeitia."
+  },
+  {
+    "seed_founder": "William Huntington Russell",
+    "wikipedia_title": "William Huntington Russell",
+    "resolved_title": "William Huntington Russell",
+    "shortdesc": "American politician",
+    "source": "https://en.wikipedia.org/wiki/William_Huntington_Russell",
+    "infobox_birth_date": "{{Birth date|df=yes|1809|08|12}}",
+    "infobox_birth_place": "[[Middletown, Connecticut]], US",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q1930248",
+    "precision": 11,
+    "founder_dob": "1809-08-12",
+    "place_detail": {
+      "city": "Middletown",
+      "admin": "Connecticut",
+      "state": "Connecticut",
+      "admin_chain": [
+        "Middlesex County",
+        "Connecticut"
+      ],
+      "country": "United States",
+      "place_qid": "Q49192"
+    },
+    "founder_birthplace": "Middletown, Connecticut",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Kobe Bean Bryant",
+    "wikipedia_title": "Kobe Bryant",
+    "resolved_title": "Kobe Bryant",
+    "shortdesc": "American basketball player (1978–2020)",
+    "source": "https://en.wikipedia.org/wiki/Kobe_Bryant",
+    "infobox_birth_date": "{{birth date|1978|8|23}}",
+    "infobox_birth_place": "[[Philadelphia]], Pennsylvania, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q25369",
+    "precision": 11,
+    "founder_dob": "1978-08-23",
+    "place_detail": {
+      "city": "Philadelphia",
+      "admin": "Pennsylvania",
+      "state": "Pennsylvania",
+      "admin_chain": [
+        "Philadelphia County",
+        "Pennsylvania"
+      ],
+      "country": "United States",
+      "place_qid": "Q1345"
+    },
+    "founder_birthplace": "Philadelphia, Pennsylvania",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Adam Weishaupt",
+    "wikipedia_title": "Adam Weishaupt",
+    "resolved_title": "Adam Weishaupt",
+    "shortdesc": "German philosopher and founder of the Bavarian Illuminati (1748–1830)",
+    "source": "https://en.wikipedia.org/wiki/Adam_Weishaupt",
+    "infobox_birth_date": "{{birth date|df=yes|1748|2|6}}",
+    "infobox_birth_place": "[[Ingolstadt]], [[Electorate of Bavaria]], [[Holy Roman Empire]]",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q159481",
+    "precision": 11,
+    "founder_dob": "1748-02-06",
+    "place_detail": {
+      "city": "Ingolstadt",
+      "admin": "Upper Bavaria",
+      "state": null,
+      "admin_chain": [
+        "Upper Bavaria",
+        "Bavaria",
+        "Germany"
+      ],
+      "country": "Germany",
+      "place_qid": "Q3004"
+    },
+    "founder_birthplace": "Ingolstadt, Germany",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Hugues de Payens",
+    "wikipedia_title": "Hugues de Payens",
+    "resolved_title": "Hugues de Payens",
+    "shortdesc": "Co-Founder and Grand Master of the Knights Templar",
+    "source": "https://en.wikipedia.org/wiki/Hugues_de_Payens",
+    "infobox_birth_date": "{{c.|1070}}<!--could be as late as 1074-->",
+    "infobox_birth_place": "[[Payns]], [[County of Champagne]]",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q297576",
+    "precision": 11,
+    "founder_dob": "1074-02-09",
+    "place_detail": {
+      "city": "Pagani",
+      "admin": "Province of Salerno",
+      "state": null,
+      "admin_chain": [
+        "Province of Salerno",
+        "Campania",
+        "Italy"
+      ],
+      "country": "Italy",
+      "place_qid": "Q81263"
+    },
+    "founder_birthplace": "Pagani, Italy",
+    "infobox_agrees": false,
+    "date_status": "verify",
+    "note": "CONFLICT: Wikidata P569 = 1074-02-09 and P19 = Pagani, Italy; Wikipedia infobox = c.1070 (comment: 'could be as late as 1074') and birth_place = Payns, County of Champagne (France). Date AND place both disputed — the Wikidata place claim looks like a Payns/Pagani conflation. Needs Tony's call."
+  },
+  {
+    "seed_founder": "Prince Bernhard",
+    "wikipedia_title": "Prince Bernhard of Lippe-Biesterfeld",
+    "resolved_title": "Prince Bernhard of Lippe-Biesterfeld",
+    "shortdesc": "Prince consort of the Netherlands from 1948 to 1980",
+    "source": "https://en.wikipedia.org/wiki/Prince_Bernhard_of_Lippe-Biesterfeld",
+    "infobox_birth_date": "{{birth date|df=y|1911|06|29}}",
+    "infobox_birth_place": "[[Jena]], [[Grand Duchy of Saxe-Weimar-Eisenach|Saxe-Weimar-Eisenach]], [[German Empire]]",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q57304",
+    "precision": 11,
+    "founder_dob": "1911-06-29",
+    "place_detail": {
+      "city": "Jena",
+      "admin": "Thuringia",
+      "state": null,
+      "admin_chain": [
+        "Thuringia",
+        "Germany"
+      ],
+      "country": "Germany",
+      "place_qid": "Q3150"
+    },
+    "founder_birthplace": "Jena, Germany",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "David Rockefeller",
+    "wikipedia_title": "David Rockefeller",
+    "resolved_title": "David Rockefeller",
+    "shortdesc": "American banker and philanthropist (1915–2017)",
+    "source": "https://en.wikipedia.org/wiki/David_Rockefeller",
+    "infobox_birth_date": "{{birth date|1915|6|12}}",
+    "infobox_birth_place": "New York City, New York, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q11239",
+    "precision": 11,
+    "founder_dob": "1915-06-12",
+    "place_detail": {
+      "city": "Manhattan",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "New York City",
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q11299"
+    },
+    "founder_birthplace": "Manhattan, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Aleister Crowley",
+    "wikipedia_title": "Aleister Crowley",
+    "resolved_title": "Aleister Crowley",
+    "shortdesc": "English occultist (1875–1947)",
+    "source": "https://en.wikipedia.org/wiki/Aleister_Crowley",
+    "infobox_birth_date": "{{birth date|df=yes|1875|10|12}}",
+    "infobox_birth_place": "[[Leamington Spa]], Warwickshire, England",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q172684",
+    "precision": 11,
+    "founder_dob": "1875-10-12",
+    "place_detail": {
+      "city": "Leamington Spa",
+      "admin": "Warwick",
+      "state": null,
+      "admin_chain": [
+        "Warwick",
+        "Warwickshire",
+        "West Midlands",
+        "England",
+        "United Kingdom"
+      ],
+      "country": "United Kingdom",
+      "place_qid": "Q546635"
+    },
+    "founder_birthplace": "Leamington Spa, United Kingdom",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Christian Rosenkreuz",
+    "wikipedia_title": "Christian Rosenkreuz",
+    "resolved_title": "Christian Rosenkreuz",
+    "shortdesc": "Legendary founder in the Rosicrucian manifestos",
+    "source": "https://en.wikipedia.org/wiki/Christian_Rosenkreuz",
+    "infobox_birth_date": null,
+    "infobox_birth_place": null,
+    "wikidata_url": "https://www.wikidata.org/wiki/Q841173",
+    "precision": 9,
+    "founder_dob": "",
+    "note": "Allegorical figure — no verifiable DOB or birthplace exists. Wikidata carries only a year-precision (9) 1378 claim and no P19. Not decoder-usable.",
+    "founder_birthplace": "",
+    "infobox_agrees": false,
+    "date_status": "legendary"
+  },
+  {
+    "seed_founder": "Mayer Amschel Rothschild",
+    "wikipedia_title": "Mayer Amschel Rothschild",
+    "resolved_title": "Mayer Amschel Rothschild",
+    "shortdesc": "German banker (1744–1812)",
+    "source": "https://en.wikipedia.org/wiki/Mayer_Amschel_Rothschild",
+    "infobox_birth_date": "{{Birth date|1743|2|23|df=yes}}<ref name=\"NDB\"/> or 1744<ref name=\"NDB\"/>",
+    "infobox_birth_place": "[[Free City of Frankfurt]], Holy Roman Empire",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q76988",
+    "precision": 9,
+    "founder_dob": "1743",
+    "note": "CONFLICT: Wikidata P569 = 1743 (year precision only); Wikipedia infobox = 1743-02-23 'or 1744' per NDB. Wikidata country label also resolved to the historical 'Francia' rather than Germany (infobox: Free City of Frankfurt, Holy Roman Empire). Needs Tony's call.",
+    "place_detail": {
+      "city": "Frankfurt",
+      "admin": "Darmstadt Government Region",
+      "state": null,
+      "admin_chain": [
+        "Darmstadt Government Region",
+        "Hesse",
+        "Germany"
+      ],
+      "country": "Francia",
+      "place_qid": "Q1794"
+    },
+    "founder_birthplace": "Frankfurt, Francia",
+    "infobox_agrees": false,
+    "date_status": "verify"
+  },
+  {
+    "seed_founder": "John D Rockefeller",
+    "wikipedia_title": "John D. Rockefeller",
+    "resolved_title": "John D. Rockefeller",
+    "shortdesc": "American business magnate (1839–1937)",
+    "source": "https://en.wikipedia.org/wiki/John_D._Rockefeller",
+    "infobox_birth_date": "{{birth date|1839|7|8|mf=y}}",
+    "infobox_birth_place": "[[Richford, New York]], U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q160278",
+    "precision": 11,
+    "founder_dob": "1839-07-08",
+    "place_detail": {
+      "city": "Richford",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "Tioga County",
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q3710131"
+    },
+    "founder_birthplace": "Richford, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "William Hulbert",
+    "wikipedia_title": "William Hulbert",
+    "resolved_title": "William Hulbert",
+    "shortdesc": "Co-founder of the National League (1832–1882)",
+    "source": "https://en.wikipedia.org/wiki/William_Hulbert",
+    "infobox_birth_date": "{{Birth date|1832|10|23}}",
+    "infobox_birth_place": "[[Burlington Flats, New York]], U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q1564512",
+    "precision": 11,
+    "founder_dob": "1832-10-23",
+    "place_detail": {
+      "city": "Burlington Flats",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q4999241"
+    },
+    "founder_birthplace": "Burlington Flats, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Ban Johnson",
+    "wikipedia_title": "Ban Johnson",
+    "resolved_title": "Ban Johnson",
+    "shortdesc": "American baseball executive",
+    "source": "https://en.wikipedia.org/wiki/Ban_Johnson",
+    "infobox_birth_date": "{{Birth date|1864|01|05}}",
+    "infobox_birth_place": "[[Norwalk, Ohio]], U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q766590",
+    "precision": 11,
+    "founder_dob": "1865-01-05",
+    "place_detail": {
+      "city": "Norwalk",
+      "admin": "Ohio",
+      "state": "Ohio",
+      "admin_chain": [
+        "Huron County",
+        "Ohio"
+      ],
+      "country": "United States",
+      "place_qid": "Q388091"
+    },
+    "founder_birthplace": "Norwalk, Ohio",
+    "infobox_agrees": false,
+    "date_status": "verify",
+    "note": "CONFLICT: Wikidata P569 = 1865-01-05; Wikipedia infobox = 1864-01-05. Same month/day, year differs by one. Birthplace agrees across both (Norwalk, Ohio). Needs Tony's call."
+  },
+  {
+    "seed_founder": "Maurice Podoloff",
+    "wikipedia_title": "Maurice Podoloff",
+    "resolved_title": "Maurice Podoloff",
+    "shortdesc": "American sports executive and lawyer (1890–1985)",
+    "source": "https://en.wikipedia.org/wiki/Maurice_Podoloff",
+    "infobox_birth_date": "{{birth date|1890|8|18}}",
+    "infobox_birth_place": "[[Kropyvnytskyi|Yelisavetgrad]], [[Kherson Governorate]], [[Russian Empire]]",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q578405",
+    "precision": 11,
+    "founder_dob": "1890-08-18",
+    "place_detail": {
+      "city": "Novoarkhanhelsk",
+      "admin": "Novoarkhanhelsk Raion",
+      "state": null,
+      "admin_chain": [
+        "Novoarkhanhelsk Raion",
+        "Kirovohrad Oblast",
+        "Ukraine"
+      ],
+      "country": "Ukraine",
+      "place_qid": "Q997452"
+    },
+    "founder_birthplace": "Novoarkhanhelsk, Ukraine",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "James Naismith",
+    "wikipedia_title": "James Naismith",
+    "resolved_title": "James Naismith",
+    "shortdesc": "Inventor of basketball (1861–1939)",
+    "source": "https://en.wikipedia.org/wiki/James_Naismith",
+    "infobox_birth_date": "{{Birth date|1861|11|06}}",
+    "infobox_birth_place": "[[Almonte, Ontario|Almonte]], [[Canada West]], [[Province of Canada]]",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q188962",
+    "precision": 11,
+    "founder_dob": "1861-11-06",
+    "place_detail": {
+      "city": "Almonte",
+      "admin": "Mississippi Mills",
+      "state": null,
+      "admin_chain": [
+        "Mississippi Mills",
+        "Lanark County",
+        "Ontario",
+        "Canada"
+      ],
+      "country": "Canada",
+      "place_qid": "Q1391099"
+    },
+    "founder_birthplace": "Almonte, Canada",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Alexander Cartwright",
+    "wikipedia_title": "Alexander Cartwright",
+    "resolved_title": "Alexander Cartwright",
+    "shortdesc": "Baseball club founding member (1820–1892)",
+    "source": "https://en.wikipedia.org/wiki/Alexander_Cartwright",
+    "infobox_birth_date": "{{birth date |1820 |4 |17}}",
+    "infobox_birth_place": "[[New York City]], New York, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q28976",
+    "precision": 11,
+    "founder_dob": "1820-04-17",
+    "place_detail": {
+      "city": "New York City",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q60"
+    },
+    "founder_birthplace": "New York City, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Jack Roosevelt Robinson",
+    "wikipedia_title": "Jackie Robinson",
+    "resolved_title": "Jackie Robinson",
+    "shortdesc": "American baseball player (1919–1972)",
+    "source": "https://en.wikipedia.org/wiki/Jackie_Robinson",
+    "infobox_birth_date": "{{birth date|mf=yes|1919|1|31}}",
+    "infobox_birth_place": "[[Cairo, Georgia]], U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q221048",
+    "precision": 11,
+    "founder_dob": "1919-01-31",
+    "place_detail": {
+      "city": "Cairo",
+      "admin": "Georgia",
+      "state": "Georgia",
+      "admin_chain": [
+        "Grady County",
+        "Georgia"
+      ],
+      "country": "United States",
+      "place_qid": "Q2087855"
+    },
+    "founder_birthplace": "Cairo, Georgia",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "George Herman Ruth",
+    "wikipedia_title": "Babe Ruth",
+    "resolved_title": "Babe Ruth",
+    "shortdesc": "American baseball player (1895–1948)",
+    "source": "https://en.wikipedia.org/wiki/Babe_Ruth",
+    "infobox_birth_date": "{{birth date|mf=yes|1895|2|6}}",
+    "infobox_birth_place": "[[Baltimore]], Maryland, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q213812",
+    "precision": 11,
+    "founder_dob": "1895-02-06",
+    "place_detail": {
+      "city": "Baltimore",
+      "admin": "Maryland",
+      "state": "Maryland",
+      "admin_chain": [
+        "Maryland"
+      ],
+      "country": "United States",
+      "place_qid": "Q5092"
+    },
+    "founder_birthplace": "Baltimore, Maryland",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Henry Louis Gehrig",
+    "wikipedia_title": "Lou Gehrig",
+    "resolved_title": "Lou Gehrig",
+    "shortdesc": "American baseball player (1903–1941)",
+    "source": "https://en.wikipedia.org/wiki/Lou_Gehrig",
+    "infobox_birth_date": "{{Birth date|1903|6|19}}",
+    "infobox_birth_place": "[[Manhattan]], New York, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q357444",
+    "precision": 11,
+    "founder_dob": "1903-06-19",
+    "place_detail": {
+      "city": "Manhattan",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "New York City",
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q11299"
+    },
+    "founder_birthplace": "Manhattan, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  },
+  {
+    "seed_founder": "Michael Jeffrey Jordan",
+    "wikipedia_title": "Michael Jordan",
+    "resolved_title": "Michael Jordan",
+    "shortdesc": "American basketball player and businessman (born 1963)",
+    "source": "https://en.wikipedia.org/wiki/Michael_Jordan",
+    "infobox_birth_date": "{{birth date and age|1963|2|17}}",
+    "infobox_birth_place": "[[New York City]], New York, U.S.",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q41421",
+    "precision": 11,
+    "founder_dob": "1963-02-17",
+    "place_detail": {
+      "city": "Brooklyn",
+      "admin": "New York",
+      "state": "New York",
+      "admin_chain": [
+        "New York City",
+        "New York"
+      ],
+      "country": "United States",
+      "place_qid": "Q18419"
+    },
+    "founder_birthplace": "Brooklyn, New York",
+    "infobox_agrees": true,
+    "date_status": "locked"
+  }
+]

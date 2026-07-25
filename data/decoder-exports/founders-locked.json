@@ -42,6 +42,10 @@
         214,
         669
       ],
+      "founder_dob": "1930-04-11",
+      "founder_birthplace": "Chicago, Illinois",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Anton_LaVey",
       "ciphers": {
         "Ord": 137,
         "Red": 56,
@@ -64,7 +68,19 @@
         "Sept": 27,
         "Latin": 1357
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 46,
+        "Red": 37,
+        "Rev": 143,
+        "RR": 35,
+        "Sat": 291,
+        "RevSat": 388,
+        "Chal": 23,
+        "Sept": 27,
+        "Latin": 81
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Society of Jesus",
@@ -77,6 +93,11 @@
         56,
         187
       ],
+      "founder_dob": "1491-10-23",
+      "founder_birthplace": "Azpeitia, Spain",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Ignatius_of_Loyola",
+      "founder_dob_note": "Wikidata P19 resolves to a building (Oratory of the Holy House of Loyola); municipality taken from the same fetch — P131 chain[0] and the Wikipedia infobox both give Azpeitia.",
       "ciphers": {
         "Ord": 191,
         "Red": 56,
@@ -99,7 +120,19 @@
         "Sept": 57,
         "Latin": 1053
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 87,
+        "Red": 42,
+        "Rev": 129,
+        "RR": 48,
+        "Sat": 367,
+        "RevSat": 409,
+        "Chal": 28,
+        "Sept": 28,
+        "Latin": 685
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Freemasonry",
@@ -144,6 +177,10 @@
         16,
         322
       ],
+      "founder_dob": "1809-08-12",
+      "founder_birthplace": "Middletown, Connecticut",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/William_Huntington_Russell",
       "ciphers": {
         "Ord": 149,
         "Red": 41,
@@ -166,7 +203,19 @@
         "Sept": 95,
         "Latin": 2088
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 119,
+        "Red": 47,
+        "Rev": 151,
+        "RR": 52,
+        "Sat": 469,
+        "RevSat": 501,
+        "Chal": 43,
+        "Sept": 35,
+        "Latin": 1162
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Scottish Rite",
@@ -200,6 +249,10 @@
         135,
         54
       ],
+      "founder_dob": "1978-08-23",
+      "founder_birthplace": "Philadelphia, Pennsylvania",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Kobe_Bryant",
       "ciphers": {
         "Ord": 113,
         "Red": 41,
@@ -222,7 +275,19 @@
         "Sept": 39,
         "Latin": 738
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 101,
+        "Red": 65,
+        "Rev": 223,
+        "RR": 61,
+        "Sat": 521,
+        "RevSat": 643,
+        "Chal": 45,
+        "Sept": 43,
+        "Latin": 205
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     }
   ],
   "secret_societies": [
@@ -232,6 +297,10 @@
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Illuminati",
       "founder": "Adam Weishaupt",
+      "founder_dob": "1748-02-06",
+      "founder_birthplace": "Ingolstadt, Germany",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Adam_Weishaupt",
       "ciphers": {
         "Ord": 120,
         "Red": 48,
@@ -254,7 +323,19 @@
         "Sept": 50,
         "Latin": 1409
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 121,
+        "Red": 40,
+        "Rev": 149,
+        "RR": 59,
+        "Sat": 471,
+        "RevSat": 499,
+        "Chal": 35,
+        "Sept": 42,
+        "Latin": 421
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Bavarian Illuminati",
@@ -262,6 +343,10 @@
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Illuminati",
       "founder": "Adam Weishaupt",
+      "founder_dob": "1748-02-06",
+      "founder_birthplace": "Ingolstadt, Germany",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Adam_Weishaupt",
       "ciphers": {
         "Ord": 188,
         "Red": 80,
@@ -284,7 +369,19 @@
         "Sept": 50,
         "Latin": 1409
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 121,
+        "Red": 40,
+        "Rev": 149,
+        "RR": 59,
+        "Sat": 471,
+        "RevSat": 499,
+        "Chal": 35,
+        "Sept": 42,
+        "Latin": 421
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Knights Templar",
@@ -293,6 +390,9 @@
       "source": "https://en.wikipedia.org/wiki/Knights_Templar",
       "founder": "Hugues de Payens",
       "note": "Ruling: 1118 (page's explicit founding statement). Some accounts date the Hugues de Payens approach to Baldwin II at 1119.",
+      "founder_dob_status": "verify",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Hugues_de_Payens",
+      "founder_dob_note": "CONFLICT: Wikidata P569 = 1074-02-09 and P19 = Pagani, Italy; Wikipedia infobox = c.1070 (comment: 'could be as late as 1074') and birth_place = Payns, County of Champagne (France). Date AND place both disputed — the Wikidata place claim looks like a Payns/Pagani conflation. Needs Tony's call.",
       "ciphers": {
         "Ord": 173,
         "Red": 65,
@@ -361,6 +461,10 @@
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Bilderberg_meeting",
       "founder": "Prince Bernhard",
+      "founder_dob": "1911-06-29",
+      "founder_birthplace": "Jena, Germany",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Prince_Bernhard_of_Lippe-Biesterfeld",
       "ciphers": {
         "Ord": 159,
         "Red": 87,
@@ -383,7 +487,19 @@
         "Sept": 51,
         "Latin": 417
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 30,
+        "Red": 12,
+        "Rev": 78,
+        "RR": 24,
+        "Sat": 170,
+        "RevSat": 218,
+        "Chal": 12,
+        "Sept": 11,
+        "Latin": 646
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Council on Foreign Relations",
@@ -410,6 +526,10 @@
       "source": "https://en.wikipedia.org/wiki/Trilateral_Commission",
       "founder": "David Rockefeller",
       "note": "CORRECTED from 1973-07-01: page gives July 1973 (month+year only), no day.",
+      "founder_dob": "1915-06-12",
+      "founder_birthplace": "Manhattan, New York",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/David_Rockefeller",
       "ciphers": {
         "Ord": 245,
         "Red": 92,
@@ -432,7 +552,19 @@
         "Sept": 62,
         "Latin": 1002
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 92,
+        "Red": 29,
+        "Rev": 151,
+        "RR": 52,
+        "Sat": 407,
+        "RevSat": 466,
+        "Chal": 30,
+        "Sept": 26,
+        "Latin": 321
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Ordo Templi Orientis",
@@ -441,6 +573,10 @@
       "source": "https://en.wikipedia.org/wiki/Ordo_Templi_Orientis",
       "founder": "Aleister Crowley",
       "note": "Ruling: anchor 1904 (first verifiable emergence per page: 'nothing verifiable is known of the Order until 1904'); apparent founder Carl Kellner claimed 1895.",
+      "founder_dob": "1875-10-12",
+      "founder_birthplace": "Leamington Spa, United Kingdom",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Aleister_Crowley",
       "ciphers": {
         "Ord": 236,
         "Red": 101,
@@ -463,7 +599,19 @@
         "Sept": 59,
         "Latin": 1768
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 146,
+        "Red": 56,
+        "Rev": 205,
+        "RR": 70,
+        "Sat": 601,
+        "RevSat": 660,
+        "Chal": 50,
+        "Sept": 42,
+        "Latin": 453
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "day"
     }
   ],
   "institutional": [
@@ -552,6 +700,10 @@
       "source": "https://en.wikipedia.org/wiki/National_League_(baseball)",
       "founder": "William Hulbert",
       "note": "137/56 exact mirror of Church of Satan. Founded 2 Feb 1876, New York City.",
+      "founder_dob": "1832-10-23",
+      "founder_birthplace": "Burlington Flats, New York",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/William_Hulbert",
       "ciphers": {
         "Ord": 137,
         "Red": 56,
@@ -574,7 +726,19 @@
         "Sept": 53,
         "Latin": 1404
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 190,
+        "Red": 64,
+        "Rev": 215,
+        "RR": 89,
+        "Sat": 715,
+        "RevSat": 740,
+        "Chal": 57,
+        "Sept": 60,
+        "Latin": 765
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "American League",
@@ -582,6 +746,9 @@
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/American_League",
       "founder": "Ban Johnson",
+      "founder_dob_status": "verify",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Ban_Johnson",
+      "founder_dob_note": "CONFLICT: Wikidata P569 = 1865-01-05; Wikipedia infobox = 1864-01-05. Same month/day, year differs by one. Birthplace agrees across both (Norwalk, Ohio). Needs Tony's call.",
       "ciphers": {
         "Ord": 115,
         "Red": 61,
@@ -613,6 +780,10 @@
       "source": "https://en.wikipedia.org/wiki/National_Basketball_Association",
       "founder": "Maurice Podoloff",
       "note": "Founded as BAA 6 June 1946; merged with NBL 1949 to form NBA.",
+      "founder_dob": "1890-08-18",
+      "founder_birthplace": "Novoarkhanhelsk, Ukraine",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Maurice_Podoloff",
       "ciphers": {
         "Ord": 296,
         "Red": 98,
@@ -635,7 +806,19 @@
         "Sept": 53,
         "Latin": 574
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 174,
+        "Red": 66,
+        "Rev": 231,
+        "RR": 78,
+        "Sat": 699,
+        "RevSat": 756,
+        "Chal": 59,
+        "Sept": 49,
+        "Latin": 1113
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "WNBA",
@@ -663,6 +846,10 @@
       "source": "https://en.wikipedia.org/wiki/Basketball",
       "founder": "James Naismith",
       "note": "CORRECTED from 1891-12-21: page gives 'December 1891' (no day). Naismith=141/51=Adam Weishaupt. First official game 20 Jan 1892.",
+      "founder_dob": "1861-11-06",
+      "founder_birthplace": "Almonte, Canada",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/James_Naismith",
       "ciphers": {
         "Ord": 85,
         "Red": 22,
@@ -685,7 +872,19 @@
         "Sept": 49,
         "Latin": 1013
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 80,
+        "Red": 26,
+        "Rev": 109,
+        "RR": 37,
+        "Sat": 325,
+        "RevSat": 354,
+        "Chal": 29,
+        "Sept": 19,
+        "Latin": 246
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Knickerbocker Rules",
@@ -694,6 +893,10 @@
       "source": "https://en.wikipedia.org/wiki/Knickerbocker_Rules",
       "founder": "Alexander Cartwright",
       "note": "CORRECTED from 1845-09-23: page gives only the year 1845. Baseball codified by Wheaton & Tucker.",
+      "founder_dob": "1820-04-17",
+      "founder_birthplace": "New York City, New York",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Alexander_Cartwright",
       "ciphers": {
         "Ord": 200,
         "Red": 83,
@@ -716,7 +919,19 @@
         "Sept": 77,
         "Latin": 1744
       },
-      "granularity": "year"
+      "birthplace_ciphers": {
+        "Ord": 168,
+        "Red": 60,
+        "Rev": 129,
+        "RR": 57,
+        "Sat": 553,
+        "RevSat": 514,
+        "Chal": 37,
+        "Sept": 39,
+        "Latin": 1997
+      },
+      "granularity": "year",
+      "founder_dob_granularity": "day"
     }
   ],
   "tribute_figures": [
@@ -727,6 +942,10 @@
       "source": "https://en.wikipedia.org/wiki/Jackie_Robinson",
       "founder": "Jack Roosevelt Robinson",
       "note": "#42, Jackie Robinson Day 4/15. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
+      "founder_dob": "1919-01-31",
+      "founder_birthplace": "Cairo, Georgia",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Jackie_Robinson",
       "ciphers": {
         "Ord": 145,
         "Red": 64,
@@ -749,7 +968,19 @@
         "Sept": 74,
         "Latin": 2075
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 46,
+        "Red": 28,
+        "Rev": 89,
+        "RR": 35,
+        "Sat": 221,
+        "RevSat": 264,
+        "Chal": 14,
+        "Sept": 16,
+        "Latin": 143
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Babe Ruth",
@@ -758,6 +989,10 @@
       "source": "https://en.wikipedia.org/wiki/Babe_Ruth",
       "founder": "George Herman Ruth",
       "note": "#3. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
+      "founder_dob": "1895-02-06",
+      "founder_birthplace": "Baltimore, Maryland",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Babe_Ruth",
       "ciphers": {
         "Ord": 77,
         "Red": 32,
@@ -780,7 +1015,19 @@
         "Sept": 74,
         "Latin": 706
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 95,
+        "Red": 41,
+        "Rev": 148,
+        "RR": 58,
+        "Sat": 410,
+        "RevSat": 463,
+        "Chal": 29,
+        "Sept": 30,
+        "Latin": 297
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Lou Gehrig",
@@ -789,6 +1036,10 @@
       "source": "https://en.wikipedia.org/wiki/Lou_Gehrig",
       "founder": "Henry Louis Gehrig",
       "note": "#4, Lou Gehrig Day 6/2. DOB confirmed via Wikipedia (Baseball-Reference returned 403).",
+      "founder_dob": "1903-06-19",
+      "founder_birthplace": "Manhattan, New York",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Lou_Gehrig",
       "ciphers": {
         "Ord": 102,
         "Red": 57,
@@ -811,7 +1062,19 @@
         "Sept": 75,
         "Latin": 1018
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 92,
+        "Red": 29,
+        "Rev": 151,
+        "RR": 52,
+        "Sat": 407,
+        "RevSat": 466,
+        "Chal": 30,
+        "Sept": 26,
+        "Latin": 321
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     },
     {
       "name": "Roberto Clemente",
@@ -839,6 +1102,10 @@
       "source": "https://en.wikipedia.org/wiki/Michael_Jordan",
       "founder": "Michael Jeffrey Jordan",
       "note": "#23 #45. Ord=113=Kobe Bryant. DOB confirmed via Wikipedia (Basketball-Reference returned 403).",
+      "founder_dob": "1963-02-17",
+      "founder_birthplace": "Brooklyn, New York",
+      "founder_dob_status": "locked",
+      "founder_dob_source": "https://en.wikipedia.org/wiki/Michael_Jordan",
       "ciphers": {
         "Ord": 113,
         "Red": 59,
@@ -861,7 +1128,19 @@
         "Sept": 73,
         "Latin": 1953
       },
-      "granularity": "day"
+      "birthplace_ciphers": {
+        "Ord": 112,
+        "Red": 40,
+        "Rev": 104,
+        "RR": 41,
+        "Sat": 392,
+        "RevSat": 384,
+        "Chal": 29,
+        "Sept": 19,
+        "Latin": 652
+      },
+      "granularity": "day",
+      "founder_dob_granularity": "day"
     }
   ],
   "mlb_teams": [
