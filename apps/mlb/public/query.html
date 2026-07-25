@@ -279,7 +279,7 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 /* tap-a-line options (7.3) -- a real menu, not a browser prompt */
 .menu{position:fixed;z-index:var(--z-menu);background:var(--sf-3);border:1px solid var(--line-hi);
   border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.6);padding:4px;min-width:196px;
-  max-width:min(90vw,300px)}
+  max-width:min(90vw,300px);max-height:72vh;overflow-y:auto}
 .menu button{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:8px;
   font-size:12.5px;color:var(--ink)}
 .menu button:active{background:var(--sf-2)}
@@ -781,6 +781,7 @@ var SIMPLE_SOURCES=[
   {id:'oName',  label:'Opponent Full Name'},
   {id:'oLoc',   label:'Opponent Location'},
   {id:'oMascot',label:'Opponent Mascot'},
+  {id:'vName',  label:'Venue Name'},
   {id:'jersey', label:'Jersey Number'},
   {id:'jerseyBday',label:'Jersey Birthday Match'},
   {id:'teamTotals',label:'Team Totals',phase:2},
@@ -799,6 +800,7 @@ var STAT_SOURCES=[
   {id:'pName', label:'Player Name'},
   {id:'tName', label:'Team Name'},
   {id:'oName', label:'Opponent Name'},
+  {id:'vName', label:'Venue Name'},
   {id:'age',   label:'Player Age figures'},
   {id:'jersey',label:'Jersey Number'},
   {id:'raw',   label:'Also match specific number(s)'},
@@ -846,9 +848,9 @@ function defaultConfig(sport){
          targets:{name:true,phrase:true,date:true}},
     /* §6.8 Stat Matching */
     stat:{sources:{phrase:true,date:true,pName:true,tName:true,oName:true,
-                   age:true,jersey:true,raw:true},
+                   vName:true,age:true,jersey:true,raw:true},
           raw:'',
-          bat:statDefaults(BAT_STATS),pit:statDefaults(PIT_STATS)},
+          bat:statDefaults(BAT_STATS),pit:statDefaults(PIT_STATS,true)},
     /* §6.9 Founders & Spans (Phase 2) */
     founders:{cats:{},entities:{},
               spans:{since:true,sinceAnn:true,untilAnn:true},
@@ -866,14 +868,14 @@ function defaultConfig(sport){
     teamTotals:teamDefaults(),
     /* §7.4 card display config */
     card:{groups:true,ageStrip:false,bdayStrip:false,statLine:false,
-          oppPitcher:false,teamTotals:false},
+          oppPitcher:false,teamTotals:false,zoom:100},
   };
 }
 /* §0 again: every lane ON. A ticked "Stat Matching" that contributes zero
    counters until Tony hand-enables lanes is the app deciding for him; picking
    a "sensible" subset is worse still. Mode defaults to Current (the value
    as-is) — the only non-opinionated mode. */
-function statDefaults(table){
+function statDefaults(table,pitching){
   var o={};
   table.forEach(function(r){
     /* FIX-1 3.2: scope Overall (default) / home / away / venue */
@@ -881,9 +883,15 @@ function statDefaults(table){
     o['career-'+r[1]]={on:true,mode:'current',off:1,scope:'overall'};
   });
   /* Tony 2026-07-26: total bases default to the +1–4 spread — one hit adds
-     1..4 bases, so a single "next" under-tests the lane. */
-  if(o['season-TB'])o['season-TB'].mode='spread';
-  if(o['career-TB'])o['career-TB'].mode='spread';
+     1..4 bases, so a single "next" under-tests the lane. Pitching SO lanes
+     default to spread too (the K ladder — spread runs +1..+11 for pitchers). */
+  if(!pitching){
+    if(o['season-TB'])o['season-TB'].mode='spread';
+    if(o['career-TB'])o['career-TB'].mode='spread';
+  }else{
+    if(o['season-SO'])o['season-SO'].mode='spread';
+    if(o['career-SO'])o['career-SO'].mode='spread';
+  }
   return o;
 }
 function teamDefaults(){
@@ -903,6 +911,13 @@ function migrateTbSpread(cfg){
   });
   var t=cfg.teamTotals&&cfg.teamTotals.TB;
   if(t&&(t.mode==='current'||t.mode==='next'))t.mode='spread';
+  if(!cfg._pitSpread){
+    cfg._pitSpread=1;
+    ['season-SO','career-SO'].forEach(function(k){
+      var c2=cfg.stat&&cfg.stat.pit&&cfg.stat.pit[k];
+      if(c2&&(c2.mode==='current'||c2.mode==='next'))c2.mode='spread';
+    });
+  }
   return cfg;
 }
 
@@ -1304,6 +1319,12 @@ function buildPool(p,ctx){
   if(S.oName) addCiphered(out,opp.fullName,'oName',ciphers);
   if(S.oLoc)  addCiphered(out,opp.city,'oLoc',ciphers);
   if(S.oMascot)addCiphered(out,opp.nickname,'oMascot',ciphers);
+  /* Tony 2026-07-26: venue gematria — the stadium name was fetched (g.venue)
+     but never ciphered. It enters the pool for every player in that game. */
+  if(S.vName){
+    var vg=ctx.slate.games.filter(function(g){return g.gameId===p.gameId})[0];
+    if(vg&&vg.venue)addCiphered(out,vg.venue,'vName',ciphers);
+  }
   if(S.jersey&&p.jersey!=null)poolAdd(out,p.jersey,'jersey #'+p.jersey,null,'jersey');
 
   /* §6.5 Direct Phrase Matching — the day's theme lives here. */
@@ -1457,6 +1478,7 @@ function statAccepts(cfg){
   if(s.pName){acc.pName=true;acc.pFirst=true;acc.pLast=true}
   if(s.tName){acc.tName=true;acc.tLoc=true;acc.tMascot=true}
   if(s.oName){acc.oName=true;acc.oLoc=true;acc.oMascot=true}
+  if(s.vName)acc.vName=true;
   if(s.age)acc.age=true;
   if(s.jersey)acc.jersey=true;
   if(s.raw)acc.raw=true;
@@ -1478,15 +1500,19 @@ function statScopeSrc(stats,scope,laneScope,p){
   return{src:(sp&&sp[loc])||null,
     tag:laneScope==='venue'?'venue·'+loc:loc};
 }
-/* Tony 2026-07-26: mode 'spread' tests +1..+4 in one lane (built for TB —
-   a single hit adds 1–4 bases — but available on any counting lane). */
-function laneOffsets(c){
+/* Tony 2026-07-26: mode 'spread' tests +1..+max in one lane. Batting max 4
+   (a hit adds 1–4 bases); pitching max 11 (K/H/BB totals move far more per
+   start — Tony wants the counter run out to eleven). */
+function laneOffsets(c,max){
   if(!c)return[0];
   if(c.mode==='next')return[1];
-  if(c.mode==='spread')return[1,2,3,4];
+  if(c.mode==='spread'){
+    var n=[];for(var i=1;i<=(max||4);i++)n.push(i);return n;
+  }
   if(c.mode==='custom')return[Math.round(+c.off||0)];
   return[0];
 }
+function spreadMax(role){return role==='Pitching'?11:4}
 function pushStatCounters(out,conf,table,stats,role,acc,p){
   ['season','career'].forEach(function(scope){
     table.forEach(function(row){
@@ -1499,7 +1525,7 @@ function pushStatCounters(out,conf,table,stats,role,acc,p){
       /* §6.8: zero-value stats are skipped for the other role (a pitcher's
          empty batting line produces no counters). null = never fabricated. */
       if(base==null||!(base>0))return;
-      laneOffsets(c).forEach(function(off){
+      laneOffsets(c,spreadMax(role)).forEach(function(off){
         var val=base+off;
         if(!(val>0))return;
         var arith=off===0?null:base.toLocaleString()+' '+(off<0?'-':'+')+' '+Math.abs(off)+' = '+val.toLocaleString();
@@ -1509,7 +1535,7 @@ function pushStatCounters(out,conf,table,stats,role,acc,p){
           label:cap(scope)+' '+role+' '+label+(rs.tag?' ('+rs.tag+')':'')+
             (off===0?'':(off===1?' (next)':' '+(off<0?'':'+')+off)),
           value:val,detail:null,arith:arith,accepts:acc,
-          statKey:key,splitScope:rs.tag,off:off});
+          statKey:key,splitScope:rs.tag,off:off,role:role});
       });
     });
   });
@@ -1927,6 +1953,7 @@ function switchSport(s){
   A.sport=s;
   A.cfg=migrateTbSpread(mergeCfg(defaultConfig(s),lsGet(LS.cfg+s,null)));
   A.cfg.sport=s;
+  applyTextZoom();
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},lsGet(LS.work+s,null));
   A.slate=null;A.results=[];A.scanned=false;A.error=null;
@@ -1966,6 +1993,9 @@ function loadPreset(n){
 ============================================================ */
 var openDlg=null;
 function openDialog(id){openDlg=id;renderDialog()}
+function applyTextZoom(){
+  document.documentElement.style.zoom=String(((A.cfg&&A.cfg.card&&A.cfg.card.zoom)||100)/100);
+}
 function closeDialog(){openDlg=null;renderDialog()}
 function renderDialog(){
   var host=document.getElementById('dialogHost');
@@ -2269,7 +2299,7 @@ function statSection(title,table,conf){
             onclick:function(){c.mode='current';onChange();renderDialog()}}),
           h('button',{class:c.mode==='next'?'on':'',text:'Next',
             onclick:function(){c.mode='next';onChange();renderDialog()}}),
-          h('button',{class:c.mode==='spread'?'on':'',text:'+1–4',
+          h('button',{class:c.mode==='spread'?'on':'',text:title==='Pitching'?'+1–11':'+1–4',
             onclick:function(){c.mode='spread';onChange();renderDialog()}}),
           h('button',{class:c.mode==='custom'?'on':'',text:'Custom',
             onclick:function(){c.mode='custom';onChange();renderDialog()}}),
@@ -2326,6 +2356,16 @@ DIALOGS.card={
       crow('Stat line (entering season + career)',K.statLine,function(e){K.statLine=e.target.checked;onChange();renderDialog()}),
       crow('Opposing pitcher section (batter cards)',K.oppPitcher,function(e){K.oppPitcher=e.target.checked;onChange();renderDialog()}),
       crow('Team totals collapsible',K.teamTotals,function(e){K.teamTotals=e.target.checked;onChange();renderDialog()}),
+    ]));
+    /* Tony 2026-07-26: text size — CSS zoom on the root scales the whole
+       page uniformly (the app is px-set throughout, so a root multiplier
+       is the honest lever). Saved per sport with the rest of card config. */
+    bd.appendChild(sec('Text size',[
+      h('div',{class:'chips'},[[90,'Small'],[100,'Default'],[112,'Large'],[125,'Larger']].map(function(zz){
+        return chip(zz[1],(K.zoom||100)===zz[0],function(){
+          K.zoom=zz[0];applyTextZoom();onChange();renderDialog();
+        });
+      })),
     ]));
     bd.appendChild(h('p',{class:'hint',text:'Saved with presets.'}));
     /* §7.3 hidden-items tray lives here too so everything is reversible. */
@@ -2516,7 +2556,7 @@ function visibleResults(){
 /* label for receipt lines whose value is not a gematria value */
 var KIND_LABEL={date:'date calc',raw:'thread #',jersey:'jersey #',age:'age figure',
   bdaySpan:'birthday span',founders:'founders span',clock:'career clock',
-  entity:'entity',phrase:'phrase',compose:'composed',probe:'probe'};
+  entity:'entity',phrase:'phrase',compose:'composed',probe:'probe',vName:'venue'};
 /* FIX-1 section 4: every receipt line answers "what even is this". Names are
    self-evident (the quoted word IS the player's or a team's name) -- no
    suffix. Everything else names its source chain. */
@@ -2696,7 +2736,10 @@ function popMenu(ev,title,items,infoRows){
   closeMenu();
   var m=h('div',{class:'menu',id:'ctxMenu'},
     [h('div',{class:'mtitle',text:title})]
-    .concat((infoRows||[]).map(function(r){return h('div',{class:'minfo',text:r})}))
+    .concat((infoRows||[]).map(function(r){
+      /* rows may be plain strings (muted) or prebuilt nodes (colored) */
+      return typeof r==='string'?h('div',{class:'minfo',text:r}):h('div',{class:'minfo'},[r]);
+    }))
     .concat(items.map(function(it){
       return h('button',{text:it[0],onclick:function(e){e.stopPropagation();closeMenu();it[1]()}});
     })));
@@ -2769,14 +2812,20 @@ function counterMenu(ev,counter){
   if(counter.group==='stat'&&counter._p&&A.ctx){
     var base=counter.value-(counter.off||0);
     var maps=playerMaps(counter._p,A.ctx).maps;
-    [1,2,3,4].forEach(function(o){
+    var incs=[];for(var oi=1;oi<=spreadMax(counter.role);oi++)incs.push(oi);
+    incs.forEach(function(o){
       var v=base+o;
       var hits=matchCounter({value:v,accepts:counter.accepts,group:counter.group,
         statKey:counter.statKey},maps,A.ctx.depth);
       if(!hits.length){rows.push('+'+o+' → '+fmt(v)+' · no match');return}
+      /* hit rows carry the stat lane's hue — misses stay muted */
+      var laneColor=counter.splitScope?'var(--c-stat-sp)':'var(--c-stat)';
       var words=hits.slice(0,2).map(function(hx){return hx.entry.text});
-      rows.push('+'+o+' → '+fmt(v)+' ✓ '+words.join(' · ')+
-        (hits.length>2?' · +'+(hits.length-2)+' more':''));
+      rows.push(h('span',{},[
+        h('b',{style:{color:laneColor},text:'+'+o+' → '+fmt(v)+' ✓  '}),
+        h('span',{style:{color:'var(--ink)'},text:words.join(' · ')+
+          (hits.length>2?' · +'+(hits.length-2)+' more':'')}),
+      ]));
       acts.push(['Spotlight '+fmt(v)+' (+'+o+')',function(){spotlightValue(v)}]);
     });
   }
@@ -3183,10 +3232,10 @@ function probeCounters(p){
         push('stat','pb-'+scope+'-'+key+'-nxt',cap(scope)+' '+role+' '+label+' (next)',base+1,
           fmt(base)+' + 1 = '+fmt(base+1));
         if(c.mode==='spread'){
-          [2,3,4].forEach(function(o){
+          for(var so=2;so<=spreadMax(role);so++)(function(o){
             push('stat','pb-'+scope+'-'+key+'-o'+o,cap(scope)+' '+role+' '+label+' +'+o,
               base+o,fmt(base)+' + '+o+' = '+fmt(base+o));
-          });
+          })(so);
         }else if(c.mode==='custom'&&+c.off){
           var o=Math.round(+c.off);
           push('stat','pb-'+scope+'-'+key+'-off',cap(scope)+' '+role+' '+label+' '+(o<0?'':'+')+o,
@@ -3313,6 +3362,7 @@ function boot(){
   A.sport=lsGet(LS.rail,{}).sport||'mlb';
   if(!SPORT_PROFILES[A.sport])A.sport='mlb';
   A.cfg=migrateTbSpread(mergeCfg(defaultConfig(A.sport),lsGet(cfgKey(),null)));
+  applyTextZoom();
   A.cfg.sport=A.sport;
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
     probes:{},openProbes:{},collapsed:{}},lsGet(workKey(),null));
@@ -3789,7 +3839,7 @@ PHASE2_POOL.push(function(out,p,ctx){
    was measurable at maximal settings. */
 var FOUNDERS_ACCEPTS={pName:true,pFirst:true,pLast:true,tName:true,tLoc:true,tMascot:true,
   oName:true,oLoc:true,oMascot:true,compose:true,phrase:true,date:true,raw:true,
-  bdaySpan:true,age:true,jersey:true,entity:true};
+  bdaySpan:true,age:true,jersey:true,entity:true,vName:true};
 function foundersAccepts(cfg){return FOUNDERS_ACCEPTS}
 
 /* §6.9 "Player dates x entity dates" */
@@ -4028,6 +4078,10 @@ PHASE2_CARD.push(function(bd,r,ctx){
       var any=false;
       spCounters.forEach(function(c){
         c.label='SP '+c.label;
+        /* Tony 2026-07-26: tap-menu +1..+4 preview — SP counters match
+           against the BATTER's pool in this section, so the preview tests
+           increments against that same pool (via _p = the batter). */
+        c._p=r.player;
         var hits=matchCounter(c,batPool,ctx.depth);
         if(hits.length){any=true;sect.appendChild(renderGroup({counter:c,hits:hits},false))}
       });
