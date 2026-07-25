@@ -397,6 +397,27 @@ t('§7.3 number spotlight restores focus and caret after re-render',()=>{
   assert.match(src,/again\.focus\(\)/,'spotlight must refocus after renderResults');
   assert.match(src,/setSelectionRange\(caret,caret\)/,'caret must be restored');
 });
+t('the page LOADS every non-system font its CSS asks for',()=>{
+  /* Regression: the CSS was copied from cvg.css but the <link> that loads
+     those families was not, so the whole page silently fell back to
+     Segoe UI + Consolas. A font stack naming a webfont is a promise the
+     page has to keep by itself — public/ inherits nothing from index.html. */
+  const head=readHtml().split('</head>')[0];
+  const css=readHtml().split('</style>')[0];
+  const declared=new Set();
+  for(const m of css.matchAll(/font-family:\s*'?"?([A-Z][A-Za-z ]+?)'?"?\s*[,;]/g))declared.add(m[1].trim());
+  for(const m of css.matchAll(/--(?:sans|mono):\s*'([^']+)'/g))declared.add(m[1].trim());
+  const SYSTEM=new Set(['Consolas','Segoe UI']);
+  const webfonts=[...declared].filter(f=>!SYSTEM.has(f)&&/[a-z]/.test(f)&&f.includes(' ')||['Fustat'].includes(f));
+  assert.ok(webfonts.length>0,'expected to find webfont families in the CSS');
+  webfonts.forEach(f=>{
+    const slug=f.replace(/ /g,'+');
+    assert.ok(head.includes(slug),'CSS asks for "'+f+'" but nothing in <head> loads it');
+  });
+  assert.match(head,/rel="preconnect" href="https:\/\/fonts\.gstatic\.com" crossorigin/,
+    'missing the gstatic preconnect index.html uses');
+  assert.match(head,/display=swap/,'webfonts must not block first paint');
+});
 t('§7.3 a spotlighted counter value lights gold',()=>{
   const src=readHtml();
   assert.match(src,/class:'mval'\+\(spot!=null&&c\.value===spot\?' spot-hit':''\)/);

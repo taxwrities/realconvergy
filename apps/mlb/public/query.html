@@ -6,6 +6,16 @@
 <meta name="theme-color" content="#0c0f15">
 <title>Daily Matches — Slate Query Engine</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<!-- The CSS below asks for Fustat / JetBrains Mono / Manufacturing Consent,
+     which are NOT system fonts. apps/mlb/index.html loads them from Google
+     Fonts; this page is served standalone out of public/ and inherits nothing
+     from it, so it must load them itself. Without this block the whole page
+     silently falls back (Segoe UI + Consolas on Windows) and looks nothing
+     like the app it sits inside. Same families/weights/href as index.html. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fustat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Manufacturing+Consent&display=swap">
 <style>
 /* ============================================================
    query.html — Slate Query Engine ("Daily Matches")
@@ -50,7 +60,10 @@ a{color:var(--acc)}
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
 }
-.hdr-title{font-size:16px;font-weight:700;letter-spacing:.3px;line-height:1.05}
+/* same treatment cvg.css gives .shell-title, so the header reads as the same
+   product as the four-tab app rather than a bolted-on page */
+.hdr-title{font-family:'Manufacturing Consent',var(--sans);font-size:21px;
+  font-weight:400;letter-spacing:.5px;line-height:1.05}
 .hdr-title em{color:var(--acc);font-style:normal}
 .hdr-sub{font-family:var(--mono);font-size:10px;color:var(--ink-2);margin-top:1px;
   display:flex;gap:6px;align-items:center;flex-wrap:wrap}
