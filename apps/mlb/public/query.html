@@ -1230,6 +1230,10 @@ function buildCounters(p,ctx){
     if(t.phrase)acc.phrase=true;
     if(t.date)acc.date=true;
     acc.raw=true;
+    /* 6.9: entity spans are "testable against ... birthday spans" — that is
+       this direction, so founders / career-clock / entity values are always
+       eligible against an age or birthday counter. */
+    acc.founders=true;acc.clock=true;acc.entity=true;
     ageFigures(p,ctx).forEach(function(a){
       out.push({group:'age',gid:'age-'+a.key,label:a.label,value:a.value,
         detail:a.detail,accepts:acc});
@@ -1388,7 +1392,11 @@ function scanPlayer(p,ctx){
   pool.forEach(function(e){(byValue[e.v]=byValue[e.v]||[]).push(e)});
   /* §6.6 direction 2: birthday spans as a POOL kind so they can hit date
      calcs. Added after byValue so they never self-match a bday counter. */
-  if(ctx.cfg.types.age&&ctx.cfg.date&&ctx.cfg.date.bdayToDate){
+  /* 6.9 lists birthday spans as a target for founders spans UNCONDITIONALLY,
+     so the pool entry is gated only by its own section (Player Total Age).
+     Whether DATE CALCS may consume it stays governed by the 6.6 direction
+     toggle, which lives on the date counter's accepts map (see buildCounters). */
+  if(ctx.cfg.types.age){
     bdayFigures(p,ctx).forEach(function(b){
       var e={v:b.value,text:b.label.toLowerCase()+' = '+b.value,cipher:null,
         kind:'bdaySpan',label:b.detail};
@@ -2972,7 +2980,32 @@ PHASE2_COUNTERS.push(function(out,p,ctx){
   });
   /* §6.9 direct date-to-date convergence — player dates x entity dates,
      independent of today. */
-  if(cfg.founders.crossDates)crossDateCounters(out,p,ctx,acc);
+  if(cfg.founders.crossDates)crossDateOf(p,ctx).forEach(function(c){out.push(c)});
+});
+/* Both the counter side and the pool side need the same cross-date set, and
+   at maximal settings it is the single most expensive thing on the page — so
+   it is computed ONCE per player and shared. Cleared with the scan context. */
+function crossDateOf(p,ctx){
+  var cache=ctx._xd||(ctx._xd={});
+  var hit=cache[p.id];
+  if(hit)return hit;
+  var out=[];
+  crossDateCounters(out,p,ctx,FOUNDERS_ACCEPTS);
+  return(cache[p.id]=out);
+}
+/* ...and the SAME cross-date values join the player's POOL, because the spec
+   says the value is "testable against all enabled targets (stats, names,
+   phrases, date calcs, thread numbers)" -- and a stat is a COUNTER, which can
+   only be reached from the pool side. Player-specific, so this is a per-player
+   producer rather than a shared one. */
+PHASE2_POOL.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders||!cfg.founders.crossDates)return;
+  crossDateOf(p,ctx).forEach(function(c){
+    if(!(c.value>0))return;
+    out.push({v:c.value,text:c.label.replace(/^⚑ /,''),cipher:null,
+      kind:'founders',label:c.detail,entityKey:c.entityKey});
+  });
 });
 /* one shared, frozen kind map — allocating a fresh one per player per entity
    was measurable at maximal settings. */
@@ -3052,6 +3085,26 @@ function annOffset(origin,target,inclusive){
 }
 
 /* §6.9 anniversary alignment → an explicit FLAG line, not a silent value. */
+/* "anniversary flag (=0 days)" from the spans-vs-analysis-date list: TODAY is
+   this entity's anniversary. A zero-day span is correctly rejected by the v>0
+   pool and counter guards (zero matches nothing), so a flag line is the only
+   honest surface for it -- which is exactly what the spec asks for. This is a
+   DIFFERENT requirement from the player-date alignment flag below. */
+PHASE2_FLAGS.push(function(out,p,ctx){
+  var cfg=ctx.cfg;
+  if(!cfg.types.founders||!ctx.founders)return;
+  var S=cfg.founders.spans;
+  if(!S.since&&!S.sinceAnn&&!S.untilAnn)return;
+  var md=ctx.slate.date.slice(5);
+  activeEntities(cfg,ctx.founders,true).forEach(function(e){
+    if(e.founded.slice(5)!==md)return;
+    var ck=entitySpans(e,ctx.slate.date,cfg.age.inclusive);
+    out.push({kind:'foundersAnniversary',
+      text:'⚑ TODAY is the '+e.name+' anniversary — founded '+e.founded+
+        (ck?' · year '+ck.years:'')});
+  });
+});
+
 PHASE2_FLAGS.push(function(out,p,ctx){
   var cfg=ctx.cfg;
   if(!cfg.types.founders||!ctx.founders||!cfg.founders.crossDates)return;
