@@ -55,12 +55,14 @@ export default function App(){
           {/* QUERY-SPEC §1.4 / §3: the ONE addition to the existing four-tab app —
               a link to the Slate Query Engine page (public/query.html, deployed
               alongside index.html). Nothing else in this app changes. */}
+          {/* header actions share the tabbar's hand-drawn 1.8-stroke svg() voice —
+              no OS-rendered dingbats next to the line-icon set */}
           <a className="icon-btn" href="/query.html" aria-label="Daily Matches query"
             title="Daily Matches — slate query engine"
-            style={{textDecoration:'none'}}>⌗</a>
-          <button className="icon-btn" aria-label="Search" onClick={()=>setSearchOpen(true)}>⌕</button>
-          <button className="icon-btn" aria-label="Quick add" onClick={()=>setSheet('quickadd')}>＋</button>
-          <button className="icon-btn" aria-label="Settings" onClick={()=>setSheet('settings')}>⚙</button>
+            style={{textDecoration:'none'}}>{svg(<path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/>)}</a>
+          <button className="icon-btn" aria-label="Search" onClick={()=>setSearchOpen(true)}>{svg(<><circle cx="11" cy="11" r="6.5"/><path d="m20.5 20.5-4.2-4.2"/></>)}</button>
+          <button className="icon-btn" aria-label="Quick add" onClick={()=>setSheet('quickadd')}>{svg(<path d="M12 5v14M5 12h14"/>)}</button>
+          <button className="icon-btn" aria-label="Settings" onClick={()=>setSheet('settings')}>{svg(<><circle cx="12" cy="12" r="3.1"/><path d="M12 2.7v2.5M12 18.8v2.5M2.7 12h2.5M18.8 12h2.5M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8"/></>)}</button>
         </div>
       </header>
 

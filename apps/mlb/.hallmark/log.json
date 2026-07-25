@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-25",
+    "scope": "app",
+    "macrostructure": "Workbench (locked LAYOUT-SPEC shell + query rail/results)",
+    "theme": "custom (broadcast-dark, locked pre-existing brand)",
+    "theme_axes": "dark / grotesk-data (Fustat + JetBrains Mono, Manufacturing Consent wordmark) / cool-purple accent",
+    "enrichment": "none",
+    "brief": "MLB Convergence app — audit-driven redesign pass: single token source (public/tokens.css), focus-visible rings, glow discipline, flat roster rows, unified icon voice, named z ladder, micro-type floor"
+  }
+]

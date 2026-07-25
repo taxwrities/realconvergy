@@ -1,3 +1,4 @@
+/* Hallmark · genre: atmospheric · macrostructure: Workbench (full-sheet overlay, LAYOUT locked) · design-system: design.md · designed-as-app */
 /* ================================================================
    player-card.css — full-sheet player card (Tony v2, LAYOUT locked).
    Re-skinned onto the shared Convergence design system (cvg.css):
@@ -10,14 +11,14 @@
 ================================================================ */
 .pcfs{
   --bg:var(--sf-0); --panel:var(--sf-1); --line:var(--sf-line);
-  --text:var(--color-text-primary); --dim:var(--color-text-secondary); --faint:#767d8f;
+  --text:var(--color-text-primary); --dim:var(--color-text-secondary); --faint:var(--ink-3);
   --gold:var(--cvg-gold); --hot:var(--cvg-red); --teal:var(--cvg-cyan);
   --mono:var(--cvg-mono);
 }
 
 /* full-screen overlay host */
-.pcfs-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:60;}
-.pcfs{position:fixed;inset:0;z-index:61;max-width:480px;margin:0 auto;
+.pcfs-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:var(--z-sheet);}
+.pcfs{position:fixed;inset:0;z-index:calc(var(--z-sheet) + 1);max-width:480px;margin:0 auto;
   height:100vh;height:100dvh;display:flex;flex-direction:column;
   background:var(--bg);color:var(--text);font-family:inherit;
   -webkit-tap-highlight-color:transparent;}
@@ -40,7 +41,7 @@
 .pcfs .activebar{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:10px 12px 8px;align-items:stretch;}
 .pcfs .activebar::-webkit-scrollbar{display:none;}
 .pcfs .lensgrp{flex-shrink:0;display:flex;flex-direction:column;margin-right:14px;cursor:pointer;}
-.pcfs .lensname{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);padding:0 2px 4px;cursor:pointer;
+.pcfs .lensname{font-size:9.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);padding:0 2px 4px;cursor:pointer;
   border:none;background:none;text-align:left;font-family:inherit;}
 .pcfs .lensgrp.lens-on .lensname{color:var(--gold);}
 .pcfs .lensnums{display:flex;gap:5px;}
@@ -62,7 +63,7 @@
 
 .pcfs .testbar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 12px 9px;align-items:center;}
 .pcfs .testbar::-webkit-scrollbar{display:none;}
-.pcfs .tlabel{font-size:8.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);margin-right:2px;flex-shrink:0;}
+.pcfs .tlabel{font-size:9.5px;font-weight:800;letter-spacing:0.8px;color:var(--faint);margin-right:2px;flex-shrink:0;}
 .pcfs .ochip{flex-shrink:0;padding:5px 12px;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--dim);
   background:var(--card-grad);border:1px solid var(--sf-line);cursor:pointer;
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
@@ -93,7 +94,7 @@
   transition:background .15s,color .15s,transform .1s;}
 .pcfs .cv:active{transform:scale(.95);}
 .pcfs .cv .n{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--dim);display:block;line-height:1.1;}
-.pcfs .cv .k{font-size:8.5px;color:var(--faint);letter-spacing:0.3px;}
+.pcfs .cv .k{font-size:9.5px;color:var(--faint);letter-spacing:0.3px;}
 .pcfs .casc-empty{font-size:10px;color:var(--faint);padding:4px 0;}
 
 .pcfs .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 60px;}
@@ -125,7 +126,7 @@
 .pcfs .bignums{display:flex;flex-wrap:wrap;gap:2px 18px;}
 .pcfs .bn{min-width:52px;padding:4px 2px;border:none;background:none;text-align:left;cursor:pointer;position:relative;}
 .pcfs .bn .n{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--dim);line-height:1.15;}
-.pcfs .bn .k{font-size:8.5px;color:var(--faint);letter-spacing:0.3px;margin-top:1px;}
+.pcfs .bn .k{font-size:9.5px;color:var(--faint);letter-spacing:0.3px;margin-top:1px;}
 /* bio-promote affordance (preserved from production card): elevate a life
    value into a thread candidate. Shown on the number's own promote button. */
 .pcfs .bn .promote{position:absolute;top:-1px;right:-3px;width:15px;height:15px;line-height:14px;text-align:center;
@@ -140,7 +141,7 @@
 .pcfs .chead{display:flex;padding:0 0 4px;}
 .pcfs .chead .w{flex:1;}
 .pcfs .chead .cvals{display:flex;gap:2px;}
-.pcfs .chead .cvals span{font-size:8px;color:var(--faint);font-weight:800;min-width:40px;text-align:right;letter-spacing:0.4px;padding:0 3px;}
+.pcfs .chead .cvals span{font-size:9px;color:var(--faint);font-weight:800;min-width:40px;text-align:right;letter-spacing:0.4px;padding:0 3px;}
 
 .pcfs .srow{display:flex;align-items:baseline;padding:5.5px 0;}
 .pcfs .srow .w{width:38px;font-size:10.5px;color:var(--dim);font-weight:700;}
@@ -151,7 +152,7 @@
 .pcfs .shead{display:flex;padding:0 0 4px;}
 .pcfs .shead .w{width:38px;}
 .pcfs .shead .sv{flex:1;display:flex;gap:2px;justify-content:flex-end;}
-.pcfs .shead .sv span{font-size:8px;color:var(--faint);font-weight:800;min-width:52px;text-align:right;letter-spacing:0.4px;padding:0 4px;}
+.pcfs .shead .sv span{font-size:9px;color:var(--faint);font-weight:800;min-width:52px;text-align:right;letter-spacing:0.4px;padding:0 4px;}
 
 .pcfs .srow.tonight .w{color:var(--gold);}
 .pcfs .srow.tonight .w::after{content:" ●";font-size:7px;vertical-align:2px;}
@@ -219,7 +220,7 @@
 
 .pcfs .why{position:absolute;left:12px;right:12px;bottom:14px;background:var(--card-grad);
   border:1px solid color-mix(in srgb, var(--gold) 45%, transparent);
-  border-radius:14px;padding:13px 15px;z-index:20;transform:translateY(130%);transition:transform 0.22s cubic-bezier(.32,.72,0,1);
+  border-radius:14px;padding:13px 15px;z-index:var(--z-sticky);transform:translateY(130%);transition:transform var(--dur-short) var(--ease-out);
   box-shadow:0 12px 34px rgba(0,0,0,0.6);}
 .pcfs .why.show{transform:translateY(0);}
 .pcfs .why-num{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);}
@@ -227,7 +228,7 @@
 .pcfs .why-reason{font-size:11.5px;color:var(--text);margin-top:3px;line-height:1.45;}
 .pcfs .why-props{margin-top:9px;display:flex;flex-direction:column;gap:4px;}
 .pcfs .why-prop{display:flex;gap:9px;align-items:baseline;}
-.pcfs .wp-k{flex-shrink:0;width:46px;font-size:8px;font-weight:800;letter-spacing:0.7px;color:var(--faint);padding-top:1px;}
+.pcfs .wp-k{flex-shrink:0;width:46px;font-size:9px;font-weight:800;letter-spacing:0.7px;color:var(--faint);padding-top:1px;}
 .pcfs .wp-v{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.4;}
 .pcfs .wp-v.gold{color:var(--gold);font-weight:700;}
 .pcfs .wp-v.teal{color:var(--teal);}

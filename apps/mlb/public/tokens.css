@@ -1,0 +1,80 @@
+/* Hallmark · genre: atmospheric · design-system: design.md · designed-as-app
+   ================================================================
+   tokens.css — the ONE palette source for the MLB Convergence app.
+   Loaded by index.html (app shell) AND public/query.html, so both
+   surfaces read identical values. cvg.css / player-card.css /
+   query.html must reference these by name — no raw hex in rules.
+   Values are the locked broadcast-dark brand; keep them hex-exact.
+================================================================ */
+:root {
+  /* surface stack (dark → bright) */
+  --sf-0: #0c0f15;            /* page */
+  --sf-1: #151a23;            /* card */
+  --sf-2: #1a202b;            /* raised / hover */
+  --sf-3: #171c26;            /* popover */
+  --sf-4: #121620;            /* table chrome */
+  --sf-sel: #202634;          /* selected row */
+  --well: rgba(10, 12, 17, 0.55);   /* recessed inset panels */
+  --well-2: rgba(10, 12, 17, 0.6);
+
+  /* hairlines + solid edges */
+  --sf-line: rgba(148, 158, 180, 0.14);
+  --sf-line-hi: rgba(148, 158, 180, 0.26);
+  --edge: #262d3a;
+  --edge-hi: #38404f;
+
+  /* ink scale (bright → dim) */
+  --ink: #e8eaf0;
+  --ink-hi: #aab2c4;
+  --ink-2: #8a90a0;
+  --ink-3: #767d8f;
+  --ink-4: #5f6678;
+
+  /* signal hues */
+  --cvg-gold: #ffb02e;
+  --cvg-green: #35d07f;
+  --cvg-blue: #46a6ff;
+  --cvg-cyan: #46d0ff;
+  --cvg-purple: #d046ff;
+  --cvg-red: #e24b4a;
+  --cvg-orange: #ff8a3d;
+  --cvg-pink: #ff6ba8;
+  --cvg-lime: #b8e04a;
+  --cvg-teal: #2fd0c0;
+
+  /* per-app brand accent (MLB: purple) */
+  --cvg-acc: var(--cvg-purple);
+  --cvg-acc-ink: #1d0526;
+
+  /* focus ring — blue reads as system-neutral against the purple accent */
+  --color-focus: var(--cvg-blue);
+
+  /* type */
+  --cvg-display: 'Manufacturing Consent', serif;
+  --cvg-sans: 'Fustat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cvg-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  /* card chrome */
+  --card-grad: linear-gradient(180deg, #1a202b 0%, #151a23 100%);
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 20px rgba(0, 0, 0, 0.35);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-short: 220ms;
+
+  /* named z ladder — the only z-index values allowed */
+  --z-sticky: 20;   /* in-scroll sticky strips (refine, query rail) */
+  --z-shell: 30;    /* app headers */
+  --z-dock: 40;     /* floating tab dock (recipe drawer sits at dock - 1) */
+  --z-sheet: 60;    /* bottom sheets / full-page overlays (+1 for panel) */
+  --z-popover: 80;  /* anchored popovers, typeahead (+1 for panel) */
+  --z-dialog: 100;  /* modal dialogs + their scrims */
+  --z-menu: 150;    /* menus above dialogs (+1 for panel) */
+  --z-toast: 200;   /* toasts — always on top */
+}
+
+/* keyboard focus — instant, high-contrast, never animated */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
