@@ -2466,16 +2466,23 @@ function renderResults(){
         }}),
     ]),
     h('div',{class:'spot-wrap'},[
+      /* debounced (Tony 2026-07-26): probing 200+ cards per keystroke made
+         typing unusable — recompute 450ms after the last key, or on Enter. */
       h('input',{class:'spot'+(A.work.slateProbe?' on':''),type:'text',id:'sprobeInput',
-        placeholder:'slate probe… {last} word',title:'Probe one phrase across every card. Tokens: {full name} {first} {last} {team} {opp}',
+        placeholder:'slate probe… tap + chips below',
+        title:'Probe one phrase across every card. Use the + chips to insert tokens.',
         value:A.work.slateProbe||'',
         oninput:function(e){
-          A.work.slateProbe=e.target.value;
+          A.work.slateProbe=e.target.value;saveWork();
           var caret=e.target.selectionStart;
-          saveWork();renderResults();
-          var again=document.getElementById('sprobeInput');
-          if(again){again.focus();try{again.setSelectionRange(caret,caret)}catch(err){}}
-        }}),
+          clearTimeout(A._sprobeT);
+          A._sprobeT=setTimeout(function(){
+            renderResults();
+            var again=document.getElementById('sprobeInput');
+            if(again){again.focus();try{again.setSelectionRange(caret,caret)}catch(err){}}
+          },450);
+        },
+        onkeydown:function(e){if(e.key==='Enter'){clearTimeout(A._sprobeT);renderResults()}}}),
     ]),
     h('select',{class:'spot',style:{flex:'0 0 auto',width:'auto'},onchange:function(e){
       C.sort=e.target.value;onChange(false);renderResults();
@@ -2500,6 +2507,21 @@ function renderResults(){
     })(),
   ]);
   host.appendChild(hdr);
+
+  /* slate-probe token builder — tap to append a field token; hand-typing
+     {last name} is mistake-prone, so the tokens are one tap each. */
+  host.appendChild(h('div',{class:'row-btns',style:{margin:'-4px 0 10px'}},
+    [['{full name}','full name'],['{first}','first'],['{last}','last'],
+     ['{team}','team'],['{opp}','opp']].map(function(t){
+      return h('button',{class:'mini-btn',text:'+ '+t[1],onclick:function(){
+        var v=A.work.slateProbe||'';
+        A.work.slateProbe=(v&&!/\s$/.test(v)?v+' ':v)+t[0]+' ';
+        saveWork();renderResults();
+        var inp=document.getElementById('sprobeInput');
+        if(inp){inp.focus();var L=inp.value.length;try{inp.setSelectionRange(L,L)}catch(err){}}
+      }});
+    }).concat([h('button',{class:'mini-btn'+(A.work.slateProbe?' on':''),text:'clear probe',
+      onclick:function(){A.work.slateProbe='';saveWork();renderResults()}})])));
 
   if(!rows.length){
     host.appendChild(h('div',{class:'empty'},[h('b',{text:'no matches'}),
