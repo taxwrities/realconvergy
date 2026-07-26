@@ -1737,7 +1737,7 @@ var A={
   /* FIX-1 section 2: hiddenFamilies replaces the old tap-to-hide type/counter
      lists (migrated at boot); hiddenWords is now typed in the sheet. */
   work:{hiddenWords:[],hiddenFamilies:[],spotlight:'',probes:{},
-        openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:''},
+        openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:'',probeOutcome:''},
   sheetOpen:false,
   undo:null,
   railOpen:null,   /* null = not yet resolved; boot() picks per viewport */
@@ -1963,7 +1963,7 @@ function switchSport(s){
   A.cfg.sport=s;
   applyTextZoom();
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
-    probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:''},lsGet(LS.work+s,null));
+    probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:'',probeOutcome:''},lsGet(LS.work+s,null));
   A.slate=null;A.results=[];A.scanned=false;A.error=null;
   persistRail();                 /* the sport IS rail state — save it now */
   render();
@@ -2521,7 +2521,15 @@ function renderResults(){
         if(inp){inp.focus();var L=inp.value.length;try{inp.setSelectionRange(L,L)}catch(err){}}
       }});
     }).concat([h('button',{class:'mini-btn'+(A.work.slateProbe?' on':''),text:'clear probe',
-      onclick:function(){A.work.slateProbe='';saveWork();renderResults()}})])));
+      onclick:function(){A.work.slateProbe='';saveWork();renderResults()}})])
+    .concat([h('span',{style:{fontFamily:'var(--mono)',fontSize:'10px',color:'var(--ink-3)',
+      alignSelf:'center',letterSpacing:'1px',marginLeft:'4px'},text:'TEST'})])
+    .concat(['1B','2B','3B','HR','BB','SO'].map(function(o){
+      var on=A.work.probeOutcome===o;
+      return h('button',{class:'mini-btn'+(on?' on':''),text:o,
+        title:'only show stat landings this outcome would cause',
+        onclick:function(){A.work.probeOutcome=on?'':o;saveWork();renderResults()}});
+    }))));
 
   if(!rows.length){
     host.appendChild(h('div',{class:'empty'},[h('b',{text:'no matches'}),
@@ -2573,6 +2581,16 @@ function renderResults(){
   }
 }
 
+/* what one outcome moves, at its exact delta (the prototype's TEST-bar
+   cascade): the landing numbers if this outcome happens next. */
+var OUTCOME_CASCADE={
+  '1B':{H:1,TB:1,AB:1,PA:1},
+  '2B':{H:1,'2B':1,XBH:1,TB:2,AB:1,PA:1},
+  '3B':{H:1,'3B':1,XBH:1,TB:3,AB:1,PA:1},
+  'HR':{H:1,HR:1,XBH:1,TB:4,R:1,RBI:1,AB:1,PA:1},
+  'BB':{BB:1,PA:1},
+  'SO':{SO:1,AB:1,PA:1},
+};
 /* §7.3 in-results filtering + spotlight + sort, all recomputed from cache. */
 function visibleResults(){
   var W=A.work,C=A.cfg,spot=W.spotlight?+W.spotlight:null;
@@ -2608,8 +2626,19 @@ function visibleResults(){
      the hits render at the top of each card in the sacred format. */
   var sq=(W.slateProbe||'').trim();
   if(sq.length>=2&&A.ctx){
+    /* outcome lens: a probe about a TRIPLE should never report a landing on
+       a strikeout counter. With an outcome picked, stat hits are kept only
+       when the lane MOVES on that outcome, at its EXACT delta — the numbers
+       the player would land on if it happens. Non-stat counters (age, date,
+       spans) are today-facts and stay. */
+    var oc=W.probeOutcome&&OUTCOME_CASCADE[W.probeOutcome];
     rows=rows.filter(function(r){
       r.sprobe=runProbe(r.player,sq);
+      if(oc)r.sprobe=r.sprobe.filter(function(g){
+        var c=g.counter;
+        if(c.group!=='stat')return true;
+        return c.statKey!=null&&oc[c.statKey]!=null&&c.off===oc[c.statKey];
+      });
       return r.sprobe.length>0;
     });
   }
@@ -3301,9 +3330,10 @@ function runProbe(p,q){
    every mode at once, and AB/PA regardless of the stat dialog. */
 function probeCounters(p){
   var ctx=A.ctx,cfg=A.cfg,out=[],acc={probe:true};
-  var push=function(group,gid,label,value,arith){
+  var push=function(group,gid,label,value,arith,statKey,off){
     if(!(value>0))return;
-    out.push({group:group,gid:gid,label:label,value:value,arith:arith||null,accepts:acc});
+    out.push({group:group,gid:gid,label:label,value:value,arith:arith||null,accepts:acc,
+      statKey:statKey||null,off:off==null?null:off});
   };
   var lanes=function(role,table,stats,conf){
     ['season','career'].forEach(function(scope){
@@ -3316,18 +3346,21 @@ function probeCounters(p){
         if(base==null||!(base>0))return;
         var always=(key==='AB'||key==='PA');
         if(!c.on&&!always)return;
-        push('stat','pb-'+scope+'-'+key+'-cur',cap(scope)+' '+role+' '+label,base);
+        push('stat','pb-'+scope+'-'+key+'-cur',cap(scope)+' '+role+' '+label,base,null,key,0);
         push('stat','pb-'+scope+'-'+key+'-nxt',cap(scope)+' '+role+' '+label+' (next)',base+1,
-          fmt(base)+' + 1 = '+fmt(base+1));
-        if(c.mode==='spread'){
-          for(var so=2;so<=spreadMax(role);so++)(function(o){
-            push('stat','pb-'+scope+'-'+key+'-o'+o,cap(scope)+' '+role+' '+label+' +'+o,
-              base+o,fmt(base)+' + '+o+' = '+fmt(base+o));
-          })(so);
-        }else if(c.mode==='custom'&&+c.off){
+          fmt(base)+' + 1 = '+fmt(base+1),key,1);
+        /* outcome-lens support: +2..+4 always exist for batting lanes so an
+           outcome's exact delta (double = TB+2, triple = TB+3, HR = TB+4) is
+           testable even when the lane isn't configured to spread. */
+        var pmax=c.mode==='spread'?spreadMax(role):(role==='Batting'?4:1);
+        for(var so=2;so<=pmax;so++)(function(o){
+          push('stat','pb-'+scope+'-'+key+'-o'+o,cap(scope)+' '+role+' '+label+' +'+o,
+            base+o,fmt(base)+' + '+o+' = '+fmt(base+o),key,o);
+        })(so);
+        if(c.mode==='custom'&&+c.off){
           var o=Math.round(+c.off);
           push('stat','pb-'+scope+'-'+key+'-off',cap(scope)+' '+role+' '+label+' '+(o<0?'':'+')+o,
-            base+o,fmt(base)+' '+(o<0?'-':'+')+' '+Math.abs(o)+' = '+fmt(base+o));
+            base+o,fmt(base)+' '+(o<0?'-':'+')+' '+Math.abs(o)+' = '+fmt(base+o),key,o);
         }
       });
     });
