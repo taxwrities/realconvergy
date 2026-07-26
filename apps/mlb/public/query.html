@@ -1737,7 +1737,7 @@ var A={
   /* FIX-1 section 2: hiddenFamilies replaces the old tap-to-hide type/counter
      lists (migrated at boot); hiddenWords is now typed in the sheet. */
   work:{hiddenWords:[],hiddenFamilies:[],spotlight:'',probes:{},
-        openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},
+        openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:''},
   sheetOpen:false,
   undo:null,
   railOpen:null,   /* null = not yet resolved; boot() picks per viewport */
@@ -1963,7 +1963,7 @@ function switchSport(s){
   A.cfg.sport=s;
   applyTextZoom();
   A.work=mergeCfg({hiddenWords:[],hiddenFamilies:[],spotlight:'',
-    probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:''},lsGet(LS.work+s,null));
+    probes:{},openProbes:{},collapsed:{},cardOpen:{},cardsBase:'',slateProbe:''},lsGet(LS.work+s,null));
   A.slate=null;A.results=[];A.scanned=false;A.error=null;
   persistRail();                 /* the sport IS rail state — save it now */
   render();
@@ -2465,6 +2465,18 @@ function renderResults(){
           if(again){again.focus();try{again.setSelectionRange(caret,caret)}catch(err){}}
         }}),
     ]),
+    h('div',{class:'spot-wrap'},[
+      h('input',{class:'spot'+(A.work.slateProbe?' on':''),type:'text',id:'sprobeInput',
+        placeholder:'slate probe… {last} word',title:'Probe one phrase across every card. Tokens: {full name} {first} {last} {team} {opp}',
+        value:A.work.slateProbe||'',
+        oninput:function(e){
+          A.work.slateProbe=e.target.value;
+          var caret=e.target.selectionStart;
+          saveWork();renderResults();
+          var again=document.getElementById('sprobeInput');
+          if(again){again.focus();try{again.setSelectionRange(caret,caret)}catch(err){}}
+        }}),
+    ]),
     h('select',{class:'spot',style:{flex:'0 0 auto',width:'auto'},onchange:function(e){
       C.sort=e.target.value;onChange(false);renderResults();
     }},[
@@ -2568,6 +2580,17 @@ function visibleResults(){
       });
     });
   }
+  /* Tony 2026-07-26: slate probe — ONE builder-style phrase ({full name} /
+     {first} / {last} / {team} / {opp} + words, or a bare number) probed
+     against EVERY card at once. Cards filter to the players it lands on;
+     the hits render at the top of each card in the sacred format. */
+  var sq=(W.slateProbe||'').trim();
+  if(sq.length>=2&&A.ctx){
+    rows=rows.filter(function(r){
+      r.sprobe=runProbe(r.player,sq);
+      return r.sprobe.length>0;
+    });
+  }
   var slate=A.slate;
   rows.sort(function(a,b){
     if(C.sort==='alpha')return a.player.fullName<b.player.fullName?-1:1;
@@ -2638,7 +2661,7 @@ function renderCard(r){
   var p=r.player,C=A.cfg,slate=A.slate;
   var team=slate.teams[p.teamId]||{},opp=slate.teams[p.oppTeamId]||{};
   var game=slate.games.filter(function(g){return g.gameId===p.gameId})[0]||{};
-  var open=cardIsOpen(p.id);
+  var open=cardIsOpen(p.id)||!!(r.sprobe&&r.sprobe.length);  /* probe hits force open */
   var card=h('div',{class:'card'+(open?'':' clps')});
 
   /* §7.1 header — the whole header is the collapse toggle */
@@ -2665,6 +2688,15 @@ function renderCard(r){
   card.appendChild(hd);
 
   var bd=h('div',{class:'card-bd'});
+
+  /* slate-probe hits — pinned to the top of the card, sacred format */
+  if(r.sprobe&&r.sprobe.length){
+    var sp=h('div',{class:'probe',style:{marginTop:'0',marginBottom:'9px'}});
+    sp.appendChild(h('div',{class:'probe-hd'},[
+      h('span',{text:'SLATE PROBE — "'+expandTokens(A.work.slateProbe,p)+'"'})]));
+    r.sprobe.forEach(function(g){sp.appendChild(renderGroup(g,false))});
+    bd.appendChild(sp);
+  }
 
   /* §7.4 strips */
   if(C.card.ageStrip)bd.appendChild(ageStrip(p));
