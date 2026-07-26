@@ -787,12 +787,12 @@ var SIMPLE_SOURCES=[
   {id:'teamTotals',label:'Team Totals',phase:2},
 ];
 /* §6.8 stat tables. key = the normalized slate stat key. */
-var BAT_STATS=[['G','G'],['H','H'],['2B','2B'],['3B','3B'],['HR','HR'],['R','R'],
-  ['RBI','RBI'],['BB','BB'],['TB','TB'],['SO','SO'],['AB','AB'],['PA','PA']];
+var BAT_STATS=[['G','G'],['H','H'],['2B','2B'],['3B','3B'],['HR','HR'],['XBH','XBH'],
+  ['R','R'],['RBI','RBI'],['BB','BB'],['TB','TB'],['SO','SO'],['AB','AB'],['PA','PA']];
 var PIT_STATS=[['G','G'],['GS','GS'],['W','W'],['L','L'],['SO','SO'],['BB','BB'],
   ['H','H'],['HR','HR'],['IP (outs)','outs']];
-var TEAM_STATS=[['R','R'],['H','H'],['HR','HR'],['TB','TB'],['SO','SO'],['BB','BB'],
-  ['AB','AB'],['PA','PA']];
+var TEAM_STATS=[['R','R'],['H','H'],['2B','2B'],['3B','3B'],['HR','HR'],['XBH','XBH'],
+  ['TB','TB'],['SO','SO'],['BB','BB'],['AB','AB'],['PA','PA']];
 /* §6.8 value sources — which pool kinds test against stat counters. */
 var STAT_SOURCES=[
   {id:'phrase',label:'Custom Phrases'},
@@ -985,9 +985,13 @@ ADAPTERS.mlb=(function(){
      never fabricated. */
   function bat(s){
     if(!s)return null;
-    return{G:num(s.gamesPlayed),AB:num(s.atBats),PA:num(s.plateAppearances),H:num(s.hits),
+    var o={G:num(s.gamesPlayed),AB:num(s.atBats),PA:num(s.plateAppearances),H:num(s.hits),
       '2B':num(s.doubles),'3B':num(s.triples),HR:num(s.homeRuns),R:num(s.runs),
       RBI:num(s.rbi),BB:num(s.baseOnBalls),SO:num(s.strikeOuts),TB:num(s.totalBases)};
+    /* XBH = 2B+3B+HR — computed; null unless all three parts are present
+       (missing = null, never fabricated). */
+    o.XBH=(o['2B']==null||o['3B']==null||o.HR==null)?null:o['2B']+o['3B']+o.HR;
+    return o;
   }
   function pit(s){
     if(!s)return null;
@@ -1202,9 +1206,13 @@ ADAPTERS.mlb=(function(){
           return jget(API+'/teams/'+id+'/stats?stats=season&group=hitting&season='+season)
           .then(function(d){
             var s=d.stats&&d.stats[0]&&d.stats[0].splits&&d.stats[0].splits[0]&&d.stats[0].splits[0].stat;
-            if(s)slate.teams[id].seasonTotals={R:num(s.runs),H:num(s.hits),HR:num(s.homeRuns),
-              TB:num(s.totalBases),SO:num(s.strikeOuts),BB:num(s.baseOnBalls),
-              AB:num(s.atBats),PA:num(s.plateAppearances)};
+            if(s){
+              var tt=slate.teams[id].seasonTotals={R:num(s.runs),H:num(s.hits),HR:num(s.homeRuns),
+                '2B':num(s.doubles),'3B':num(s.triples),
+                TB:num(s.totalBases),SO:num(s.strikeOuts),BB:num(s.baseOnBalls),
+                AB:num(s.atBats),PA:num(s.plateAppearances)};
+              tt.XBH=(tt['2B']==null||tt['3B']==null||tt.HR==null)?null:tt['2B']+tt['3B']+tt.HR;
+            }
           }).catch(function(){/* staircases just absent for this team */});
         },6);
       }).then(function(){
