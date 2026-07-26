@@ -1999,6 +1999,11 @@ function applyTextZoom(){
 function closeDialog(){openDlg=null;renderDialog()}
 function renderDialog(){
   var host=document.getElementById('dialogHost');
+  /* scroll preservation (Tony 2026-07-26): dialogs re-render on every toggle
+     — capture the body's scroll before teardown and restore after rebuild,
+     so a tap deep in the stats list doesn't jump back to the top. */
+  var prevBd=host.querySelector('.dlg-bd');
+  var keepScroll=prevBd?prevBd.scrollTop:0;
   clear(host);
   if(!openDlg)return;
   var spec=DIALOGS[openDlg];
@@ -2013,6 +2018,7 @@ function renderDialog(){
       h('div',{class:'grow'}),h('button',{class:'btn pri',text:'Done',onclick:closeDialog})])),
   ]);
   host.appendChild(h('div',{class:'scrim',onclick:function(e){if(e.target===e.currentTarget)closeDialog()}},[dlg]));
+  if(keepScroll)bd.scrollTop=keepScroll;
 }
 function crow(label,checked,onchange,extra){
   return h('div',{class:'crow'},[
@@ -2383,6 +2389,19 @@ var renderToken=0;
 function renderResults(){
   renderToken++;   /* invalidate any in-flight chunked append */
   var host=document.getElementById('results');
+  /* scroll preservation: filter/sheet toggles re-render the results under
+     the user — capture the WINDOW scroll before teardown; restore as soon
+     as the streamed chunks have rebuilt enough height to reach it. */
+  var keepY=window.scrollY||document.documentElement.scrollTop||0;
+  var scrollRestored=keepY===0;
+  var tryRestoreScroll=function(done){
+    if(scrollRestored)return;
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    if(max>=keepY||done){
+      window.scrollTo(0,Math.min(keepY,Math.max(0,max)));
+      scrollRestored=true;
+    }
+  };
   clear(host);
   var C=A.cfg;
 
@@ -2492,6 +2511,7 @@ function renderResults(){
   };
   emit();                       /* first frame is synchronous: instant paint */
   updateTray();
+  tryRestoreScroll(idx>=rows.length);
   if(idx<rows.length){
     var note=h('div',{class:'banner info',id:'renderNote',
       text:'rendering '+idx+' of '+rows.length+' cards…'});
@@ -2501,6 +2521,7 @@ function renderResults(){
     var step=function(){
       if(token!==renderToken)return;          /* a newer render superseded us */
       emit();
+      tryRestoreScroll(idx>=rows.length);
       if(idx<rows.length){
         note.textContent='rendering '+idx+' of '+rows.length+' cards…';
         raf(step);
@@ -2928,6 +2949,10 @@ function chip(label,on,fn,color){
 }
 function renderSheet(){
   var host=document.getElementById('sheetHost');
+  /* scroll preservation: the filter sheet recomputes live on every chip —
+     keep the body's scroll across the rebuild. */
+  var prevBd=host.querySelector('.sheet-bd');
+  var keepScroll=prevBd?prevBd.scrollTop:0;
   clear(host);
   if(!A.sheetOpen)return;
   var C=A.cfg,W=A.work,prof=SPORT_PROFILES[A.sport];
@@ -3101,6 +3126,7 @@ function renderSheet(){
     if(ev.target===ev.currentTarget){A.sheetOpen=false;renderSheet()}
   }}));
   host.appendChild(sheet);
+  if(keepScroll)bd.scrollTop=keepScroll;
 }
 
 /* ============================================================
