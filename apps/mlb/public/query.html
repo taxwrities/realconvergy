@@ -3742,7 +3742,12 @@ function hookCtxOf(ctx){
        venue state, city bridge) or per player via birth state. Manual hook,
        widened category, or a custom phrase (all explicit picks) still carry
        a state across the whole slate. */
-    if(e.cat==='states')return;
+    /* Tony 2026-07-27: TEAMS get the same ruling. The founders backport gave
+       all 30 franchises day granularity, so their spans started landing in
+       the pool and date-hooking slate-wide — Atlanta Braves on a SEA@TEX
+       card. A team admits per game via routing (away team / home team) or
+       via the explicit picks above; never by date coincidence alone. */
+    if(e.cat==='states'||e.cat==='mlb_teams'||e.cat==='wnba_teams')return;
     /* 1.1 date hooks -- slate-level */
     if(e.dayGranularity){
       if(e.founded.slice(5)===md)add(hk.slate,e.key,'date','anniversary today');
