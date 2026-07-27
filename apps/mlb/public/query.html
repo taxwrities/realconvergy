@@ -1806,6 +1806,12 @@ function countOn(o){return Object.keys(o||{}).filter(function(k){return o[k]}).l
 ============================================================ */
 function renderRail(){
   var body=document.getElementById('railBody');
+  /* scroll preservation (Tony 2026-07-26): the rail is its own scroll surface
+     (mobile .rail-body caps at 64vh, desktop .rail is a sticky column) and it
+     rebuilds on EVERY onChange — capture both offsets, restore after build. */
+  var railEl=document.getElementById('rail');
+  var keepRail=railEl?railEl.scrollTop:0;
+  var keepBody=body?body.scrollTop:0;
   clear(body);
   var C=A.cfg;
 
@@ -1884,6 +1890,8 @@ function renderRail(){
   document.getElementById('railSumTxt').innerHTML=
     '<b>'+(C.mode==='individual'?'Individual':'Daily Matches')+'</b> · '+currentDate()+
     ' · '+typesOn+' types · '+cOn+' ciphers';
+  if(keepBody)body.scrollTop=keepBody;
+  if(keepRail&&railEl)railEl.scrollTop=keepRail;
 }
 function fld(label,ctl){return h('div',{class:'fld'},[h('div',{class:'fld-label',text:label}),ctl])}
 function segBtn(label,on,fn){return h('button',{class:on?'on':'',text:label,onclick:fn})}
@@ -2692,6 +2700,14 @@ function provSuffix(e){
 var GROUP_CLASS={age:'g-age',bday:'g-bday',stat:'g-stat',date:'g-date',
   founders:'g-founders',clock:'g-clock',team:'g-team'};
 
+/* in-place card refresh (Tony 2026-07-26): probe open/close/submit/remove
+   touch ONE card — rebuilding the whole grid for that made the page jump.
+   Swap just that card's node; fall back to a full render if it isn't mounted. */
+function refreshCardFor(r){
+  var el=document.querySelector('.card[data-pid="'+r.player.id+'"]');
+  if(!el){renderResults();return}
+  el.replaceWith(renderCard(r));
+}
 /* collapsible cards: viewport default (phone = collapsed) → cardsBase
    override from expand/collapse-all → per-card override from a header tap. */
 function cardIsOpen(pid){
@@ -2713,7 +2729,7 @@ function renderCard(r){
   var team=slate.teams[p.teamId]||{},opp=slate.teams[p.oppTeamId]||{};
   var game=slate.games.filter(function(g){return g.gameId===p.gameId})[0]||{};
   var open=cardIsOpen(p.id)||!!(r.sprobe&&r.sprobe.length);  /* probe hits force open */
-  var card=h('div',{class:'card'+(open?'':' clps')});
+  var card=h('div',{class:'card'+(open?'':' clps'),'data-pid':p.id});
 
   /* §7.1 header — the whole header is the collapse toggle */
   var nm=h('div',{class:'card-name'},[
@@ -3232,12 +3248,12 @@ function renderProbe(r){
   var p=r.player,key=probeKey(p);
   var open=A.cfg.mode==='individual'||A.work.openProbes[key];
   if(!open)return h('button',{class:'probe-open',text:'🔍 Probe',
-    onclick:function(){A.work.openProbes[key]=true;saveWork();renderResults()}});
+    onclick:function(){A.work.openProbes[key]=true;saveWork();refreshCardFor(r)}});
 
   var wrap=h('div',{class:'probe'});
   wrap.appendChild(h('div',{class:'probe-hd'},[h('span',{text:'PROBE'}),
     A.cfg.mode==='individual'?null:h('button',{text:'close',onclick:function(){
-      A.work.openProbes[key]=false;saveWork();renderResults();
+      A.work.openProbes[key]=false;saveWork();refreshCardFor(r);
     }})]));
 
   var input=h('input',{type:'text',placeholder:'phrase or number…',
@@ -3258,7 +3274,7 @@ function renderProbe(r){
     var list=A.work.probes[key]=A.work.probes[key]||[];
     if(list.indexOf(q)<0)list.push(q);
     input.value='';
-    saveWork();renderResults();
+    saveWork();refreshCardFor(r);
   }
 
   (A.work.probes[key]||[]).forEach(function(q,i){
@@ -3282,7 +3298,7 @@ function renderProbe(r){
           onChange();
         }}),
       h('button',{text:'×',onclick:function(){
-        A.work.probes[key].splice(i,1);saveWork();renderResults();
+        A.work.probes[key].splice(i,1);saveWork();refreshCardFor(r);
       }}),
     ]));
     if(!res.length)item.appendChild(h('div',{class:'nomatch',text:'no landing spots'}));
