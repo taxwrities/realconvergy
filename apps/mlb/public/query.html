@@ -119,7 +119,7 @@ a{color:var(--acc)}
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding-bottom:10px}
   .rail-sum{display:flex}
   .rail-body{margin-top:10px;max-height:64vh;overflow-y:auto;
-    padding-right:2px;-webkit-overflow-scrolling:touch}
+    padding-right:2px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 }
 .rail-sum b{color:var(--ink);font-weight:700}
 .rail-sum .chev{margin-left:auto;color:var(--ink-3)}
@@ -174,7 +174,7 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 
 /* game filter list */
 .gamelist{max-height:170px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
-  background:var(--sf-1);padding:4px}
+  background:var(--sf-1);padding:4px;overscroll-behavior:contain}
 .gamelist label{display:flex;gap:7px;align-items:center;padding:5px 6px;border-radius:7px;
   font-size:12px;font-family:var(--mono);color:var(--ink-2)}
 .gamelist label:active{background:var(--sf-2)}
@@ -183,7 +183,7 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .ta-wrap{position:relative}
 .ta-list{position:absolute;top:100%;left:0;right:0;z-index:var(--z-popover);margin-top:3px;
   background:var(--sf-3);border:1px solid var(--line-hi);border-radius:10px;
-  max-height:210px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  max-height:210px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.5);overscroll-behavior:contain}
 .ta-list button{display:block;width:100%;text-align:left;padding:8px 10px;font-size:12.5px;
   border-bottom:1px solid var(--line)}
 .ta-list button:last-child{border-bottom:none}
@@ -279,7 +279,7 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 /* tap-a-line options (7.3) -- a real menu, not a browser prompt */
 .menu{position:fixed;z-index:var(--z-menu);background:var(--sf-3);border:1px solid var(--line-hi);
   border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.6);padding:4px;min-width:196px;
-  max-width:min(90vw,300px);max-height:72vh;overflow-y:auto}
+  max-width:min(90vw,300px);max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
 .menu button{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:8px;
   font-size:12.5px;color:var(--ink)}
 .menu button:active{background:var(--sf-2)}
@@ -355,7 +355,11 @@ select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50
 .dlg-hd h2{margin:0;font-size:15px;font-weight:700}
 .dlg-hd .x{margin-left:auto;font-size:20px;color:var(--ink-3);width:30px;height:30px;
   display:grid;place-items:center;border-radius:8px}
-.dlg-bd{padding:12px 14px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+/* overscroll-behavior:contain on every inner scroller (Tony 2026-07-27):
+   without it, iOS chains the swipe to the page BEHIND the overlay when the
+   inner scroll hits an edge or rebuilds mid-momentum — the dialog feels like
+   it "won't scroll to the top" while the results page moves invisibly. */
+.dlg-bd{padding:12px 14px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .dlg-ft{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:7px;
   background:var(--sf-3);position:sticky;bottom:0}
 .dlg-ft .grow{flex:1}
@@ -415,7 +419,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc);flex:0 0 aut
   border:1px solid var(--line);color:var(--ink-2);background:var(--sf-1)}
 .pill.on{border-color:var(--c-founders);color:var(--c-founders)}
 .entlist{max-height:250px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
-  background:var(--sf-1);padding:4px}
+  background:var(--sf-1);padding:4px;overscroll-behavior:contain}
 .entrow{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:7px;font-size:12px}
 .entrow .g-year{font-family:var(--mono);font-size:9px;color:var(--ink-3);
   border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:auto;flex:0 0 auto}
@@ -445,7 +449,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc);flex:0 0 aut
   border-bottom:1px solid var(--line)}
 .sheet-hd h2{margin:0;font-size:15px;font-weight:700}
 .sheet-hd .cnt{font-family:var(--mono);font-size:11px;color:var(--acc)}
-.sheet-bd{flex:1;overflow-y:auto;padding:10px 14px 20px;-webkit-overflow-scrolling:touch}
+.sheet-bd{flex:1;overflow-y:auto;padding:10px 14px 20px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .sheet-ft{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
 .ssec{margin-bottom:14px}
 .ssec-hd{display:flex;align-items:baseline;gap:7px;margin-bottom:6px}
