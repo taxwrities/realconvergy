@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-26",
+    "scope": "app",
+    "macrostructure": "Workbench (locked LAYOUT-SPEC shell, WNBA two-column batter-zone)",
+    "theme": "custom (broadcast-dark, shared system; WNBA orange accent + Space Grotesk display)",
+    "theme_axes": "dark / grotesk-data (Space Grotesk + Fustat + JetBrains Mono) / warm-orange accent",
+    "enrichment": "none",
+    "brief": "WNBA port of the MLB design-system pass: public/tokens.css single source, focus-visible ring, static convergence markers, no outer glows, svg icon voice, named z ladder, 9px type floor, bold-contrast weights"
+  }
+]
