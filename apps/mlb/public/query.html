@@ -3773,11 +3773,15 @@ function hookCtxOf(ctx){
         if(states[e.name])add(map,e.key,'routing',
           e.name===g.venueState?'venue state':'team state');
       }
-      /* city bridge: entity geography shares the game's geography */
+      /* city bridge (tightened Tony 2026-07-26): the entity/founder geography
+         must share the game's CITY — a mere state-word overlap ("Norwalk,
+         Ohio" ~ Cleveland because Ohio) bridged founders into every game in
+         the state. State-level relevance is the states category's job
+         (venue state / team state / birth state), not the bridge's. */
       var geo=e.city||e.birthplace;
       if(geo){
         [away,home].forEach(function(t){
-          if(wordIn(geo,t.city)||wordIn(geo,t.state))
+          if(wordIn(geo,t.city))
             add(map,e.key,'routing','city bridge: '+geo+' ~ '+(t.abbr||t.fullName));
         });
       }
