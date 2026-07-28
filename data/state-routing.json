@@ -1,0 +1,253 @@
+{
+ "_meta": {
+  "version": 1,
+  "purpose": "Geographic routing gate for the states layer in founders.json. Enforces 'no hook = no pool' for state values and state-anniversary spans.",
+  "rules": [
+   "A state's cipher values and admission-anniversary spans route ONLY to games with a hook to that state.",
+   "PRIMARY hook: park_state \u2014 the state the game is physically played in. Auto-admit.",
+   "SECONDARY hook: a team's home_state when that team is on the road (e.g. Missouri values for Cardinals playing away). Manual promote only \u2014 never auto-admit.",
+   "No hook = the state value must not appear in that game's pool, no matter how clean the number match is.",
+   "admission_order (state number) follows the same gate.",
+   "Institutional/society layers (Jesuit, Illuminati, Freemasonry, etc.) remain slate-wide and are NOT gated by this file.",
+   "Rays venue is 2025-era Steinbrenner Field info \u2014 verify current park before locking.",
+   "Toronto Blue Jays: Ontario is not a US state; no states-layer hook exists. Route via city/team gematria only."
+  ],
+  "date_status": "verify \u2014 spot-check parks against current season before flipping to locked"
+ },
+ "mlb_teams": [
+  {
+   "team": "Arizona Diamondbacks",
+   "park": "Chase Field",
+   "city": "Phoenix",
+   "park_state": "Arizona"
+  },
+  {
+   "team": "Atlanta Braves",
+   "park": "Truist Park",
+   "city": "Atlanta",
+   "park_state": "Georgia"
+  },
+  {
+   "team": "Baltimore Orioles",
+   "park": "Oriole Park at Camden Yards",
+   "city": "Baltimore",
+   "park_state": "Maryland"
+  },
+  {
+   "team": "Boston Red Sox",
+   "park": "Fenway Park",
+   "city": "Boston",
+   "park_state": "Massachusetts"
+  },
+  {
+   "team": "Chicago Cubs",
+   "park": "Wrigley Field",
+   "city": "Chicago",
+   "park_state": "Illinois"
+  },
+  {
+   "team": "Chicago White Sox",
+   "park": "Rate Field",
+   "city": "Chicago",
+   "park_state": "Illinois"
+  },
+  {
+   "team": "Cincinnati Reds",
+   "park": "Great American Ball Park",
+   "city": "Cincinnati",
+   "park_state": "Ohio"
+  },
+  {
+   "team": "Cleveland Guardians",
+   "park": "Progressive Field",
+   "city": "Cleveland",
+   "park_state": "Ohio"
+  },
+  {
+   "team": "Colorado Rockies",
+   "park": "Coors Field",
+   "city": "Denver",
+   "park_state": "Colorado"
+  },
+  {
+   "team": "Detroit Tigers",
+   "park": "Comerica Park",
+   "city": "Detroit",
+   "park_state": "Michigan"
+  },
+  {
+   "team": "Houston Astros",
+   "park": "Daikin Park",
+   "city": "Houston",
+   "park_state": "Texas"
+  },
+  {
+   "team": "Kansas City Royals",
+   "park": "Kauffman Stadium",
+   "city": "Kansas City",
+   "park_state": "Missouri"
+  },
+  {
+   "team": "Los Angeles Angels",
+   "park": "Angel Stadium",
+   "city": "Anaheim",
+   "park_state": "California"
+  },
+  {
+   "team": "Los Angeles Dodgers",
+   "park": "Dodger Stadium",
+   "city": "Los Angeles",
+   "park_state": "California"
+  },
+  {
+   "team": "Miami Marlins",
+   "park": "LoanDepot Park",
+   "city": "Miami",
+   "park_state": "Florida"
+  },
+  {
+   "team": "Milwaukee Brewers",
+   "park": "American Family Field",
+   "city": "Milwaukee",
+   "park_state": "Wisconsin"
+  },
+  {
+   "team": "Minnesota Twins",
+   "park": "Target Field",
+   "city": "Minneapolis",
+   "park_state": "Minnesota"
+  },
+  {
+   "team": "New York Mets",
+   "park": "Citi Field",
+   "city": "New York",
+   "park_state": "New York"
+  },
+  {
+   "team": "New York Yankees",
+   "park": "Yankee Stadium",
+   "city": "New York",
+   "park_state": "New York"
+  },
+  {
+   "team": "Athletics",
+   "park": "Sutter Health Park",
+   "city": "Sacramento",
+   "park_state": "California"
+  },
+  {
+   "team": "Philadelphia Phillies",
+   "park": "Citizens Bank Park",
+   "city": "Philadelphia",
+   "park_state": "Pennsylvania"
+  },
+  {
+   "team": "Pittsburgh Pirates",
+   "park": "PNC Park",
+   "city": "Pittsburgh",
+   "park_state": "Pennsylvania"
+  },
+  {
+   "team": "San Diego Padres",
+   "park": "Petco Park",
+   "city": "San Diego",
+   "park_state": "California"
+  },
+  {
+   "team": "San Francisco Giants",
+   "park": "Oracle Park",
+   "city": "San Francisco",
+   "park_state": "California"
+  },
+  {
+   "team": "Seattle Mariners",
+   "park": "T-Mobile Park",
+   "city": "Seattle",
+   "park_state": "Washington"
+  },
+  {
+   "team": "St. Louis Cardinals",
+   "park": "Busch Stadium",
+   "city": "St. Louis",
+   "park_state": "Missouri"
+  },
+  {
+   "team": "Tampa Bay Rays",
+   "park": "George M. Steinbrenner Field",
+   "city": "Tampa",
+   "park_state": "Florida"
+  },
+  {
+   "team": "Texas Rangers",
+   "park": "Globe Life Field",
+   "city": "Arlington",
+   "park_state": "Texas"
+  },
+  {
+   "team": "Toronto Blue Jays",
+   "park": "Rogers Centre",
+   "city": "Toronto",
+   "park_state": "Ontario (Canada)"
+  },
+  {
+   "team": "Washington Nationals",
+   "park": "Nationals Park",
+   "city": "Washington DC",
+   "park_state": "District of Columbia"
+  }
+ ],
+ "wnba_teams": [
+  {
+   "team": "Atlanta Dream",
+   "home_state": "Georgia"
+  },
+  {
+   "team": "Chicago Sky",
+   "home_state": "Illinois"
+  },
+  {
+   "team": "Connecticut Sun",
+   "home_state": "Connecticut"
+  },
+  {
+   "team": "Dallas Wings",
+   "home_state": "Texas"
+  },
+  {
+   "team": "Golden State Valkyries",
+   "home_state": "California"
+  },
+  {
+   "team": "Indiana Fever",
+   "home_state": "Indiana"
+  },
+  {
+   "team": "Las Vegas Aces",
+   "home_state": "Nevada"
+  },
+  {
+   "team": "Los Angeles Sparks",
+   "home_state": "California"
+  },
+  {
+   "team": "Minnesota Lynx",
+   "home_state": "Minnesota"
+  },
+  {
+   "team": "New York Liberty",
+   "home_state": "New York"
+  },
+  {
+   "team": "Phoenix Mercury",
+   "home_state": "Arizona"
+  },
+  {
+   "team": "Seattle Storm",
+   "home_state": "Washington"
+  },
+  {
+   "team": "Washington Mystics",
+   "home_state": "District of Columbia"
+  }
+ ]
+}

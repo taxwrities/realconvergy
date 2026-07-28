@@ -4,3 +4,4 @@ dist/
 scripts/cache/
 # convergence-scanner is its own git repo (pre-monorepo); not part of this tree
 convergence-scanner/
+__pycache__/
