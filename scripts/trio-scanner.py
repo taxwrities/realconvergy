@@ -96,40 +96,60 @@ def main(ds, quiet=False, do_commit=False):
     games = sched.get("dates",[{}])[0].get("games",[])
     if not games and not quiet: print("no games")
     game_list, hits = [], []
+    # A doubleheader lists the same matchup twice, which would scan both rosters
+    # twice. Collect the date's distinct (team, opp) pairs first — keyed on ids, so
+    # a team facing two different opponents on one date is kept as two pairs.
+    pairs, seen_pairs = [], set()
     for g in games:
         game_list.append({"home": g["teams"]["home"]["team"]["name"],
                           "away": g["teams"]["away"]["team"]["name"]})
-        pair = [(g["teams"]["home"]["team"], g["teams"]["away"]["team"]),
-                (g["teams"]["away"]["team"], g["teams"]["home"]["team"])]
-        for team, opp in pair:
-            tv = {}   # value -> label
-            for v in TEAM_VALS.get(team["name"], []): tv.setdefault(v, []).append(team["name"]+" (own)")
-            for v in TEAM_VALS.get(opp["name"], []):  tv.setdefault(v, []).append(opp["name"]+" (opp)")
+        for team, opp in ((g["teams"]["home"]["team"], g["teams"]["away"]["team"]),
+                          (g["teams"]["away"]["team"], g["teams"]["home"]["team"])):
+            k = (team["id"], opp["id"])
+            if k in seen_pairs: continue
+            seen_pairs.add(k); pairs.append((team, opp))
+
+    roster_ids, stat_cache, emitted = {}, {}, set()
+    for team, opp in pairs:
+        tv = {}   # value -> label
+        for v in TEAM_VALS.get(team["name"], []): tv.setdefault(v, []).append(team["name"]+" (own)")
+        for v in TEAM_VALS.get(opp["name"], []):  tv.setdefault(v, []).append(opp["name"]+" (opp)")
+        if team["id"] not in roster_ids:
             roster = get(f"{API}/teams/{team['id']}/roster/active").get("roster",[])
-            ids = [str(p["person"]["id"]) for p in roster if p.get("position",{}).get("type") != "Pitcher"]
-            for i in range(0, len(ids), 25):
-                ppl = get(f"{API}/people", personIds=",".join(ids[i:i+25]),
-                          hydrate="stats(group=[hitting],type=[season,career])").get("people",[])
-                for p in ppl:
-                    sea = car = None
-                    for s in p.get("stats",[]):
-                        t = s.get("type",{}).get("displayName"); sp = s.get("splits") or [{}]
-                        if t=="season": sea = sp[0].get("stat",{}).get("homeRuns")
-                        if t=="career": car = sp[0].get("stat",{}).get("homeRuns")
-                    for kind, hr in (("season", sea), ("career", car)):
-                        if hr is None: continue
-                        nxt = int(hr)+1
-                        legs, receipts = 1, [f"next {kind} HR = #{nxt} [MLB API {kind} HR={hr}]"]
-                        if nxt in day_pool: legs+=1; receipts.append(f"#{nxt} = {'/'.join(day_pool[nxt])} [day pool]")
-                        if red(nxt) in day_pool and nxt not in day_pool:
-                            receipts.append(f"#{nxt}→{red(nxt)} reduced = {'/'.join(day_pool[red(nxt)])} [day pool, reduced]")
-                        if nxt in tv: legs+=1; receipts.append(f"#{nxt} = {'/'.join(tv[nxt])} [team table]")
-                        if legs >= 2:
-                            hits.append({"player": p["fullName"], "team": team["name"],
-                                         "opp": opp["name"], "legs": legs, "kind": kind,
-                                         "next_hr_ordinal": nxt,
-                                         "day_hit": nxt in day_pool, "team_hit": nxt in tv,
-                                         "receipts": receipts})
+            roster_ids[team["id"]] = [str(p["person"]["id"]) for p in roster
+                                      if p.get("position",{}).get("type") != "Pitcher"]
+        ids = roster_ids[team["id"]]
+        need = [i for i in ids if i not in stat_cache]   # HR totals don't vary by opponent
+        for i in range(0, len(need), 25):
+            ppl = get(f"{API}/people", personIds=",".join(need[i:i+25]),
+                      hydrate="stats(group=[hitting],type=[season,career])").get("people",[])
+            for p in ppl:
+                sea = car = None
+                for s in p.get("stats",[]):
+                    t = s.get("type",{}).get("displayName"); sp = s.get("splits") or [{}]
+                    if t=="season": sea = sp[0].get("stat",{}).get("homeRuns")
+                    if t=="career": car = sp[0].get("stat",{}).get("homeRuns")
+                stat_cache[str(p["id"])] = (p["fullName"], sea, car)
+        for pid in ids:
+            if pid not in stat_cache: continue
+            pname_, sea, car = stat_cache[pid]
+            for kind, hr in (("season", sea), ("career", car)):
+                if hr is None: continue
+                nxt = int(hr)+1
+                legs, receipts = 1, [f"next {kind} HR = #{nxt} [MLB API {kind} HR={hr}]"]
+                if nxt in day_pool: legs+=1; receipts.append(f"#{nxt} = {'/'.join(day_pool[nxt])} [day pool]")
+                if red(nxt) in day_pool and nxt not in day_pool:
+                    receipts.append(f"#{nxt}→{red(nxt)} reduced = {'/'.join(day_pool[red(nxt)])} [day pool, reduced]")
+                if nxt in tv: legs+=1; receipts.append(f"#{nxt} = {'/'.join(tv[nxt])} [team table]")
+                if legs >= 2:
+                    key = (pname_, team["name"], opp["name"], kind, nxt)
+                    if key in emitted: continue
+                    emitted.add(key)
+                    hits.append({"player": pname_, "team": team["name"],
+                                 "opp": opp["name"], "legs": legs, "kind": kind,
+                                 "next_hr_ordinal": nxt,
+                                 "day_hit": nxt in day_pool, "team_hit": nxt in tv,
+                                 "receipts": receipts})
     hits.sort(key=lambda h: -h["legs"])
 
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -151,7 +171,10 @@ def main(ds, quiet=False, do_commit=False):
         two = [h for h in hits if h["legs"]==2]
         print(f"\n=== TWO-LEG ({len(two)}) — top 25 ===")
         for h in two[:25]:
-            print(f"{h['player']} ({h['team']} vs {h['opp']}) — " + " | ".join(h["receipts"][1:]))
+            # kind is what separates a season-#N row from a career-#N row for the same
+            # player — without it the two render identically and read as a duplicate.
+            print(f"{h['player']} ({h['team']} vs {h['opp']}) [{h['kind']}] — "
+                  + " | ".join(h["receipts"][1:]))
         print(f"\nwrote data/slates/{ds}.json — {len(hits)} hits, {len(full)} full trio")
 
     return git_publish(out_path, ds, quiet) if do_commit else 0
