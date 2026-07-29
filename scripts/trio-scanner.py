@@ -5,12 +5,21 @@ Pattern: winner's NEXT HR ordinal (season+1 / career+1) lands on a
 day-numerology value (leg 2) and/or a team gematria value (leg 3).
 Leg 1 (the milestone itself) always exists — legs 2/3 are the match.
 
-Usage:  python trio-scanner.py            # today's slate
-        python trio-scanner.py 2026-07-28 # specific date
+Usage:  python trio-scanner.py                      # today's slate
+        python trio-scanner.py 2026-07-28           # specific date
+        python trio-scanner.py 2026-07-28 --quiet   # no console output
+        python trio-scanner.py 2026-07-28 --commit  # write, then add/commit/push
+        python trio-scanner.py --quiet --commit     # today, silent, published
+
+Every run writes data/slates/{date}.json — all 2- and 3-leg hits, legs desc,
+with the day pool and the slate's games. --commit stages that one file,
+commits "slate {date}", and pushes. Exit status is 0 on success, or the
+failing git step's exit code when --commit is used.
+
 Requires: requests (pip install requests). MLB Stats API, no auth.
 Receipts printed with provenance on every line (QUERY-FIX-1 discipline).
 """
-import sys, requests
+import sys, os, json, argparse, subprocess, requests
 from datetime import date, datetime
 
 API = "https://statsapi.mlb.com/api/v1"
@@ -57,7 +66,20 @@ def dn_set(d):
 def get(url, **params):
     r = requests.get(url, params=params, timeout=20); r.raise_for_status(); return r.json()
 
-def main(ds):
+def git_publish(path, ds, quiet=False):
+    """git add <slate> && git commit -m "slate {ds}" && git push — stops on first failure."""
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    rel = os.path.relpath(path, repo).replace(os.sep, "/")
+    sink = subprocess.DEVNULL if quiet else None
+    for cmd in (["git", "add", rel], ["git", "commit", "-m", f"slate {ds}"], ["git", "push"]):
+        rc = subprocess.run(cmd, cwd=repo, stdout=sink, stderr=sink).returncode
+        if rc != 0:
+            if not quiet: print(f"git step failed ({rc}): {' '.join(cmd)}")
+            return rc
+    if not quiet: print(f"committed + pushed slate {ds}")
+    return 0
+
+def main(ds, quiet=False, do_commit=False):
     d = datetime.strptime(ds, "%Y-%m-%d").date()
     wd = d.strftime("%A")
     DN = dn_set(d)
@@ -67,13 +89,16 @@ def main(ds):
     pname, pvals = PLANET[wd]
     for v in pvals: day_pool.setdefault(v, []).append(pname)
 
-    print(f"TRIO SCAN {ds} ({wd}) | DN: {DN} | {wd}: {DAY_NAME[wd]} | {pname}: {pvals}")
+    if not quiet:
+        print(f"TRIO SCAN {ds} ({wd}) | DN: {DN} | {wd}: {DAY_NAME[wd]} | {pname}: {pvals}")
 
     sched = get(f"{API}/schedule", sportId=1, date=ds, hydrate="team")
     games = sched.get("dates",[{}])[0].get("games",[])
-    if not games: print("no games"); return
-    hits = []
+    if not games and not quiet: print("no games")
+    game_list, hits = [], []
     for g in games:
+        game_list.append({"home": g["teams"]["home"]["team"]["name"],
+                          "away": g["teams"]["away"]["team"]["name"]})
         pair = [(g["teams"]["home"]["team"], g["teams"]["away"]["team"]),
                 (g["teams"]["away"]["team"], g["teams"]["home"]["team"])]
         for team, opp in pair:
@@ -100,16 +125,43 @@ def main(ds):
                             receipts.append(f"#{nxt}→{red(nxt)} reduced = {'/'.join(day_pool[red(nxt)])} [day pool, reduced]")
                         if nxt in tv: legs+=1; receipts.append(f"#{nxt} = {'/'.join(tv[nxt])} [team table]")
                         if legs >= 2:
-                            hits.append((legs, p["fullName"], team["name"], opp["name"], receipts))
-    hits.sort(key=lambda x: -x[0])
-    full = [h for h in hits if h[0]==3]
-    print(f"\n=== FULL TRIO (milestone + day + team) — {len(full)} ===")
-    for legs,name,tm,opp,rc in full:
-        print(f"\n{name} ({tm} vs {opp})")
-        for r in rc: print("   ", r)
-    print(f"\n=== TWO-LEG ({sum(1 for h in hits if h[0]==2)}) — top 25 ===")
-    for legs,name,tm,opp,rc in [h for h in hits if h[0]==2][:25]:
-        print(f"{name} ({tm} vs {opp}) — " + " | ".join(rc[1:]))
+                            hits.append({"player": p["fullName"], "team": team["name"],
+                                         "opp": opp["name"], "legs": legs, "kind": kind,
+                                         "next_hr_ordinal": nxt,
+                                         "day_hit": nxt in day_pool, "team_hit": nxt in tv,
+                                         "receipts": receipts})
+    hits.sort(key=lambda h: -h["legs"])
+
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "data", "slates")
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{ds}.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump({"date": ds, "weekday": wd,
+                   "dn_pool": {str(k): v for k, v in sorted(day_pool.items())},
+                   "games": game_list, "hits": hits}, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+
+    full = [h for h in hits if h["legs"]==3]
+    if not quiet:
+        print(f"\n=== FULL TRIO (milestone + day + team) — {len(full)} ===")
+        for h in full:
+            print(f"\n{h['player']} ({h['team']} vs {h['opp']})")
+            for r in h["receipts"]: print("   ", r)
+        two = [h for h in hits if h["legs"]==2]
+        print(f"\n=== TWO-LEG ({len(two)}) — top 25 ===")
+        for h in two[:25]:
+            print(f"{h['player']} ({h['team']} vs {h['opp']}) — " + " | ".join(h["receipts"][1:]))
+        print(f"\nwrote data/slates/{ds}.json — {len(hits)} hits, {len(full)} full trio")
+
+    return git_publish(out_path, ds, quiet) if do_commit else 0
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv)>1 else date.today().isoformat())
+    ap = argparse.ArgumentParser(description="Trio scanner — also writes data/slates/{date}.json")
+    ap.add_argument("date", nargs="?", default=date.today().isoformat(),
+                    help="slate date YYYY-MM-DD (default: today)")
+    ap.add_argument("--commit", action="store_true",
+                    help="git add/commit/push the slate file after writing")
+    ap.add_argument("--quiet", action="store_true", help="suppress console output")
+    a = ap.parse_args()
+    sys.exit(main(a.date, quiet=a.quiet, do_commit=a.commit))
