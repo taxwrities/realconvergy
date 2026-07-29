@@ -685,6 +685,25 @@
         "Latin": 688
       },
       "granularity": "day"
+    },
+    {
+      "name": "NASA",
+      "founded": "1958-07-29",
+      "date_status": "locked",
+      "source": "https://en.wikipedia.org/wiki/NASA",
+      "note": "National Aeronautics and Space Act signed 29 July 1958 (Wikipedia infobox Established: July 29, 1958); agency commenced operations 1 Oct 1958. No single founder — succeeded the NACA. Full name National Aeronautics and Space Administration is not a separate entry; acronym-known entities carry one entry under the acronym, same as WNBA. 68th anniversary 2026-07-29.",
+      "ciphers": {
+        "Ord": 35,
+        "Red": 8,
+        "Rev": 73,
+        "RR": 28,
+        "Sat": 175,
+        "RevSat": 213,
+        "Chal": 10,
+        "Sept": 9,
+        "Latin": 132
+      },
+      "granularity": "day"
     }
   ],
   "sports_founders": [
