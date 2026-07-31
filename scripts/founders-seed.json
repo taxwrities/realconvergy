@@ -688,152 +688,152 @@
     {
       "name": "Atlanta Dream",
       "sport": "wnba",
-      "founded": "2008",
+      "founded": "2008-05-17",
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Atlanta_Dream",
       "city": "Atlanta",
       "nickname": "Dream",
-      "note": "Expansion team, never moved. Founded for 2008 season; 'Dream' announced 23 Jan 2008."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 2008-05-17 (season-opening loss to Connecticut). Awarded 17 Oct 2007; 'Dream' announced 23 Jan 2008."
     },
     {
       "name": "Chicago Sky",
       "sport": "wnba",
-      "founded": "2005",
+      "founded": "2006-05-20",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Chicago_Sky",
+      "source": "https://en.wikipedia.org/wiki/2006_Chicago_Sky_season",
       "city": "Chicago",
       "nickname": "Sky",
-      "note": "Expansion team, never moved. Awarded Feb 2005; began play 2006."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 2006-05-20 at Charlotte. NOTE: this moves the year 2005 -> 2006. Awarded Feb 2005 (Wikipedia gives no day), so the award year could not be expressed at day granularity at all; first game is also the convention every other WNBA entry now uses."
     },
     {
       "name": "Connecticut Sun",
       "sport": "wnba",
-      "founded": "2003",
+      "founded": "2003-05-24",
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Connecticut_Sun",
       "city": "Connecticut",
       "nickname": "Sun",
-      "note": "Franchise 1999 Orlando Miracle -> Connecticut Sun 2003 (relocation/rename announced 28 Jan 2003; current identity)."
+      "note": "Franchise 1999 Orlando Miracle -> Connecticut Sun 2003. Anchor = CURRENT IDENTITY first game, 2003-05-24 (first home game of the inaugural Sun season). Relocation/rename announced 28 Jan 2003. Wikipedia infobox Founded reads 1999 (franchise origin) — deliberately not used."
     },
     {
       "name": "Dallas Wings",
       "sport": "wnba",
-      "founded": "2016",
+      "founded": "2016-05-14",
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Dallas_Wings",
       "city": "Dallas",
       "nickname": "Wings",
-      "note": "Franchise 1998 Detroit Shock -> Tulsa Shock 2010 -> Dallas Wings 2016 (current identity; first game 14 May 2016)."
+      "note": "Franchise 1998 Detroit Shock -> Tulsa Shock 2010 -> Dallas Wings 2016. Anchor = CURRENT IDENTITY first game, 2016-05-14 (90-79 at Indiana). Wikipedia infobox Founded reads 1998 (franchise origin) — deliberately not used. Cross-checked against data/wnba-splits game logs."
     },
     {
       "name": "Golden State Valkyries",
       "sport": "wnba",
-      "founded": "2025",
+      "founded": "2025-05-16",
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Golden_State_Valkyries",
       "city": "Golden State",
       "nickname": "Valkyries",
-      "note": "New expansion team, never moved. Awarded 5 Oct 2023; WNBA debut 16 May 2025 (first season)."
+      "note": "New expansion team, never moved. Anchor = franchise first game / WNBA debut, 2025-05-16 (84-76 loss to Los Angeles). Awarded 5 Oct 2023. Cross-checked against data/wnba-splits game logs."
     },
     {
       "name": "Indiana Fever",
       "sport": "wnba",
-      "founded": "2000",
+      "founded": "2000-06-01",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Indiana_Fever",
+      "source": "https://en.wikipedia.org/wiki/2000_Indiana_Fever_season",
       "city": "Indiana",
       "nickname": "Fever",
-      "note": "Expansion team, never moved. Founded for 2000 season."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 2000-06-01 at Miami. Expansion granted 7 Jun 1999."
     },
     {
       "name": "Las Vegas Aces",
       "sport": "wnba",
-      "founded": "2018",
+      "founded": "2018-05-20",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Las_Vegas_Aces",
+      "source": "https://en.wikipedia.org/wiki/2018_Las_Vegas_Aces_season",
       "city": "Las Vegas",
       "nickname": "Aces",
-      "note": "Franchise 1997 Utah Starzz -> San Antonio Silver Stars/Stars 2003 -> Las Vegas Aces 2018 (current identity)."
+      "note": "Franchise 1997 Utah Starzz -> San Antonio Silver Stars/Stars 2003 -> Las Vegas Aces 2018. Anchor = CURRENT IDENTITY first game, 2018-05-20 vs Connecticut. Wikipedia infobox Founded reads 1997 (franchise origin) — deliberately not used. Cross-checked against data/wnba-splits game logs."
     },
     {
       "name": "Los Angeles Sparks",
       "sport": "wnba",
-      "founded": "1997",
+      "founded": "1997-06-21",
       "date_status": "locked",
       "source": "https://en.wikipedia.org/wiki/Los_Angeles_Sparks",
       "city": "Los Angeles",
       "nickname": "Sparks",
-      "note": "One of eight original WNBA franchises, never moved. First season 1997."
+      "note": "One of eight original WNBA franchises, never moved. Anchor = franchise first game, 1997-06-21 vs New York — also the first game in WNBA history, at the Forum."
     },
     {
       "name": "Minnesota Lynx",
       "sport": "wnba",
-      "founded": "1999",
+      "founded": "1999-06-12",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Minnesota_Lynx",
+      "source": "https://en.wikipedia.org/wiki/1999_Minnesota_Lynx_season",
       "city": "Minnesota",
       "nickname": "Lynx",
-      "note": "Expansion team, never moved. Named 5 Dec 1998; began play 1999."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 1999-06-12 vs Detroit (68-51 at Target Center). Named 5 Dec 1998."
     },
     {
       "name": "New York Liberty",
       "sport": "wnba",
-      "founded": "1997",
+      "founded": "1997-06-21",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/New_York_Liberty",
+      "source": "https://en.wikipedia.org/wiki/1997_New_York_Liberty_season",
       "city": "New York",
       "nickname": "Liberty",
-      "note": "One of eight original WNBA franchises, never moved. First season 1997."
+      "note": "One of eight original WNBA franchises, never moved. Anchor = franchise first game, 1997-06-21 at Los Angeles (67-57) — also the first game in WNBA history."
     },
     {
       "name": "Phoenix Mercury",
       "sport": "wnba",
-      "founded": "1997",
+      "founded": "1997-06-22",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Phoenix_Mercury",
+      "source": "https://en.wikipedia.org/wiki/1997_Phoenix_Mercury_season",
       "city": "Phoenix",
       "nickname": "Mercury",
-      "note": "One of eight original WNBA franchises, never moved. First season 1997."
+      "note": "One of eight original WNBA franchises, never moved. Anchor = franchise first game, 1997-06-22 vs Charlotte (76-59 at America West Arena)."
     },
     {
       "name": "Portland Fire",
       "sport": "wnba",
-      "founded": "2026",
+      "founded": "2026-05-09",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Portland_Fire",
+      "source": "https://en.wikipedia.org/wiki/2026_Portland_Fire_season",
       "city": "Portland",
       "nickname": "Fire",
-      "note": "Ruling: 2026 (new-expansion first season; infobox award date 2024-09-18). Distinct from the folded original Portland Fire (2000-2002)."
+      "note": "New expansion team (distinct from the folded original Portland Fire, 2000-2002). Anchor = franchise first game, 2026-05-09 vs Chicago at Moda Center. Wikipedia infobox Founded reads 2024-09-18 (award date, day-level) — deliberately not used, for convention consistency. Cross-checked against data/wnba-splits game logs."
     },
     {
       "name": "Seattle Storm",
       "sport": "wnba",
-      "founded": "2000",
+      "founded": "2000-05-31",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Seattle_Storm",
+      "source": "https://en.wikipedia.org/wiki/2000_Seattle_Storm_season",
       "city": "Seattle",
       "nickname": "Storm",
-      "note": "Expansion team, never moved. First season 2000."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 2000-05-31 at Sacramento. Expansion draft 15 Dec 1999."
     },
     {
       "name": "Toronto Tempo",
       "sport": "wnba",
-      "founded": "2026",
+      "founded": "2026-05-08",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Toronto_Tempo",
+      "source": "https://en.wikipedia.org/wiki/2026_Toronto_Tempo_season",
       "city": "Toronto",
       "nickname": "Tempo",
-      "note": "New expansion team, never moved. Announced 23 May 2024; begins play May 2026. First WNBA team outside the US."
+      "note": "New expansion team, never moved. First WNBA team outside the US. Anchor = franchise first game, 2026-05-08 vs Washington at Coca-Cola Coliseum. Announced 23 May 2024. Cross-checked against data/wnba-splits game logs."
     },
     {
       "name": "Washington Mystics",
       "sport": "wnba",
-      "founded": "1998",
+      "founded": "1998-06-11",
       "date_status": "locked",
-      "source": "https://en.wikipedia.org/wiki/Washington_Mystics",
+      "source": "https://en.wikipedia.org/wiki/1998_Washington_Mystics_season",
       "city": "Washington",
       "nickname": "Mystics",
-      "note": "Expansion team, never moved. Made official Nov 1997; began play 1998."
+      "note": "Expansion team, never moved. Anchor = franchise first game, 1998-06-11 at Charlotte. Expansion draft 18 Feb 1998."
     }
   ],
   "states": [
