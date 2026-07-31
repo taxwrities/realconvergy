@@ -5,6 +5,7 @@ import {LANES,DEFAULT_LANES_ON,T_FAMILY} from '../data/defaults.js';
 import {daysBetween,dateFigures} from '../engine/clocks.js';
 import {classifyRungs} from '../engine/rungs.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
+import {founderHitLines} from '../engine/founders.js';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
    horizontal scroll on overflowing rails/tables (mouse users have no h-track).
@@ -192,9 +193,89 @@ function TeamToggle(){
   );
 }
 
+/* founder source URL → short attribution label ("Wikipedia" for wikipedia.org,
+   else the bare host). Used in the badge popover's founded line. */
+function srcLabel(url){
+  if(!url)return'';
+  try{
+    const h=new URL(url).hostname.replace(/^www\./,'');
+    return h.includes('wikipedia.org')?'Wikipedia':h;
+  }catch{return'';}
+}
+
+/* FOUNDER badge — the gold pill on each Board row (spec: founders-historian),
+   ported from apps/mlb. A short tap still bubbles to the row → selects the
+   player (unchanged). A long-press (~500ms pointer hold) instead pops a mini
+   popover with the WHY: every span reading that fired, WHAT it matched, and
+   WHERE (DN spine row / active thread / 322 anchor), via founderHitLines.
+   Portalled to <body> so it escapes the list's overflow; a full-screen scrim
+   + ✕ close it without touching the row. */
+function FounderBadge({fh}){
+  const [pop,setPop]=useState(null);          // fixed-position style object | null
+  const timer=useRef(null);
+  const longFired=useRef(false);
+  const clear=()=>{if(timer.current){clearTimeout(timer.current);timer.current=null;}};
+  const start=e=>{
+    longFired.current=false;
+    const r=e.currentTarget.getBoundingClientRect();
+    clear();
+    timer.current=setTimeout(()=>{
+      longFired.current=true;timer.current=null;
+      const W=252;
+      const left=Math.min(Math.max(8,r.left),Math.max(8,window.innerWidth-8-W));
+      const below=r.bottom+6;
+      setPop(below>window.innerHeight*0.62
+        ? {left,width:W,bottom:window.innerHeight-r.top+6}
+        : {left,width:W,top:below});
+    },500);
+  };
+  /* suppress the tap-through only when the long-press fired; a plain tap falls
+     through to the row button's onClick (selects the player). */
+  const onClick=e=>{if(longFired.current){e.stopPropagation();e.preventDefault();longFired.current=false;}};
+  const lines=fh.hits.map(h=>founderHitLines(h)).filter(Boolean);
+  return(
+    <>
+      <span className="badge gold founder" onClick={onClick}
+        onPointerDown={start} onPointerUp={clear} onPointerLeave={clear} onPointerCancel={clear}
+        onContextMenu={e=>e.preventDefault()}
+        title="hold for convergence detail">
+        FOUNDER{fh.hits.length>1?` ${fh.hits.length}`:''}
+      </span>
+      {pop&&createPortal(
+        <div className="founder-pop-scrim" onClick={e=>{e.stopPropagation();setPop(null);}}>
+          <div className="founder-pop" style={pop} onClick={e=>e.stopPropagation()}>
+            <div className="fp-head">
+              <span className="fp-title">FOUNDER — {fh.record.name}</span>
+              <button className="fp-close" onClick={()=>setPop(null)} aria-label="close">✕</button>
+            </div>
+            <div className="fp-sub">founded {fh.record.founded}
+              {srcLabel(fh.record.source)?` · ${srcLabel(fh.record.source)}`:''}</div>
+            <div className="fp-body">
+              {lines.map((l,i)=>(
+                <div className="fp-hit" key={i}>
+                  <div className="fp-val">{l.value}</div>
+                  <div className="fp-where">↳ {l.where}
+                    {l.calc&&<span className="fp-calc"> ({l.calc})</span>}</div>
+                  {l.xref&&<div className="fp-xref">{l.xref}</div>}
+                </div>
+              ))}
+            </div>
+            <div className="fp-foot">322 anchor: {fh.hits322?'yes':'no'}</div>
+          </div>
+        </div>,
+        document.body)}
+    </>
+  );
+}
+
 /* player list (sticky left, starters first) + player card + pattern-hits panel */
 function PlayerZone(){
-  const {board,side,batterId,setBatterId,contextFilter,patternFilter,dayState}=useApp();
+  const {board,side,batterId,setBatterId,contextFilter,patternFilter,dayState,founderHits}=useApp();
+  /* auxiliary FOUNDER pill (spec: founders-historian) — team-level, so the
+     player's OWN side's founding convergence shows on each of its rows, same
+     placement convention as apps/mlb (flags cluster first, before the lane /
+     pattern badges). Plain <span> inside the row button, so a tap bubbles. */
+  const fh=founderHits?.[side]||null;
   const rows=board[side]||[];
   const inFilter=r=>{
     if(contextFilter!=null&&!r.ev.rungs.some(g=>g.n===contextFilter&&g.hits.length))return false;
@@ -215,6 +296,7 @@ function PlayerZone(){
               onClick={()=>setBatterId(r.id)}>
               <span className="nm"><span className="ord">{r.starter?'⭐':r.order}</span>{r.ev.p.fullName}</span>
               <span className="badges">
+                {fh&&(fh.hits.length>0||fh.hits322)&&<FounderBadge fh={fh}/>}
                 {r.ev.kat&&<span className="badge gold" title={`KAT rule: ${r.ev.katHits.map(k=>`${k.word} ${k.cipher} ${k.n}`).join(' · ')}`}>KAT</span>}
                 {r.patternHits.map(({pattern})=>(
                   <span key={pattern.id} className="badge gold" title={pattern.name}>{pattern.lane}</span>

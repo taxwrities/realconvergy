@@ -243,6 +243,42 @@ body {
 .badge.gold { color: var(--cvg-gold); } .badge.green { color: var(--cvg-green); }
 .badge.purple { color: var(--cvg-purple); } .badge.blue { color: var(--cvg-blue); }
 .badge.cyan { color: var(--cvg-cyan); }
+.badge.founder { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+
+/* FOUNDER badge popover (long-press, spec: founders-historian) — mini
+   convergence detail portalled to <body>. Ported from apps/mlb; stacks on
+   --z-popover (this app's popover token — it has no --z-menu) so it sits in
+   the same layer as the rung popover. */
+.founder-pop-scrim { position: fixed; inset: 0; z-index: var(--z-popover); background: transparent; }
+.founder-pop {
+  position: fixed; z-index: calc(var(--z-popover) + 1); font-family: var(--cvg-mono);
+  background: var(--color-background-popover, var(--sf-3));
+  border: 1px solid color-mix(in srgb, var(--cvg-gold) 40%, var(--sf-line));
+  border-radius: 10px; padding: 10px 11px 9px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55),
+    0 0 0 1px color-mix(in srgb, var(--cvg-gold) 12%, transparent) inset;
+  max-height: 70vh; overflow: auto;
+}
+.founder-pop .fp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.founder-pop .fp-title { color: var(--cvg-gold); font-size: 11px; font-weight: 800; letter-spacing: .5px; line-height: 1.3; }
+.founder-pop .fp-close {
+  background: transparent; border: none; color: var(--ink-2); font-size: 13px; line-height: 1;
+  cursor: pointer; padding: 0 2px; flex-shrink: 0;
+}
+.founder-pop .fp-close:active { color: var(--cvg-gold); }
+.founder-pop .fp-sub { color: var(--ink-2); font-size: 9.5px; margin-top: 2px; letter-spacing: .2px; }
+.founder-pop .fp-body { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.founder-pop .fp-hit {
+  border-left: 2px solid color-mix(in srgb, var(--cvg-gold) 45%, transparent); padding-left: 8px;
+}
+.founder-pop .fp-val { color: var(--ink); font-size: 11px; font-weight: 700; }
+.founder-pop .fp-where { color: var(--cvg-gold); font-size: 10.5px; margin-top: 2px; line-height: 1.35; }
+.founder-pop .fp-calc { color: var(--ink-2); font-weight: 400; }
+.founder-pop .fp-xref { color: var(--ink-3); font-size: 9.5px; margin-top: 2px; }
+.founder-pop .fp-foot {
+  margin-top: 9px; padding-top: 7px; border-top: 1px solid var(--sf-line);
+  color: var(--ink-2); font-size: 9.5px; letter-spacing: .3px;
+}
 
 /* date picker in the DateStrip — inherits the h3 look; native picker on tap */
 .date-pick {
