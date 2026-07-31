@@ -1,6 +1,10 @@
 {
  "date": "2026-07-30",
  "weekday": "Thursday",
+ "fetched_at": "2026-07-30T18:19:18Z",
+ "first_pitch": "2026-07-30T16:10:00Z",
+ "scan_integrity": "contaminated",
+ "scan_integrity_note": "Scanned 129 minutes after first pitch. Games under way at scan time have their HRs folded into entering totals. Partially unusable. Retro-annotated; cannot be re-scanned clean because the MLB API only returns as-of-now totals.",
  "dn_pool": {
   "2": [
    "DN all-digit reduced"

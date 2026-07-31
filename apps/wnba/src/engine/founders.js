@@ -15,11 +15,11 @@
    same status as the Satanic cipher ruling. It never gates the skip
    logic, scoring, patterns, lanes, forecast, or glow. Purely additive.
 
-   NOTE on granularity: every wnba_teams entry is currently year-only
-   (founded: "2008"), so a team's span yields `years` and nothing else —
-   day/anniversary readings stay null by design until the harvest
-   upgrades those dates. The shared layers (rituals / institutional /
-   states / …) are day-granularity and probe fully via probeFounders.
+   Granularity: all 15 wnba_teams entries are day-granularity as of the
+   backport (anchored to each club's first game), so every span reading —
+   totalDays / since / until / years — is live for team probes. A handful
+   of shared-layer entries are still year-only; foundingSpan yields `years`
+   alone for those, per the harvest rule excluding them from day spans.
 
    Every computed span is checked against 322 (Skull & Bones anchor,
    the most-used ritual) and carries a prime-index cross-ref in the

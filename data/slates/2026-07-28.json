@@ -1,6 +1,10 @@
 {
  "date": "2026-07-28",
  "weekday": "Tuesday",
+ "fetched_at": "2026-07-29T15:49:26Z",
+ "first_pitch": "2026-07-28T17:40:00Z",
+ "scan_integrity": "contaminated",
+ "scan_integrity_note": "Scanned the DAY AFTER these games (2026-07-29 11:49 ET) — all 16 games complete. Entering HR totals include every HR hit on 07-28. Fully unusable for grading. Retro-annotated; cannot be re-scanned clean because the MLB API only returns as-of-now totals.",
  "dn_pool": {
   "9": [
    "DN all-digit reduced"

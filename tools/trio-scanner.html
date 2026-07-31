@@ -87,14 +87,28 @@ async function scan(){
     if(!games.length){st("no games on "+ds);btn.disabled=false;return}
     const hits=[];
     let done=0;
-    await Promise.all(games.map(async g=>{
-      const pairs=[[g.teams.home.team,g.teams.away.team],[g.teams.away.team,g.teams.home.team]];
-      for(const[team,opp]of pairs){
+    /* A doubleheader lists the same matchup twice, which would scan both rosters twice
+       and emit every qualifying player twice. Collect the date's distinct (team, opp)
+       pairs first, keyed on ids — a club facing two different opponents on one date
+       still yields two pairs. Mirrors scripts/trio-scanner.py. */
+    const seenPairs=new Set(),pairList=[];
+    for(const g of games){
+      for(const[team,opp]of[[g.teams.home.team,g.teams.away.team],[g.teams.away.team,g.teams.home.team]]){
+        const k=team.id+"v"+opp.id;
+        if(seenPairs.has(k))continue;
+        seenPairs.add(k);pairList.push([team,opp]);
+      }
+    }
+    const emitted=new Set();
+    await Promise.all(pairList.map(async([team,opp])=>{
+      {
         const tv={};
         (TEAM_VALS[team.name]||[]).forEach(v=>add(tv,v,team.name+" (own)"));
         (TEAM_VALS[opp.name]||[]).forEach(v=>add(tv,v,opp.name+" (opp)"));
         let roster;
-        try{roster=(await j(`${API}/teams/${team.id}/roster/active`)).roster||[]}catch(e){continue}
+        /* `return` (not `continue`) — the per-pair body is now a map callback, not a
+           loop iteration. Bailing here just skips this pair, as it did before. */
+        try{roster=(await j(`${API}/teams/${team.id}/roster/active`)).roster||[]}catch(e){return}
         const ids=roster.filter(p=>(p.position&&p.position.type)!=="Pitcher").map(p=>p.person.id);
         for(let i=0;i<ids.length;i+=25){
           let ppl;
@@ -114,11 +128,16 @@ async function scan(){
               if(dayHit){legs++;rc.push(`#${nxt} = ${esc(dayHit.join(" / "))} <span class="tag">[day pool]</span>`)}
               else if(dayPool[red(nxt)])rc.push(`#${nxt}→${red(nxt)} reduced = ${esc(dayPool[red(nxt)].join(" / "))} <span class="tag">[day pool, reduced — no leg credit]</span>`);
               if(teamHit){legs++;rc.push(`#${nxt} = ${esc(teamHit.join(" / "))} <span class="tag">[team table]</span>`)}
-              if(legs>=2)hits.push({legs,name:p.fullName,team:team.name,opp:opp.name,kind,nxt,rc,dayHit:!!dayHit,teamHit:!!teamHit});
+              if(legs>=2){
+                const key=[p.fullName,team.name,opp.name,kind,nxt].join("|");
+                if(emitted.has(key))continue;
+                emitted.add(key);
+                hits.push({legs,name:p.fullName,team:team.name,opp:opp.name,kind,nxt,rc,dayHit:!!dayHit,teamHit:!!teamHit});
+              }
             }
           }
         }
-        done++;st(`scanned ${done}/${games.length*2} rosters… ${hits.length} matches`);
+        done++;st(`scanned ${done}/${pairList.length} rosters… ${hits.length} matches`);
       }
     }));
     hits.sort((a,b)=>b.legs-a.legs||a.name.localeCompare(b.name));

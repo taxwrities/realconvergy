@@ -16,11 +16,18 @@ with the day pool and the slate's games. --commit stages that one file,
 commits "slate {date}", and pushes. Exit status is 0 on success, or the
 failing git step's exit code when --commit is used.
 
+RUN IT BEFORE FIRST PITCH. The MLB API returns season/career HR totals as of
+NOW, not as of the slate date, so a scan at or after the day's first game folds
+that day's own HRs into the "entering" totals and shifts every next-HR ordinal
+by one. Each slate records fetched_at / first_pitch / scan_integrity
+("pregame" | "contaminated") so a grader can tell the difference; a
+contaminated scan also prints a loud warning.
+
 Requires: requests (pip install requests). MLB Stats API, no auth.
 Receipts printed with provenance on every line (QUERY-FIX-1 discipline).
 """
 import sys, os, json, argparse, subprocess, requests
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 API = "https://statsapi.mlb.com/api/v1"
 
@@ -95,7 +102,11 @@ def main(ds, quiet=False, do_commit=False):
     sched = get(f"{API}/schedule", sportId=1, date=ds, hydrate="team")
     games = sched.get("dates",[{}])[0].get("games",[])
     if not games and not quiet: print("no games")
-    game_list, hits = [], []
+    game_list, hits, starts = [], [], []
+    # Stats come back as-of-NOW, not as-of-ds. Scanning at or after first pitch folds
+    # the day's own HRs into the "entering" totals, so every next-HR ordinal is off by
+    # one and the slate cannot be used to grade the rule. Recorded, not guessed.
+    fetched_at = datetime.now(timezone.utc)
     # A doubleheader lists the same matchup twice, which would scan both rosters
     # twice. Collect the date's distinct (team, opp) pairs first — keyed on ids, so
     # a team facing two different opponents on one date is kept as two pairs.
@@ -103,6 +114,7 @@ def main(ds, quiet=False, do_commit=False):
     for g in games:
         game_list.append({"home": g["teams"]["home"]["team"]["name"],
                           "away": g["teams"]["away"]["team"]["name"]})
+        starts.append(g.get("gameDate"))
         for team, opp in ((g["teams"]["home"]["team"], g["teams"]["away"]["team"]),
                           (g["teams"]["away"]["team"], g["teams"]["home"]["team"])):
             k = (team["id"], opp["id"])
@@ -156,11 +168,24 @@ def main(ds, quiet=False, do_commit=False):
                            "data", "slates")
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, f"{ds}.json")
+    first_pitch = min((s for s in starts if s), default=None)
+    integrity = "unknown"
+    if first_pitch:
+        fp = datetime.strptime(first_pitch, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        integrity = "pregame" if fetched_at < fp else "contaminated"
+
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump({"date": ds, "weekday": wd,
+                   "fetched_at": fetched_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                   "first_pitch": first_pitch, "scan_integrity": integrity,
                    "dn_pool": {str(k): v for k, v in sorted(day_pool.items())},
                    "games": game_list, "hits": hits}, f, indent=1, ensure_ascii=False)
         f.write("\n")
+
+    if integrity == "contaminated" and not quiet:
+        print(f"\n!! CONTAMINATED — scanned {fetched_at:%Y-%m-%dT%H:%MZ}, first pitch was "
+              f"{first_pitch}. Entering HR totals already include this slate's own HRs, so "
+              f"every next-HR ordinal is off by one. NOT usable for grading.")
 
     full = [h for h in hits if h["legs"]==3]
     if not quiet:
