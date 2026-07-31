@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trio Scanner</title>
+<style>
+:root{
+  --bg:#0b0e13; --panel:#131822; --panel2:#0f141d; --line:#232c3b;
+  --ink:#dce4f0; --dim:#8593a8; --faint:#5a6578;
+  --ember:#ffb454; --ember-deep:#c2620e; --steel:#6ea8d8; --ok:#7dd87d;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,'Segoe UI',Roboto,sans-serif;padding:14px 12px 60px;max-width:640px;margin:0 auto}
+h1{font-size:19px;letter-spacing:.4px;font-weight:700}
+h1 .sub{color:var(--dim);font-weight:400;font-size:12px;display:block;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.bar{display:flex;gap:8px;margin:14px 0 10px}
+input[type=date]{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 10px;font:inherit;color-scheme:dark}
+button{background:var(--ember-deep);border:none;color:#fff;font:600 15px/1 inherit;border-radius:8px;padding:0 18px;cursor:pointer}
+button:disabled{opacity:.45}
+.spine{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--dim);word-break:break-word}
+.spine b{color:var(--ink);font-weight:600}
+#status{font-family:var(--mono);font-size:12px;color:var(--steel);margin:10px 2px;min-height:16px}
+.sect{margin-top:18px}
+.sect>h2{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:10px}
+.sect>h2 .n{color:var(--ember);font-family:var(--mono)}
+.card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ember);border-radius:10px;padding:11px 12px;margin-bottom:10px}
+.card.two{border-left-color:var(--steel);padding:8px 12px}
+.card .who{font-weight:700;font-size:15px}
+.card .game{color:var(--dim);font-size:12px;margin-left:6px;font-weight:400}
+.rungs{display:flex;gap:6px;margin:7px 0 6px}
+.rung{flex:1;text-align:center;font:600 10px/1 var(--mono);letter-spacing:.8px;text-transform:uppercase;padding:5px 0;border-radius:5px;border:1px solid var(--line);color:var(--faint)}
+.rung.on{background:linear-gradient(180deg,#2a1f0d,#1c1509);border-color:var(--ember-deep);color:var(--ember)}
+.rcpt{font-family:var(--mono);font-size:11.5px;color:var(--dim);padding-left:10px;border-left:1px solid var(--line);margin-left:2px}
+.rcpt div{margin:2px 0}
+.rcpt .tag{color:var(--faint)}
+.two .rcpt{border:none;padding-left:0;margin-top:4px}
+.empty{color:var(--faint);font-size:13px;padding:6px 2px}
+</style>
+</head>
+<body>
+<h1>TRIO SCANNER<span class="sub">next-HR ordinal &times; day pool &times; team table &middot; realconvergy</span></h1>
+<div class="bar"><input type="date" id="d"><button id="go" onclick="scan()">Scan</button></div>
+<div class="spine" id="spine">Pick a date and scan. Milestone leg is computed from live MLB API season/career HR totals; matches admit only through the day pool or the two team tables in the game — no hook, no pool.</div>
+<div id="status"></div>
+<div class="sect" id="fullSect" style="display:none"><h2>Full trio <span class="n" id="fullN"></span></h2><div id="full"></div></div>
+<div class="sect" id="twoSect" style="display:none"><h2>Two-leg <span class="n" id="twoN"></span></h2><div id="two"></div></div>
+
+<script>
+const API="https://statsapi.mlb.com/api/v1";
+const DAY_NAME={Monday:[72,27,90,27],Tuesday:[95,23,94,40],Wednesday:[100,37,143,44],Thursday:[116,35,100,46],Friday:[63,36,99,36],Saturday:[109,28,107,53],Sunday:[84,21,78,33]};
+const PLANET={Monday:["Moon",[57,21,51,15]],Tuesday:["Mars",[51,15,57,30]],Wednesday:["Mercury",[103,40,86,41]],Thursday:["Jupiter",[99,36,90,45]],Friday:["Venus",[81,18,54,27]],Saturday:["Saturn",[93,21,69,42]],Sunday:["Sun",[54,9,27,18]]};
+const TEAM_VALS={"Arizona Diamondbacks":[42,75,81,96,117,180,228,333],"Atlanta Braves":[22,37,41,67,89,95,136,215],"Baltimore Orioles":[39,42,80,93,96,100,188,244],"Boston Red Sox":[31,32,53,64,77,85,154,170],"Chicago Cubs":[9,27,45,46,62,63,91,206],"Chicago White Sox":[39,42,74,79,93,123,169,236],"Cincinnati Reds":[19,26,46,62,70,92,142,236],"Cleveland Guardians":[40,59,73,94,107,149,172,314],"Colorado Rockies":[35,46,73,80,89,109,163,242],"Detroit Tigers":[33,39,70,78,83,84,169,182],"Houston Astros":[20,43,51,70,75,92,147,204],"Kansas City Royals":[27,36,59,72,90,103,212,220],"Los Angeles Angels":[22,32,58,59,85,104,167,265],"Los Angeles Dodgers":[36,72,73,89,117,181,278],"Miami Marlins":[32,49,59,85,86,103,131,193],"Milwaukee Brewers":[36,45,73,90,98,99,190,242],"Minnesota Twins":[22,32,50,60,84,85,183,195],"New York Mets":[12,24,51,57,129,168],"New York Yankees":[26,37,65,70,80,109,187,191],"Athletics":[34,56,97,146],"Philadelphia Phillies":[45,90,106,110,126,191,349],"Pittsburgh Pirates":[34,47,84,88,101,105,228,231],"San Diego Padres":[27,36,63,65,79,99,137,241],"San Francisco Giants":[25,38,70,75,92,114,192,294],"Seattle Mariners":[43,56,62,97,100,119,179,226],"St. Louis Cardinals":[36,61,63,81,110,162,196,236],"Tampa Bay Rays":[18,27,43,45,63,74,142,182],"Texas Rangers":[37,44,52,74,82,107,151,173],"Toronto Blue Jays":[23,49,59,85,95,121,193,212],"Washington Nationals":[33,57,82,105,107,138,235,278]};
+
+function red(n){while(n>9&&n!==11&&n!==22&&n!==33){n=String(n).split("").reduce((a,c)=>a+ +c,0)}return n}
+function dnSet(d){
+  const m=d.getMonth()+1,dd=d.getDate(),y=d.getFullYear(),cc=Math.floor(y/100),yy=y%100;
+  const doy=Math.round((d-new Date(y,0,0))/86400000);
+  const dliy=Math.round((new Date(y,11,31)-new Date(y,0,0))/86400000)-doy;
+  const digs=s=>String(s).split("").reduce((a,c)=>a+ +c,0);
+  const v={"M+DD+CC+YY":m+dd+cc+yy,"M+DD+ydigits":m+dd+digs(y),"all-digit":digs(m)+digs(String(dd).padStart(2,"0"))+digs(y),"M+DD+YY":m+dd+yy,"M+DD":m+dd,"DOY":doy,"DLIY":dliy};
+  v["all-digit red"]=red(v["all-digit"]);
+  return v;
+}
+async function j(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status+" "+u);return r.json()}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+async function scan(){
+  const btn=document.getElementById("go");btn.disabled=true;
+  const st=t=>document.getElementById("status").textContent=t;
+  try{
+    const ds=document.getElementById("d").value||new Date().toISOString().slice(0,10);
+    const d=new Date(ds+"T12:00:00");
+    const wd=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
+    const DN=dnSet(d);
+    const dayPool={};
+    const add=(pool,v,lab)=>{(pool[v]=pool[v]||[]).push(lab)};
+    for(const[k,v]of Object.entries(DN))add(dayPool,v,"DN "+k);
+    DAY_NAME[wd].forEach(v=>add(dayPool,v,wd));
+    const[pn,pv]=PLANET[wd];pv.forEach(v=>add(dayPool,v,pn));
+    document.getElementById("spine").innerHTML=`<b>${ds} · ${wd}</b><br>DN: ${Object.entries(DN).map(([k,v])=>k+"=<b>"+v+"</b>").join(" · ")}<br>${wd}: <b>${DAY_NAME[wd].join("/")}</b> · ${pn}: <b>${pv.join("/")}</b>`;
+
+    st("fetching schedule…");
+    const sched=await j(`${API}/schedule?sportId=1&date=${ds}`);
+    const games=(sched.dates&&sched.dates[0]&&sched.dates[0].games)||[];
+    if(!games.length){st("no games on "+ds);btn.disabled=false;return}
+    const hits=[];
+    let done=0;
+    /* A doubleheader lists the same matchup twice, which would scan both rosters twice
+       and emit every qualifying player twice. Collect the date's distinct (team, opp)
+       pairs first, keyed on ids — a club facing two different opponents on one date
+       still yields two pairs. Mirrors scripts/trio-scanner.py. */
+    const seenPairs=new Set(),pairList=[];
+    for(const g of games){
+      for(const[team,opp]of[[g.teams.home.team,g.teams.away.team],[g.teams.away.team,g.teams.home.team]]){
+        const k=team.id+"v"+opp.id;
+        if(seenPairs.has(k))continue;
+        seenPairs.add(k);pairList.push([team,opp]);
+      }
+    }
+    const emitted=new Set();
+    await Promise.all(pairList.map(async([team,opp])=>{
+      {
+        const tv={};
+        (TEAM_VALS[team.name]||[]).forEach(v=>add(tv,v,team.name+" (own)"));
+        (TEAM_VALS[opp.name]||[]).forEach(v=>add(tv,v,opp.name+" (opp)"));
+        let roster;
+        /* `return` (not `continue`) — the per-pair body is now a map callback, not a
+           loop iteration. Bailing here just skips this pair, as it did before. */
+        try{roster=(await j(`${API}/teams/${team.id}/roster/active`)).roster||[]}catch(e){return}
+        const ids=roster.filter(p=>(p.position&&p.position.type)!=="Pitcher").map(p=>p.person.id);
+        for(let i=0;i<ids.length;i+=25){
+          let ppl;
+          try{ppl=(await j(`${API}/people?personIds=${ids.slice(i,i+25).join(",")}&hydrate=stats(group=[hitting],type=[season,career])`)).people||[]}catch(e){continue}
+          for(const p of ppl){
+            let sea=null,car=null;
+            for(const s of(p.stats||[])){
+              const t=s.type&&s.type.displayName,sp=(s.splits&&s.splits[0]&&s.splits[0].stat)||{};
+              if(t==="season")sea=sp.homeRuns;
+              if(t==="career")car=sp.homeRuns;
+            }
+            for(const[kind,hr]of[["season",sea],["career",car]]){
+              if(hr==null)continue;
+              const nxt=+hr+1;
+              let legs=1;const rc=[`next ${kind} HR = #${nxt} <span class="tag">[MLB API ${kind} HR=${hr}]</span>`];
+              const dayHit=dayPool[nxt],teamHit=tv[nxt];
+              if(dayHit){legs++;rc.push(`#${nxt} = ${esc(dayHit.join(" / "))} <span class="tag">[day pool]</span>`)}
+              else if(dayPool[red(nxt)])rc.push(`#${nxt}→${red(nxt)} reduced = ${esc(dayPool[red(nxt)].join(" / "))} <span class="tag">[day pool, reduced — no leg credit]</span>`);
+              if(teamHit){legs++;rc.push(`#${nxt} = ${esc(teamHit.join(" / "))} <span class="tag">[team table]</span>`)}
+              if(legs>=2){
+                const key=[p.fullName,team.name,opp.name,kind,nxt].join("|");
+                if(emitted.has(key))continue;
+                emitted.add(key);
+                hits.push({legs,name:p.fullName,team:team.name,opp:opp.name,kind,nxt,rc,dayHit:!!dayHit,teamHit:!!teamHit});
+              }
+            }
+          }
+        }
+        done++;st(`scanned ${done}/${pairList.length} rosters… ${hits.length} matches`);
+      }
+    }));
+    hits.sort((a,b)=>b.legs-a.legs||a.name.localeCompare(b.name));
+    const full=hits.filter(h=>h.legs===3),two=hits.filter(h=>h.legs===2);
+    const rungs=h=>`<div class="rungs"><div class="rung on">milestone #${h.nxt}</div><div class="rung ${h.dayHit?"on":""}">day pool</div><div class="rung ${h.teamHit?"on":""}">team table</div></div>`;
+    document.getElementById("fullSect").style.display="block";
+    document.getElementById("fullN").textContent="· "+full.length;
+    document.getElementById("full").innerHTML=full.length?full.map(h=>`<div class="card"><div class="who">${esc(h.name)}<span class="game">${esc(h.team)} vs ${esc(h.opp)}</span></div>${rungs(h)}<div class="rcpt">${h.rc.map(r=>`<div>${r}</div>`).join("")}</div></div>`).join(""):'<div class="empty">No full-trio hits on this slate.</div>';
+    document.getElementById("twoSect").style.display="block";
+    document.getElementById("twoN").textContent="· "+two.length;
+    document.getElementById("two").innerHTML=two.map(h=>`<div class="card two"><div class="who">${esc(h.name)}<span class="game">${esc(h.team)} vs ${esc(h.opp)}</span></div><div class="rcpt">${h.rc.map(r=>`<div>${r}</div>`).join("")}</div></div>`).join("");
+    st(`done — ${full.length} full trio, ${two.length} two-leg`);
+  }catch(e){st("error: "+e.message)}
+  btn.disabled=false;
+}
+document.getElementById("d").value=new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
