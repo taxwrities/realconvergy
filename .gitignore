@@ -5,3 +5,6 @@ scripts/cache/
 # convergence-scanner is its own git repo (pre-monorepo); not part of this tree
 convergence-scanner/
 __pycache__/
+
+# staged from data/wnba-splits by apps/wnba/scripts/copy-splits.mjs (pre dev/build)
+apps/wnba/public/data/wnba-splits/

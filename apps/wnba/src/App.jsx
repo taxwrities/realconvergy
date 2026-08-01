@@ -3,6 +3,7 @@ import {useApp} from './state/store.jsx';
 import BoardTab from './tabs/Board.jsx';
 import PatternsTab from './tabs/Patterns.jsx';
 import ForecastTab from './tabs/Forecast.jsx';
+import SplitsTab from './tabs/Splits.jsx';
 import VocabTab from './tabs/Vocab.jsx';
 import SearchSheet from './components/SearchSheet.jsx';
 import QuickAddSheet from './components/QuickAddSheet.jsx';
@@ -17,6 +18,7 @@ const TABS=[
   {id:'board',label:'Board',ico:svg(<><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.8"/></>)},
   {id:'patterns',label:'Patterns',ico:svg(<><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 15l9 5 9-5"/></>)},
   {id:'forecast',label:'Forecast',ico:svg(<path d="M12 3c.7 4.6 3.4 7.3 8 8-4.6.7-7.3 3.4-8 8-.7-4.6-3.4-7.3-8-8 4.6-.7 7.3-3.4 8-8z"/>)},
+  {id:'splits',label:'Splits',ico:svg(<><path d="M4 20V10M10 20V4M16 20v-7M22 20h-20"/></>)},
   {id:'vocab',label:'Vocab',ico:svg(<><path d="M6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></>)},
 ];
 
@@ -57,6 +59,8 @@ export default function App(){
         <div style={{display:tab==='board'?'block':'none'}}><BoardTab/></div>
         <div style={{display:tab==='patterns'?'block':'none'}}><PatternsTab goBoard={()=>setTab('board')}/></div>
         <div style={{display:tab==='forecast'?'block':'none'}}><ForecastTab/></div>
+        {/* `active` (not mount) drives the lazy index fetch — every tab stays mounted */}
+        <div style={{display:tab==='splits'?'block':'none'}}><SplitsTab active={tab==='splits'}/></div>
         <div style={{display:tab==='vocab'?'block':'none'}}><VocabTab/></div>
       </main>
 

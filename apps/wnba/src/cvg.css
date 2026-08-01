@@ -719,3 +719,92 @@ body {
   .totals-wrap::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 4px; }
   .totals-wrap::-webkit-scrollbar-track { background: transparent; }
 }
+
+/* ---------------- Splits tab (career game logs + splits) ----------------
+   Raw-stats layer: no gematria colour language here, so it stays on the
+   neutral ink ramp with the accent reserved for the one number that matters
+   (days-since). Mobile-first — every table scrolls inside its own box. */
+.sp-search { display: flex; gap: 8px; align-items: center; }
+.sp-search input[type='text'] {
+  background: var(--well-2); border: 1px solid var(--sf-line); border-radius: 10px;
+  color: var(--ink); padding: 10px 12px; font-family: inherit; font-size: 13px;
+  width: 100%; min-width: 0;
+}
+.sp-search input[type='text']:focus { border-color: var(--cvg-acc); outline: none; }
+.sp-search .btn {
+  background: var(--well-2); border: 1px solid var(--sf-line); color: var(--ink-2);
+  border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+
+.sp-typeahead {
+  margin-top: 8px; display: flex; flex-direction: column;
+  max-height: 268px; overflow-y: auto; overscroll-behavior: contain;
+  border: 1px solid var(--sf-line); border-radius: 10px; background: var(--well-2);
+}
+.sp-hit {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  background: none; border: none; border-bottom: 1px solid var(--sf-2);
+  padding: 9px 11px; cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+}
+.sp-hit:last-child { border-bottom: none; }
+.sp-hit:active { background: var(--well); }
+.sp-hit-nm { color: var(--ink); font-size: 13px; font-weight: 600; }
+.sp-hit-meta { color: var(--ink-3); font-size: 10.5px; font-family: var(--cvg-mono); white-space: nowrap; }
+
+.sp-head { display: flex; flex-direction: column; gap: 4px; }
+.sp-head-nm { font-size: 17px; font-weight: 800; letter-spacing: .2px; }
+.sp-head-meta { display: flex; gap: 8px; align-items: baseline; color: var(--ink-2); font-size: 12px; }
+.sp-head-meta span + span::before { content: '·'; margin-right: 8px; color: var(--ink-3); }
+.sp-head-span { color: var(--ink-3); font-size: 11px; }
+
+.sp-scroll { overflow-x: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.sp-list { max-height: 420px; overflow-y: auto; }
+.sp-table { min-width: 100%; white-space: nowrap; }
+.sp-table th { position: sticky; top: 0; background: var(--sf-1); z-index: 1; }
+.sp-table td { text-align: right; }
+.sp-table td.w, .sp-table th:first-child { text-align: left; }
+.sp-table .sp-avg { color: var(--ink-2); }
+.sp-table tr.sp-today td {
+  background: color-mix(in srgb, var(--cvg-acc) 13%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--cvg-acc) 45%, transparent),
+              inset 0 -1px 0 color-mix(in srgb, var(--cvg-acc) 45%, transparent);
+}
+.sp-table tr.sp-today td.w { color: var(--cvg-acc); font-weight: 800; }
+.sp-today-tag { color: var(--cvg-acc); letter-spacing: .6px; }
+.sp-foot { font-size: 10.5px; margin-top: 8px; line-height: 1.45; }
+
+.sp-query-row { display: flex; gap: 8px; align-items: stretch; }
+.sp-select, .sp-thr {
+  background: var(--well-2); border: 1px solid var(--sf-line); border-radius: 10px;
+  color: var(--ink); padding: 10px 11px; font-family: var(--cvg-mono); font-size: 13px;
+  min-width: 0;
+}
+.sp-select { flex: 1 1 auto; }
+.sp-thr { flex: 0 1 96px; width: 96px; }
+.sp-select:focus, .sp-thr:focus { border-color: var(--cvg-acc); outline: none; }
+.sp-query-row .btn {
+  background: var(--cvg-acc); border: 1px solid var(--cvg-acc); color: var(--cvg-acc-ink);
+  border-radius: 10px; padding: 10px 16px; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+
+.sp-last-line { font-size: 13px; color: var(--ink); }
+.sp-last-val { color: var(--ink-2); }
+/* the payoff number — biggest thing on the page, tap to copy just the digits */
+.sp-days {
+  display: flex; align-items: baseline; gap: 9px; margin: 10px 0 2px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--cvg-mono); text-align: left;
+  -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+.sp-days-n {
+  font-size: 44px; font-weight: 800; line-height: 1; color: var(--cvg-gold);
+  letter-spacing: -1px;
+}
+.sp-days-l {
+  font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 800;
+}
+.sp-days:active .sp-days-n { opacity: .65; }
+.sp-count { color: var(--ink-2); font-size: 11.5px; margin-top: 6px; }
