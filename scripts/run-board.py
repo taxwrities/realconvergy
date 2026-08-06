@@ -35,6 +35,7 @@ SLATES  = os.path.join(REPO, 'data', 'slates')
 BOARDS  = os.path.join(REPO, 'data', 'boards')
 THEMES  = os.path.join(REPO, 'data', 'themes')
 SCANNER = os.path.join(REPO, 'scripts', 'landings-scanner.py')
+TRIO    = os.path.join(REPO, 'scripts', 'trio-scanner.py')
 API     = 'https://statsapi.mlb.com/api/v1'
 
 
@@ -204,11 +205,21 @@ def main():
         die(f"bad date '{ds}' — want YYYY-MM-DD")
 
     slate = os.path.join(SLATES, f"{ds}-landings.json")
+    trio_slate = os.path.join(SLATES, f"{ds}.json")
     if a.retheme:
         if not os.path.exists(slate):
             die(f"--retheme but no slate at {os.path.relpath(slate, REPO)} — run without --retheme first")
     else:
         slate = resolve_slate(ds)
+        # Tony 2026-08-06: "everything, every time" — also produce trio-scanner's
+        # slate so both artifacts publish each morning. Best-effort: a trio
+        # failure warns but never blocks the board.
+        if not os.path.exists(trio_slate):
+            env = dict(os.environ, PYTHONIOENCODING='utf-8')
+            t = subprocess.run([sys.executable, TRIO, ds, '--quiet'], env=env)
+            if t.returncode != 0 or not os.path.exists(trio_slate):
+                print(f"WARNING: trio-scanner failed (exit {t.returncode}) — continuing without {os.path.relpath(trio_slate, REPO)}",
+                      file=sys.stderr)
 
     theme = load_theme(ds, a.theme)
     if a.retheme and not theme:
@@ -235,6 +246,8 @@ def main():
         rels = [os.path.relpath(p, REPO).replace(os.sep, '/') for p in written]
         if not a.retheme:
             rels.insert(0, os.path.relpath(slate, REPO).replace(os.sep, '/'))
+            if os.path.exists(trio_slate):
+                rels.insert(1, os.path.relpath(trio_slate, REPO).replace(os.sep, '/'))
         for cmd in (['add'] + rels, ['commit', '-m', f"board: {ds}"], ['push']):
             r = git(cmd)
             if r.returncode != 0:
