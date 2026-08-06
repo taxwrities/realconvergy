@@ -14,6 +14,8 @@
     "build:wnba": "npm --workspace apps/wnba run build",
     "test:mlb": "npm --workspace apps/mlb test",
     "test:wnba": "npm --workspace apps/wnba test",
-    "harvest:h2h": "node scripts/harvest-h2h.mjs"
+    "harvest:h2h": "node scripts/harvest-h2h.mjs",
+    "board": "python scripts/run-board.py --commit",
+    "retheme": "python scripts/run-board.py --retheme --commit"
   }
 }
