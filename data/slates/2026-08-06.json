@@ -1,0 +1,1057 @@
+{
+ "date": "2026-08-06",
+ "weekday": "Thursday",
+ "fetched_at": "2026-08-06T23:42:38Z",
+ "first_pitch": "2026-08-06T16:35:00Z",
+ "scan_integrity": "contaminated",
+ "dn_pool": {
+  "6": [
+   "DN all-digit reduced"
+  ],
+  "14": [
+   "DN M+DD"
+  ],
+  "24": [
+   "DN M+DD+ydigits",
+   "DN all-digit"
+  ],
+  "35": [
+   "Thursday"
+  ],
+  "36": [
+   "Jupiter"
+  ],
+  "40": [
+   "DN M+DD+YY"
+  ],
+  "45": [
+   "Jupiter"
+  ],
+  "46": [
+   "Thursday"
+  ],
+  "60": [
+   "DN M+DD+CC+YY"
+  ],
+  "90": [
+   "Jupiter"
+  ],
+  "99": [
+   "Jupiter"
+  ],
+  "100": [
+   "Thursday"
+  ],
+  "116": [
+   "Thursday"
+  ],
+  "147": [
+   "DN DLIY"
+  ],
+  "218": [
+   "DN DOY"
+  ]
+ },
+ "games": [
+  {
+   "home": "Baltimore Orioles",
+   "away": "Los Angeles Angels"
+  },
+  {
+   "home": "Cincinnati Reds",
+   "away": "Athletics"
+  },
+  {
+   "home": "Cleveland Guardians",
+   "away": "New York Mets"
+  },
+  {
+   "home": "Milwaukee Brewers",
+   "away": "Pittsburgh Pirates"
+  },
+  {
+   "home": "Chicago Cubs",
+   "away": "Toronto Blue Jays"
+  },
+  {
+   "home": "Seattle Mariners",
+   "away": "Detroit Tigers"
+  },
+  {
+   "home": "Philadelphia Phillies",
+   "away": "Washington Nationals"
+  },
+  {
+   "home": "Boston Red Sox",
+   "away": "Chicago White Sox"
+  },
+  {
+   "home": "Atlanta Braves",
+   "away": "Miami Marlins"
+  },
+  {
+   "home": "Kansas City Royals",
+   "away": "Minnesota Twins"
+  },
+  {
+   "home": "Arizona Diamondbacks",
+   "away": "San Diego Padres"
+  }
+ ],
+ "hits": [
+  {
+   "player": "Brooks Lee",
+   "team": "Minnesota Twins",
+   "opp": "Kansas City Royals",
+   "legs": 3,
+   "kind": "career",
+   "next_hr_ordinal": 36,
+   "day_hit": true,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #36 [MLB API career HR=35]",
+    "#36 = Jupiter [day pool]",
+    "#36 = Kansas City Royals (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Corbin Carroll",
+   "team": "Arizona Diamondbacks",
+   "opp": "San Diego Padres",
+   "legs": 3,
+   "kind": "career",
+   "next_hr_ordinal": 99,
+   "day_hit": true,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #99 [MLB API career HR=98]",
+    "#99 = Jupiter [day pool]",
+    "#99 = San Diego Padres (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Jackson Holliday",
+   "team": "Baltimore Orioles",
+   "opp": "Los Angeles Angels",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Pete Alonso",
+   "team": "Baltimore Orioles",
+   "opp": "Los Angeles Angels",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #24 [MLB API season HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Denzer Guzman",
+   "team": "Los Angeles Angels",
+   "opp": "Baltimore Orioles",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Tyler Heineman",
+   "team": "Los Angeles Angels",
+   "opp": "Baltimore Orioles",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #6 [MLB API career HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Dane Myers",
+   "team": "Cincinnati Reds",
+   "opp": "Athletics",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "JJ Bleday",
+   "team": "Cincinnati Reds",
+   "opp": "Athletics",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 70,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #70 [MLB API career HR=69]",
+    "#70 = Cincinnati Reds (own) [team table]"
+   ]
+  },
+  {
+   "player": "Sal Stewart",
+   "team": "Cincinnati Reds",
+   "opp": "Athletics",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 26,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #26 [MLB API season HR=25]",
+    "#26 = Cincinnati Reds (own) [team table]"
+   ]
+  },
+  {
+   "player": "Max Muncy",
+   "team": "Athletics",
+   "opp": "Cincinnati Reds",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Angel Martínez",
+   "team": "Cleveland Guardians",
+   "opp": "New York Mets",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 12,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #12 [MLB API season HR=11]",
+    "#12 = New York Mets (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Nathaniel Lowe",
+   "team": "Cleveland Guardians",
+   "opp": "New York Mets",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Bo Bichette",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 12,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #12 [MLB API season HR=11]",
+    "#12 = New York Mets (own) [team table]"
+   ]
+  },
+  {
+   "player": "Carson Benge",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Carson Benge",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Eric Wagaman",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Jared Young",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Luis Robert Jr.",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 107,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #107 [MLB API career HR=106]",
+    "#107 = Cleveland Guardians (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Marcus Semien",
+   "team": "New York Mets",
+   "opp": "Cleveland Guardians",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Andrew Vaughn",
+   "team": "Milwaukee Brewers",
+   "opp": "Pittsburgh Pirates",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Joey Ortiz",
+   "team": "Milwaukee Brewers",
+   "opp": "Pittsburgh Pirates",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Joey Ortiz",
+   "team": "Milwaukee Brewers",
+   "opp": "Pittsburgh Pirates",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Henry Davis",
+   "team": "Pittsburgh Pirates",
+   "opp": "Milwaukee Brewers",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Jacob Gonzalez",
+   "team": "Pittsburgh Pirates",
+   "opp": "Milwaukee Brewers",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Jacob Gonzalez",
+   "team": "Pittsburgh Pirates",
+   "opp": "Milwaukee Brewers",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #6 [MLB API career HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Spencer Horwitz",
+   "team": "Pittsburgh Pirates",
+   "opp": "Milwaukee Brewers",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 35,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #35 [MLB API career HR=34]",
+    "#35 = Thursday [day pool]"
+   ]
+  },
+  {
+   "player": "Pete Crow-Armstrong",
+   "team": "Chicago Cubs",
+   "opp": "Toronto Blue Jays",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 27,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #27 [MLB API season HR=26]",
+    "#27 = Chicago Cubs (own) [team table]"
+   ]
+  },
+  {
+   "player": "Brandon Valenzuela",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 9,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #9 [MLB API season HR=8]",
+    "#9 = Chicago Cubs (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Brandon Valenzuela",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 9,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #9 [MLB API career HR=8]",
+    "#9 = Chicago Cubs (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Davis Schneider",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 36,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #36 [MLB API career HR=35]",
+    "#36 = Jupiter [day pool]"
+   ]
+  },
+  {
+   "player": "Ernie Clement",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 35,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #35 [MLB API career HR=34]",
+    "#35 = Thursday [day pool]"
+   ]
+  },
+  {
+   "player": "Jesús Sánchez",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 9,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #9 [MLB API season HR=8]",
+    "#9 = Chicago Cubs (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Myles Straw",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Nathan Lukes",
+   "team": "Toronto Blue Jays",
+   "opp": "Chicago Cubs",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Colt Keith",
+   "team": "Detroit Tigers",
+   "opp": "Seattle Mariners",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 35,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #35 [MLB API career HR=34]",
+    "#35 = Thursday [day pool]"
+   ]
+  },
+  {
+   "player": "James Outman",
+   "team": "Detroit Tigers",
+   "opp": "Seattle Mariners",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "James Outman",
+   "team": "Detroit Tigers",
+   "opp": "Seattle Mariners",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 40,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #40 [MLB API career HR=39]",
+    "#40 = DN M+DD+YY [day pool]"
+   ]
+  },
+  {
+   "player": "Alec Bohm",
+   "team": "Philadelphia Phillies",
+   "opp": "Washington Nationals",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Derek Hill",
+   "team": "Philadelphia Phillies",
+   "opp": "Washington Nationals",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Edmundo Sosa",
+   "team": "Philadelphia Phillies",
+   "opp": "Washington Nationals",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Luis Arraez",
+   "team": "Philadelphia Phillies",
+   "opp": "Washington Nationals",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Daylen Lile",
+   "team": "Washington Nationals",
+   "opp": "Philadelphia Phillies",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "José Tena",
+   "team": "Washington Nationals",
+   "opp": "Philadelphia Phillies",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Nasim Nuñez",
+   "team": "Washington Nationals",
+   "opp": "Philadelphia Phillies",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #6 [MLB API career HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Eli White",
+   "team": "Boston Red Sox",
+   "opp": "Chicago White Sox",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Masataka Yoshida",
+   "team": "Boston Red Sox",
+   "opp": "Chicago White Sox",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Masataka Yoshida",
+   "team": "Boston Red Sox",
+   "opp": "Chicago White Sox",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 35,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #35 [MLB API career HR=34]",
+    "#35 = Thursday [day pool]"
+   ]
+  },
+  {
+   "player": "Willson Contreras",
+   "team": "Boston Red Sox",
+   "opp": "Chicago White Sox",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #24 [MLB API season HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Wilyer Abreu",
+   "team": "Boston Red Sox",
+   "opp": "Chicago White Sox",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 60,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #60 [MLB API career HR=59]",
+    "#60 = DN M+DD+CC+YY [day pool]"
+   ]
+  },
+  {
+   "player": "Drew Romo",
+   "team": "Chicago White Sox",
+   "opp": "Boston Red Sox",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Drew Romo",
+   "team": "Chicago White Sox",
+   "opp": "Boston Red Sox",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #6 [MLB API career HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Austin Riley",
+   "team": "Atlanta Braves",
+   "opp": "Miami Marlins",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Drake Baldwin",
+   "team": "Atlanta Braves",
+   "opp": "Miami Marlins",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 40,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #40 [MLB API career HR=39]",
+    "#40 = DN M+DD+YY [day pool]"
+   ]
+  },
+  {
+   "player": "Matt Olson",
+   "team": "Atlanta Braves",
+   "opp": "Miami Marlins",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 32,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next season HR = #32 [MLB API season HR=31]",
+    "#32 = Miami Marlins (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Agustín Ramírez",
+   "team": "Miami Marlins",
+   "opp": "Atlanta Braves",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Esteury Ruiz",
+   "team": "Miami Marlins",
+   "opp": "Atlanta Braves",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Esteury Ruiz",
+   "team": "Miami Marlins",
+   "opp": "Atlanta Braves",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Owen Caissie",
+   "team": "Miami Marlins",
+   "opp": "Atlanta Braves",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Bobby Witt Jr.",
+   "team": "Kansas City Royals",
+   "opp": "Minnesota Twins",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #14 [MLB API season HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Kyle Isbel",
+   "team": "Kansas City Royals",
+   "opp": "Minnesota Twins",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 27,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #27 [MLB API career HR=26]",
+    "#27 = Kansas City Royals (own) [team table]"
+   ]
+  },
+  {
+   "player": "Luke Maile",
+   "team": "Kansas City Royals",
+   "opp": "Minnesota Twins",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #24 [MLB API career HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  },
+  {
+   "player": "Michael Massey",
+   "team": "Kansas City Royals",
+   "opp": "Minnesota Twins",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 46,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #46 [MLB API career HR=45]",
+    "#46 = Thursday [day pool]"
+   ]
+  },
+  {
+   "player": "Nick Loftin",
+   "team": "Kansas City Royals",
+   "opp": "Minnesota Twins",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Royce Lewis",
+   "team": "Minnesota Twins",
+   "opp": "Kansas City Royals",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 59,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #59 [MLB API career HR=58]",
+    "#59 = Kansas City Royals (opp) [team table]"
+   ]
+  },
+  {
+   "player": "Ryan Kreidler",
+   "team": "Minnesota Twins",
+   "opp": "Kansas City Royals",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 6,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #6 [MLB API season HR=5]",
+    "#6 = DN all-digit reduced [day pool]"
+   ]
+  },
+  {
+   "player": "Tim Tawa",
+   "team": "Arizona Diamondbacks",
+   "opp": "San Diego Padres",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 14,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next career HR = #14 [MLB API career HR=13]",
+    "#14 = DN M+DD [day pool]"
+   ]
+  },
+  {
+   "player": "Luis Rengifo",
+   "team": "San Diego Padres",
+   "opp": "Arizona Diamondbacks",
+   "legs": 2,
+   "kind": "career",
+   "next_hr_ordinal": 65,
+   "day_hit": false,
+   "team_hit": true,
+   "receipts": [
+    "next career HR = #65 [MLB API career HR=64]",
+    "#65 = San Diego Padres (own) [team table]"
+   ]
+  },
+  {
+   "player": "Manny Machado",
+   "team": "San Diego Padres",
+   "opp": "Arizona Diamondbacks",
+   "legs": 2,
+   "kind": "season",
+   "next_hr_ordinal": 24,
+   "day_hit": true,
+   "team_hit": false,
+   "receipts": [
+    "next season HR = #24 [MLB API season HR=23]",
+    "#24 = DN M+DD+ydigits/DN all-digit [day pool]"
+   ]
+  }
+ ]
+}
