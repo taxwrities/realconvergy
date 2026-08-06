@@ -23,19 +23,40 @@ so the board never runs on a stale copy.
 
 Windows: set PYTHONUTF8=1
 """
-import argparse, csv, io, json, os, subprocess, sys, urllib.request
+import argparse, io, json, os, re, subprocess, sys, urllib.request
 from datetime import date, datetime
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(REPO, "scripts", "cache", "wehoop")
 BASE = "https://raw.githubusercontent.com/sportsdataverse/wehoop-wnba-data/main/wnba"
-SCHEDULE_URL = f"{BASE}/schedules/wnba_schedule_master.csv"
+# Per-season schedule keyed to the board's year (333 rows) rather than the
+# all-seasons master CSV (6,002 rows) — same answer, a fraction of the pull.
+SCHEDULE_URL = BASE + "/schedules/parquet/wnba_schedule_{season}.parquet"
 BOX_URL = BASE + "/player_box/parquet/player_box_{season}.parquet"
 FIRST_SEASON = 2003
+
+# wehoop season_type: 1 = preseason, 2 = regular, 3 = playoffs.
+# Counters are REGULAR SEASON ONLY, across all six scopes.
+SEASON_TYPE_REGULAR = 2
 
 # Spec rule 8 — FIXED key set. Adding a key requires a spec bump.
 STAT_KEYS = ["G", "FG", "3PM", "2PM", "PTS", "REB", "AST", "STL", "BLK", "FTM"]
 SCOPES = ["season", "season_home", "season_away", "career", "career_home", "career_away"]
+
+# The .md board log speaks the app's stat vocabulary (apps/wnba/src/data/
+# defaults.js STATS); the JSON uses the spec's. Map app -> spec for the
+# acceptance test. PRA is derived, so it is reconstructed for comparison only
+# and never stored (rule 3).
+MD_STAT_ALIAS = {"FG": "FG", "PTS": "PTS", "REB": "REB", "AST": "AST",
+                 "3PM": "3PM", "2PM": "2PM", "FT": "FTM", "FTM": "FTM",
+                 "GP": "G", "G": "G", "STL": "STL", "BLK": "BLK"}
+MD_SCOPE_ALIAS = {"season": "season", "career": "career",
+                  "season_home": "season_home", "season_away": "season_away",
+                  "career_home": "career_home", "career_away": "career_away"}
+# - **Name** (Team) ⭐ · KAT — season PTS → 400 (sits 391) · patterns: ...
+MD_LINE = re.compile(
+    r"^-\s+\*\*(?P<name>[^*]+)\*\*\s*\((?P<team>[^)]*)\).*?—\s*"
+    r"(?P<scope>\w+)\s+(?P<stat>[A-Za-z0-9]+)\s*→\s*[\d,]+\s*\(sits\s*(?P<sits>[\d,]+)\)")
 
 
 def fetch(url, timeout=120):
@@ -69,20 +90,28 @@ def season_box(season, refresh=False):
 
 
 def slate_games(ds):
-    """Games scheduled on `ds`, from the wehoop schedule master."""
-    raw = fetch(SCHEDULE_URL).decode("utf-8", "replace")
+    """Games scheduled on `ds`, from that season's schedule file only."""
+    import pyarrow.parquet as pq
+    season = int(ds[:4])
+    blob = fetch(SCHEDULE_URL.format(season=season))
+    t = pq.read_table(io.BytesIO(blob), columns=[
+        "id", "game_date", "status_type_name", "season_type",
+        "home_id", "home_display_name", "home_abbreviation",
+        "away_id", "away_display_name", "away_abbreviation"])
     out = []
-    for r in csv.DictReader(io.StringIO(raw)):
-        gd = (r.get("date") or r.get("game_date") or "")[:10]
+    for r in t.to_pylist():
+        gd = r.get("game_date")
+        gd = gd.isoformat() if hasattr(gd, "isoformat") else str(gd)[:10]
         if gd != ds:
             continue
         out.append({
-            "game_id": r.get("id"),
+            "game_id": str(r.get("id")),
             "date": gd,
             "status": r.get("status_type_name") or "",
-            "home": {"id": r.get("home_id"), "name": r.get("home_display_name") or r.get("home_name"),
+            "season_type": r.get("season_type"),
+            "home": {"id": str(r.get("home_id")), "name": r.get("home_display_name"),
                      "abbrev": r.get("home_abbreviation")},
-            "away": {"id": r.get("away_id"), "name": r.get("away_display_name") or r.get("away_name"),
+            "away": {"id": str(r.get("away_id")), "name": r.get("away_display_name"),
                      "abbrev": r.get("away_abbreviation")},
         })
     return out
@@ -136,6 +165,8 @@ def build(ds, quiet=False):
             gd = gd.isoformat() if hasattr(gd, "isoformat") else str(gd)[:10]
             if not gd or gd >= ds:            # strictly before the board date
                 continue
+            if row.get("season_type") != SEASON_TYPE_REGULAR:
+                continue                       # regular season only — drop preseason + playoffs
             if row.get("did_not_play"):
                 continue
             if gd > data_through:
@@ -237,6 +268,72 @@ def build(ds, quiet=False):
     return board, games
 
 
+def md_path_for(ds):
+    """Locate the .md board log for `ds`. Sibling to the JSON first."""
+    for p in (os.path.join(REPO, "data", "boards", "wnba", f"{ds}.md"),
+              os.path.join(REPO, "data", "boards", f"wnba-{ds}.md"),
+              os.path.join(REPO, "data", "daylogs", f"{ds}.md")):
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def acceptance_test(board, ds, quiet=False):
+    """Reconcile the JSON counters against the .md board log's `sits` values.
+
+    Same discipline as harvest-founders.mjs's cipher-drift abort: if the two
+    disagree, the caller must NOT write or commit. Returns
+    (status, detail, mismatches). status is "pass" | "skipped" | "fail".
+    A missing .md skips (never blocks a first run); a present-but-disagreeing
+    .md fails.
+    """
+    path = md_path_for(ds)
+    if not path:
+        return "skipped", "no .md board log found for this date", []
+
+    idx = {}
+    for g in board["games"]:
+        for p in g["players"]:
+            idx[(p["name"] or "").strip().lower()] = p
+
+    checked, mismatches, unresolved = 0, [], 0
+    for raw in open(path, encoding="utf-8"):
+        m = MD_LINE.match(raw.strip())
+        if not m:
+            continue
+        name = m.group("name").strip().lower()
+        scope = MD_SCOPE_ALIAS.get(m.group("scope").strip().lower())
+        stat_raw = m.group("stat").strip().upper()
+        sits = int(m.group("sits").replace(",", ""))
+        p = idx.get(name)
+        if not p or not scope or scope not in p["counters"]:
+            unresolved += 1
+            continue
+        c = p["counters"][scope]
+        if stat_raw == "PRA":                      # derived for comparison only
+            got = c["PTS"] + c["REB"] + c["AST"]
+        else:
+            key = MD_STAT_ALIAS.get(stat_raw)
+            if not key:
+                unresolved += 1
+                continue
+            got = c[key]
+        checked += 1
+        if got != sits:
+            mismatches.append({"player": m.group("name").strip(), "scope": scope,
+                               "stat": stat_raw, "md_sits": sits, "json": got})
+
+    rel = os.path.relpath(path, REPO).replace(os.sep, "/")
+    if not checked:
+        return "skipped", f"{rel}: no parseable 'sits' lines matched a player on this board", []
+    if mismatches:
+        return "fail", f"{rel}: {len(mismatches)} of {checked} sits values disagree", mismatches
+    if not quiet:
+        print(f"acceptance test: {checked}/{checked} sits values reconcile against {rel}"
+              + (f" ({unresolved} lines unresolved)" if unresolved else ""))
+    return "pass", f"{rel}: {checked} sits values reconcile", []
+
+
 def validate(board):
     """Spec conformance — abort the write on any failure."""
     errs = []
@@ -293,6 +390,21 @@ def main(ds, quiet=False, do_commit=False):
         return 2
     if not quiet:
         print("validation: all six scopes fixed, stat keys fixed, frozen+source present")
+
+    # Acceptance test — abort BEFORE the write, so a disagreeing board can
+    # never reach disk, let alone a commit.
+    status, detail, mismatches = acceptance_test(board, ds, quiet)
+    board["acceptance_test"] = {"status": status, "detail": detail}
+    if mismatches:
+        board["acceptance_test"]["mismatches"] = mismatches
+    if status == "fail":
+        print(f"ACCEPTANCE TEST FAILED — nothing written: {detail}", file=sys.stderr)
+        for m in mismatches[:20]:
+            print(f"  {m['player']} · {m['scope']} {m['stat']}: "
+                  f".md sits {m['md_sits']} vs JSON {m['json']}", file=sys.stderr)
+        return 3
+    if status == "skipped" and not quiet:
+        print(f"acceptance test SKIPPED — {detail}")
 
     out_dir = os.path.join(REPO, "data", "boards", "wnba")
     os.makedirs(out_dir, exist_ok=True)
