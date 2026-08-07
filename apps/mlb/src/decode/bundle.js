@@ -74,7 +74,7 @@ function spanLine(p,date){
 /* ---------- stats (block 4) ---------- */
 const STATK=[['PA','plateAppearances'],['AB','atBats'],['H','hits'],['TB','totalBases'],
   ['1B','1B'],['2B','doubles'],['3B','triples'],['HR','homeRuns'],['RBI','rbi'],
-  ['R','runs'],['BB','baseOnBalls'],['SB','stolenBases']];
+  ['R','runs'],['BB','baseOnBalls'],['SB','stolenBases'],['SO','strikeOuts']];
 function statLine(st){
   if(!st)return null;
   const out=STATK.map(([k,src])=>st[src]!=null?`${k} ${st[src]}`:null).filter(Boolean);
@@ -98,6 +98,36 @@ function playerBlock(p,date){
   const se=statLine(p.season);if(se)lines.push(`  season: ${se}`);
   const ca=statLine(p.career);if(ca)lines.push(`  career: ${ca}`);
   return lines.join('\n');
+}
+
+/* ---------- Tier-3 rungs sheet (LAYER-SCANNER-V2 change 5) ----------
+   The machine sheet for THIS game: every batter, every counter incl. SO,
+   depth + provenance tags, pitcher K/out/W/L ladders. No top-N trim — the
+   Neto rule. Zero-hit batters are named so the model knows they were scanned
+   (denominator honesty), not silently absent. */
+function rungsSection(rungs,away,home){
+  if(!rungs)return null;
+  const gm=(rungs.games||[]).find(g=>g.matchup===`${away} @ ${home}`);
+  if(!gm)return null;
+  const fh=h=>(h||[]).slice(0,2).map(x=>`[d${x.depth}] ${x.prov}`).join(' ; ');
+  const lines=[],quiet=[];
+  for(const pl of gm.players||[]){
+    const bits=[];
+    for(const pj of pl.projections||[])
+      bits.push(`${pj.scope} ${pj.stat} ${pj.base}->${pj.target} (${pj.class}) ${fh(pj.hits)}`);
+    for(const ex of pl.exclusive||[])
+      bits.push(`EXACT-FIT ${ex.outcome}: ${ex.scope} TB ${ex.base}->${ex.target} ${fh(ex.hits)}`);
+    for(const f of (pl.nameFlags||[]).filter(f=>f.depth<=2))
+      bits.push(`NAME ${f.part} ${f.cipher}=${f.n} [d${f.depth}] ${f.prov} (decoration, never a leg)`);
+    for(const pk of pl.parked||[])bits.push(`PARKED ${pk} (decoration)`);
+    for(const m of pl.markedMan||[])bits.push(`MARKED MAN ${m}`);
+    for(const l of pl.pitcherLadder||[])
+      bits.push(`PITCH ${l.scope} ${l.stat} ${l.base}->${l.target} ${fh(l.hits)}`);
+    if(bits.length)lines.push(`${pl.name} (${pl.team||'?'}):\n  ${bits.join('\n  ')}`);
+    else quiet.push(pl.name);
+  }
+  if(quiet.length)lines.push(`Scanned, no rung hits: ${quiet.join(', ')}`);
+  return lines.length?lines.join('\n'):null;
 }
 
 /* ---------- board section extraction (block 7 + prior ledger) ---------- */
@@ -131,6 +161,22 @@ export async function buildBundle({game,people,dn,date,contextChips}){
     try{
       const t=JSON.parse(themeRaw);
       themeTxt=`Zach numbers: ${(t.numbers||[]).join(', ')}${t.notes?`\nNotes: ${t.notes}`:''}`;
+      /* entity threads (specs/entity-threads.md): curated field members — the
+         model cites the thread label as provenance, e.g. "124 [Oppenheimer ←
+         Hiroshima 81st]". Expired threads are already dropped by the scanner;
+         listed here as authored so the labels are quotable. */
+      const ths=(t.entity_threads||[]).filter(th=>!th.expiry||date<=th.expiry);
+      if(ths.length){
+        themeTxt+='\nENTITY THREADS (curated, field members; cite label as provenance):';
+        for(const th of ths){
+          const prov=th.provenance||{};
+          const vals=(th.values||[]).map(v=>{
+            const k=Object.keys(prov).find(k=>k.split('/').map(s=>s.trim()).includes(String(v)));
+            return k?`${v} (${prov[k]})`:String(v);
+          }).join(', ');
+          themeTxt+=`\n- ${th.label} [hook: ${th.hook||'?'}${th.expiry?`, expires ${th.expiry}`:''}]: ${vals}`;
+        }
+      }
     }catch{/* leave placeholder */}
   }
   const figures=dateFigures(date).map(f=>`${f.n} (${f.calc})${f.top?' [top]':''}`).join('  ');
@@ -153,10 +199,15 @@ Active day chips (app-computed): ${chips||'none loaded'}`;
     .filter(Boolean).join('\n');
   const venueCipher=game.venue?cipherLine('venue',game.venue):null;
 
-  const [board,prior]=await Promise.all([
+  const [board,prior,rungsRaw]=await Promise.all([
     rawFetch(`data/boards/${date}-themed.txt`).then(t=>t||rawFetch(`data/boards/${date}.txt`)),
     rawFetch(`data/boards/${prevISO(date)}-themed.txt`).then(t=>t||rawFetch(`data/boards/${prevISO(date)}.txt`)),
+    rawFetch(`data/boards/${date}-rungs.json`),
   ]);
+  let rungsTxt=null;
+  if(rungsRaw){
+    try{rungsTxt=rungsSection(JSON.parse(rungsRaw),away,home)}catch{/* board txt still covers */}
+  }
   const sect=boardSection(board,away,home);
   const priorAway=prior?[...prior.matchAll(/\n## [^\n]+/g)].map(m=>m[0].trim())
     .filter(h=>h.includes(away)||h.includes(home))
@@ -177,6 +228,9 @@ ${roster('away')||'(no lineup)'}
 
 ${home} LINEUP:
 ${roster('home')||'(no lineup)'}
+
+TIER-3 RUNG SHEET — this game (${date}, machine sheet, gospel [board]):
+${rungsTxt||'(no rungs.json published for this date — fall back to the board text below)'}
 
 LANDINGS BOARD — this game (${date}):
 ${sect||'(no board section for this game — say so if asked)'}
