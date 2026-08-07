@@ -1,11 +1,52 @@
 {
   "date": "2026-08-07",
-  "numbers": [],
-  "notes": "SEEDED overnight 8/6 — paste Zach's 8/7 post numbers here in the morning, then npm run retheme. Entity threads pre-loaded: Truman spans recomputed (+1 day: 223->224, 90->91), Hiroshima + 509th carried to Nagasaki 8/9, Goldwater dropped.",
+  "numbers": [
+    7,
+    16,
+    34,
+    43,
+    52,
+    70,
+    79,
+    88,
+    97,
+    106,
+    38,
+    327,
+    268,
+    54,
+    311,
+    63,
+    36,
+    99,
+    81,
+    18,
+    27,
+    25,
+    61,
+    5,
+    23,
+    41
+  ],
+  "notes": "Zach 8/7 — SPINE 7 (4th prime; streak-of-4 motif, flagged TOP). Jersey ladder (+9 chain off 16): 16, 34, 43, 52, 70, 79, 88, 97, 106 — the chain's 25 and 61 sit in the date nums below. Pope: 38 = days before bday, 327 = days after bday. Superior General: 268 = days after bday, 97 = days to next bday (Vatican 97 yrs old; 97 doubles as the jersey ladder's 97). Trump: 54 = days after bday, 311 = days before bday (311 = 64th prime). CONFIRMS — Friday: 63 Ord, 36 Red/RevRed, 99 RevOrd. Venus: 81 Ord, 18 Red, 54 RevOrd (= Trump's 54), 27 RevRed. Date nums: 61, 25, and 7 (61 reduced). Lesser date nums: 41, 23, and 5 (41/23 reduced). Verified against landings-scanner build_field for 2026-08-07: Friday/Venus ciphers, 25/61 date nums and 23 lesser all match the scanner's own computation; 7 = 4th prime and 311 = 64th prime confirmed. Note: the scanner classes 41 as a date num rather than a lesser date num — Zach's grouping kept verbatim.",
   "entity_threads": [
     {
       "label": "Hiroshima 81st",
-      "values": [81, 86, 100, 143, 39, 60, 35, 37, 80, 124, 212, 218, 32],
+      "values": [
+        81,
+        86,
+        100,
+        143,
+        39,
+        60,
+        35,
+        37,
+        80,
+        124,
+        212,
+        218,
+        32
+      ],
       "provenance": {
         "81": "81st anniversary",
         "86": "Robert Oppenheimer RR; 8/6 date stamp",
@@ -24,7 +65,17 @@
     },
     {
       "label": "Truman-Masonic",
-      "values": [24, 87, 91, 224, 42, 48, 96, 144, 39],
+      "values": [
+        24,
+        87,
+        91,
+        224,
+        42,
+        48,
+        96,
+        144,
+        39
+      ],
       "provenance": {
         "24": "Truman Red; date num family",
         "224": "days after Truman death (8/7 recompute of 223)",
@@ -38,7 +89,10 @@
     },
     {
       "label": "509th Composite Group",
-      "values": [509, 97],
+      "values": [
+        509,
+        97
+      ],
       "provenance": {
         "509": "bomb delivery unit",
         "97": "509 = 97th prime; Athletics Ord"
