@@ -1,6 +1,19 @@
 # DECODE-CHAT.md — Per-Game AI Decode Chat
 
-Status: DRAFT v1 — 2026-08-06. Do not build until open questions are answered.
+Status: BUILT v1 — 2026-08-06 (MLB app). Open questions answered per Tony ("go with your recs"), see Decisions below.
+
+## v1 Decisions (2026-08-06)
+
+1. Per-game chat (day-level toggle deferred — preserves per-game cache blocks).
+2. Prior-day board sections for the same teams ride in the bundle (graded-ledger stand-in until GRADED-REPORTS.md ships).
+3. Free-recall entities in v1, hook-type labels mandatory (enforced in the instructions block).
+4. Transcripts persist via "save .md" download named `{date}-{gamePk}.md` — drop into data/decode-logs/ to commit; auto-commit deferred.
+5. Lovable: "copy context" button ships in the MLB chat (paste anywhere); Lovable-side auto-wire is v2.
+6. One shared Netlify function (`apps/mlb/functions/decode.mjs`), keyed by `app` param.
+
+Model routing updated at build time: default `claude-sonnet-5` (was sonnet-4-6 in draft; same sticker, intro pricing, near-Opus reads), Deep Decode `claude-fable-5` with server-side default fallback + refusal handling, deep max_tokens 4000 (Fable thinking shares the budget; visible-text intent unchanged at ~2500).
+
+**Netlify env action (Tony):** set `ANTHROPIC_API_KEY` on the MLB site — the function returns a clear 503 until it's set. Console budget alert recommended.
 
 ## Purpose
 

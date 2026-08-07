@@ -754,3 +754,18 @@ body {
   .totals-wrap::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 4px; }
   .totals-wrap::-webkit-scrollbar-track { background: transparent; }
 }
+
+/* ================= Decode Chat (DECODE-CHAT.md) ================= */
+.decode-launch { display: flex; justify-content: flex-end; margin: 6px 0; }
+.decode-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.decode-turns { margin-left: auto; font-size: 11px; }
+.decode-hint { font-size: 12px; margin: 8px 2px; }
+.decode-msgs { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
+.decode-msg { border: 1px solid var(--edge); border-radius: 10px; padding: 8px 10px; background: var(--sf-1); }
+.decode-msg.user { background: var(--sf-2); border-color: var(--edge-hi); margin-left: 12%; }
+.decode-msg.assistant { margin-right: 6%; }
+.decode-who { display: block; font-size: 10px; letter-spacing: .08em; color: var(--cvg-purple); margin-bottom: 3px; font-weight: 700; }
+.decode-text { white-space: pre-wrap; font-size: 13px; line-height: 1.45; }
+.decode-input { display: flex; gap: 6px; align-items: flex-end; margin-top: 8px; }
+.decode-input textarea { flex: 1; resize: none; background: var(--sf-2); color: var(--ink); border: 1px solid var(--edge); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; }
+.decode-input textarea:focus { outline: none; border-color: var(--edge-hi); }

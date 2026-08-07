@@ -9,6 +9,7 @@ import {founderHitLines} from '../engine/founders.js';
 import {gameBucket} from '../data/mlb.js';
 import {cl} from '../engine/gematria.js';
 import {isPrime,primeIndex,compositeIndex,nthPrime,nthComposite,chainBase,chainMembers} from '../engine/numbers.js';
+import {DecodeLauncher} from '../components/DecodeChat.jsx';
 
 /* Desktop horizontal scroll: a callback ref that turns vertical wheel into
    horizontal scroll on overflowing rails/tables (mouse users have no h-track).
@@ -44,6 +45,7 @@ export default function BoardTab({goPatterns}){
       <GameRail/>
       <ContextRail/>
       <TeamToggle/>
+      <DecodeLauncher/>
       <MatchupPanel/>
       <PatternHitsPanel/>
       <BatterZone/>
