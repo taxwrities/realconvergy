@@ -77,6 +77,10 @@ def build_slate(ds, path):
         'away': {'id': g['teams']['away']['team']['id']},
         'homeIds': [x['id'] for x in (g.get('lineups') or {}).get('homePlayers') or []],
         'awayIds': [x['id'] for x in (g.get('lineups') or {}).get('awayPlayers') or []],
+        # probables feed the V2 Tier-3 pitcher K/out ladders (Castillo class)
+        'probableIds': [pid for pid in (
+            (g['teams'][s].get('probablePitcher') or {}).get('id') for s in ('home', 'away'))
+            if pid],
     } for g in raw]
 
     team_ids = sorted({g[s]['id'] for g in games for s in ('home', 'away')})
@@ -96,20 +100,26 @@ def build_slate(ds, path):
                                 or x['position']['abbreviation'] == 'TWP']
 
     people = {}
-    ids = sorted({pid for g in games for s in ('homeIds', 'awayIds') for pid in g[s]})
+    ids = sorted({pid for g in games
+                  for s in ('homeIds', 'awayIds', 'probableIds') for pid in g[s]})
     for i in range(0, len(ids), 50):
         chunk = ids[i:i + 50]
         d = jget(f"{API}/people?personIds={','.join(map(str, chunk))}&season={season}"
-                 f"&hydrate=stats(group=[hitting],type=[career,season],season={season})")
+                 f"&hydrate=stats(group=[hitting,pitching],type=[career,season],season={season})")
         for pp in d.get('people', []):
             rec = {'fullName': pp.get('fullName', '?'),
                    'position': (pp.get('primaryPosition') or {}).get('abbreviation', '')}
+            # legal-name cipher layer (First Middle Last) — only when it differs
+            if pp.get('fullFMLName') and pp['fullFMLName'] != rec['fullName']:
+                rec['fullFMLName'] = pp['fullFMLName']
             for st in pp.get('stats') or []:
                 tn = st.get('type', {}).get('displayName')
+                gp = (st.get('group') or {}).get('displayName')
                 if tn in ('career', 'season'):
                     s = (st.get('splits') or [{}])[0].get('stat')
                     if s:
-                        rec[tn] = s
+                        # pitching lines keyed separately so batter scan stays untouched
+                        rec[tn + 'Pitching' if gp == 'pitching' else tn] = s
             people[str(pp['id'])] = rec
 
     slate = {'date': ds, 'fetched_at': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -144,6 +154,9 @@ def resolve_slate(ds):
 
 # ---------- theme ----------
 def load_theme(ds, cli_theme):
+    """CLI extras parsed here; the theme FILE is handed to the scanner whole so
+    entity_threads ride along (specs/entity-threads.md — the JSON is the single
+    source of truth, no flattening to a hot-set csv)."""
     nums = []
     if cli_theme:
         try:
@@ -153,24 +166,26 @@ def load_theme(ds, cli_theme):
     tf = os.path.join(THEMES, f"board-theme-{ds}.json")
     if os.path.exists(tf):
         try:
-            file_nums = json.load(open(tf, encoding='utf-8')).get('numbers', [])
+            tj = json.load(open(tf, encoding='utf-8'))
         except (ValueError, OSError) as e:
             die(f"bad theme file {os.path.relpath(tf, REPO)}: {e}")
-        nums += [int(x) for x in file_nums]
-        print(f"loaded {len(file_nums)} theme numbers from {os.path.relpath(tf, REPO)}")
-    seen, out = set(), []
-    for n in nums:
-        if n not in seen:
-            seen.add(n)
-            out.append(n)
-    return out
+        print(f"theme file {os.path.relpath(tf, REPO)}: "
+              f"{len(tj.get('numbers', []))} numbers, "
+              f"{len(tj.get('entity_threads', []))} entity threads")
+    else:
+        tf = None
+    return nums, tf
 
 
 # ---------- board ----------
-def run_scanner(slate_path, theme_nums):
+def run_scanner(slate_path, theme_nums, theme_file=None, no_json=False):
     cmd = [sys.executable, SCANNER, slate_path]
     if theme_nums:
         cmd += ['--theme', ','.join(map(str, theme_nums))]
+    if theme_file:
+        cmd += ['--theme-file', theme_file]
+    if no_json:
+        cmd += ['--no-json']
     env = dict(os.environ, PYTHONIOENCODING='utf-8')
     res = subprocess.run(cmd, capture_output=True, encoding='utf-8', env=env)
     if res.returncode != 0:
@@ -221,33 +236,40 @@ def main():
                 print(f"WARNING: trio-scanner failed (exit {t.returncode}) — continuing without {os.path.relpath(trio_slate, REPO)}",
                       file=sys.stderr)
 
-    theme = load_theme(ds, a.theme)
-    if a.retheme and not theme:
-        die(f"--retheme with no theme numbers (no --theme and no data/themes/board-theme-{ds}.json)")
+    cli_nums, theme_file = load_theme(ds, a.theme)
+    themed = bool(cli_nums or theme_file)
+    if a.retheme and not themed:
+        die(f"--retheme with no theme (no --theme and no data/themes/board-theme-{ds}.json)")
 
     base_path   = os.path.join(BOARDS, f"{ds}.txt")
     themed_path = os.path.join(BOARDS, f"{ds}-themed.txt")
     written = []
 
-    if theme:
-        board = run_scanner(slate, theme)
+    rungs_path = os.path.join(BOARDS, f"{ds}-rungs.json")
+    if themed:
+        board = run_scanner(slate, cli_nums, theme_file)  # themed run owns the rungs JSON
         write_board(themed_path, board)
         written.append(themed_path)
-        # keep an untheme'd base alongside; never overwrite an existing one
+        # keep an untheme'd base alongside; never overwrite an existing one —
+        # and never let it clobber the themed Tier-3 sheet (--no-json)
         if not a.retheme and not os.path.exists(base_path):
-            write_board(base_path, run_scanner(slate, []))
+            write_board(base_path, run_scanner(slate, [], None, no_json=True))
             written.append(base_path)
     else:
         board = run_scanner(slate, [])
         write_board(base_path, board)
         written.append(base_path)
+    if os.path.exists(rungs_path):
+        written.append(rungs_path)
 
     if a.commit:
         rels = [os.path.relpath(p, REPO).replace(os.sep, '/') for p in written]
-        if not a.retheme:
+        # slate ALWAYS ships with the board (8/6 miss: retheme commits left the
+        # slate local-only and chat had no raw copy to fetch)
+        if os.path.exists(slate):
             rels.insert(0, os.path.relpath(slate, REPO).replace(os.sep, '/'))
-            if os.path.exists(trio_slate):
-                rels.insert(1, os.path.relpath(trio_slate, REPO).replace(os.sep, '/'))
+        if not a.retheme and os.path.exists(trio_slate):
+            rels.insert(1, os.path.relpath(trio_slate, REPO).replace(os.sep, '/'))
         for cmd in (['add'] + rels, ['commit', '-m', f"board: {ds}"], ['push']):
             r = git(cmd)
             if r.returncode != 0:

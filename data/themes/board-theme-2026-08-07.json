@@ -1,0 +1,50 @@
+{
+  "date": "2026-08-07",
+  "numbers": [],
+  "notes": "SEEDED overnight 8/6 — paste Zach's 8/7 post numbers here in the morning, then npm run retheme. Entity threads pre-loaded: Truman spans recomputed (+1 day: 223->224, 90->91), Hiroshima + 509th carried to Nagasaki 8/9, Goldwater dropped.",
+  "entity_threads": [
+    {
+      "label": "Hiroshima 81st",
+      "values": [81, 86, 100, 143, 39, 60, 35, 37, 80, 124, 212, 218, 32],
+      "provenance": {
+        "81": "81st anniversary",
+        "86": "Robert Oppenheimer RR; 8/6 date stamp",
+        "100": "Hiroshima Ord; Thursday RevOrd",
+        "39": "Little Boy Red; Pope Leo",
+        "60": "Atomic Bomb RR; top date num",
+        "35/37/80": "Enola Gay = Triple (O/R/RR twins)",
+        "124": "Oppenheimer Ord",
+        "212": "J Robert Oppenheimer Ord",
+        "218": "Destroyer of Worlds RevOrd; day-of-year",
+        "32": "Bomb Ord"
+      },
+      "hook": "date-anniversary",
+      "expiry": "2026-08-09",
+      "carryover_note": "Fat Man 55/19/35 + 509/97 reload for Nagasaki 8/9"
+    },
+    {
+      "label": "Truman-Masonic",
+      "values": [24, 87, 91, 224, 42, 48, 96, 144, 39],
+      "provenance": {
+        "24": "Truman Red; date num family",
+        "224": "days after Truman death (8/7 recompute of 223)",
+        "42/48/96/144": "Freemason O/RR-family; Jesuit Order",
+        "87": "Truman Ord",
+        "91": "days after Truman bday (8/7 recompute of 90)"
+      },
+      "hook": "span + confirmed landings (Neto 223, Bleday 223, Elly 42 on 8/6)",
+      "expiry": "2026-08-07",
+      "carryover_note": "span values recompute daily — re-derive before the board if this file is reused"
+    },
+    {
+      "label": "509th Composite Group",
+      "values": [509, 97],
+      "provenance": {
+        "509": "bomb delivery unit",
+        "97": "509 = 97th prime; Athletics Ord"
+      },
+      "hook": "unit designation",
+      "expiry": "2026-08-09"
+    }
+  ]
+}
