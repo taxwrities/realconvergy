@@ -723,52 +723,92 @@ body {
 /* ---------------- Splits tab (career game logs + splits) ----------------
    Raw-stats layer: no gematria colour language here, so it stays on the
    neutral ink ramp with the accent reserved for the one number that matters
-   (days-since). Mobile-first — every table scrolls inside its own box. */
+   (days-since, gold). Mobile-first — every table scrolls inside its own box.
+   Redesign pass 2026-08-08 (design-taste, preserve mode 3/3/7): frozen first
+   column on wide tables, right-aligned numeric headers, hover/press states,
+   identity-card player head, skeleton loading, focus-visible rings. Class
+   names unchanged; theme + accent language untouched. */
 .sp-search { display: flex; gap: 8px; align-items: center; }
 .sp-search input[type='text'] {
   background: var(--well-2); border: 1px solid var(--sf-line); border-radius: 10px;
-  color: var(--ink); padding: 10px 12px; font-family: inherit; font-size: 13px;
+  color: var(--ink); padding: 11px 13px; font-family: inherit; font-size: 14px;
   width: 100%; min-width: 0;
+  transition: border-color .15s ease;
 }
+.sp-search input[type='text']::placeholder { color: var(--ink-3); }
 .sp-search input[type='text']:focus { border-color: var(--cvg-acc); outline: none; }
 .sp-search .btn {
   background: var(--well-2); border: 1px solid var(--sf-line); color: var(--ink-2);
-  border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 600;
+  border-radius: 10px; padding: 11px 13px; font-size: 12.5px; font-weight: 600;
   cursor: pointer; font-family: inherit; white-space: nowrap;
 }
+.sp-search .btn:active { transform: scale(.97); }
 
 .sp-typeahead {
   margin-top: 8px; display: flex; flex-direction: column;
-  max-height: 268px; overflow-y: auto; overscroll-behavior: contain;
+  max-height: 300px; overflow-y: auto; overscroll-behavior: contain;
   border: 1px solid var(--sf-line); border-radius: 10px; background: var(--well-2);
 }
 .sp-hit {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
   background: none; border: none; border-bottom: 1px solid var(--sf-2);
-  padding: 9px 11px; cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+  padding: 11px 12px; cursor: pointer; text-align: left; font-family: inherit; width: 100%;
 }
 .sp-hit:last-child { border-bottom: none; }
+.sp-hit:hover { background: color-mix(in srgb, var(--well) 60%, transparent); }
 .sp-hit:active { background: var(--well); }
-.sp-hit-nm { color: var(--ink); font-size: 13px; font-weight: 600; }
+.sp-hit-nm { color: var(--ink); font-size: 13.5px; font-weight: 600; }
 .sp-hit-meta { color: var(--ink-3); font-size: 10.5px; font-family: var(--cvg-mono); white-space: nowrap; }
 
-.sp-head { display: flex; flex-direction: column; gap: 4px; }
-.sp-head-nm { font-size: 17px; font-weight: 800; letter-spacing: .2px; }
-.sp-head-meta { display: flex; gap: 8px; align-items: baseline; color: var(--ink-2); font-size: 12px; }
-.sp-head-meta span + span::before { content: '·'; margin-right: 8px; color: var(--ink-3); }
-.sp-head-span { color: var(--ink-3); font-size: 11px; }
+/* identity card: name block left, career-games stat right */
+.sp-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.sp-head-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sp-head-nm {
+  font-size: 21px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sp-head-meta { color: var(--ink-2); font-size: 12px; font-family: var(--cvg-mono); }
+.sp-head-span { color: var(--ink-3); font-size: 11px; font-family: var(--cvg-mono); }
+.sp-head-g { text-align: right; flex: 0 0 auto; }
+.sp-head-g-n {
+  font-size: 26px; font-weight: 800; line-height: 1; font-family: var(--cvg-mono);
+  letter-spacing: -.5px;
+}
+.sp-head-g-l {
+  font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 800; margin-top: 3px;
+}
 
 .sp-scroll { overflow-x: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .sp-list { max-height: 420px; overflow-y: auto; }
 .sp-table { min-width: 100%; white-space: nowrap; }
-.sp-table th { position: sticky; top: 0; background: var(--sf-1); z-index: 1; }
+.sp-table th {
+  position: sticky; top: 0; background: var(--sf-1); z-index: 2;
+  box-shadow: 0 1px 0 var(--sf-2);
+}
 .sp-table td { text-align: right; }
-.sp-table td.w, .sp-table th:first-child { text-align: left; }
+/* numeric headers align with their digits; only the row-label column is left */
+.sp-table th { text-align: right; }
+.sp-table td.w, .sp-table th:first-child, .sp-table td:first-child { text-align: left; }
+/* frozen key column — 12-column tables scroll under the row label, so the
+   label (or date) stays readable mid-scroll. Solid bg + hairline edge. */
+.sp-table th:first-child, .sp-table td:first-child {
+  position: sticky; left: 0; background: var(--sf-1);
+  box-shadow: 1px 0 0 var(--sf-2);
+}
+.sp-table th:first-child { z-index: 3; box-shadow: 1px 0 0 var(--sf-2), 0 1px 0 var(--sf-2); }
+.sp-table tbody tr:hover td { background: color-mix(in srgb, var(--well) 55%, transparent); }
+.sp-table tbody tr:hover td:first-child { background: color-mix(in srgb, var(--well) 55%, var(--sf-1)); }
 .sp-table .sp-avg { color: var(--ink-2); }
 .sp-table tr.sp-today td {
   background: color-mix(in srgb, var(--cvg-acc) 13%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--cvg-acc) 45%, transparent),
               inset 0 -1px 0 color-mix(in srgb, var(--cvg-acc) 45%, transparent);
+}
+.sp-table tr.sp-today td:first-child {
+  background: color-mix(in srgb, var(--cvg-acc) 13%, var(--sf-1));
 }
 .sp-table tr.sp-today td.w { color: var(--cvg-acc); font-weight: 800; }
 .sp-today-tag { color: var(--cvg-acc); letter-spacing: .6px; }
@@ -777,34 +817,70 @@ body {
 .sp-query-row { display: flex; gap: 8px; align-items: stretch; }
 .sp-select, .sp-thr {
   background: var(--well-2); border: 1px solid var(--sf-line); border-radius: 10px;
-  color: var(--ink); padding: 10px 11px; font-family: var(--cvg-mono); font-size: 13px;
+  color: var(--ink); padding: 11px 12px; font-family: var(--cvg-mono); font-size: 13.5px;
   min-width: 0;
+  transition: border-color .15s ease;
 }
 .sp-select { flex: 1 1 auto; }
 .sp-thr { flex: 0 1 96px; width: 96px; }
 .sp-select:focus, .sp-thr:focus { border-color: var(--cvg-acc); outline: none; }
 .sp-query-row .btn {
   background: var(--cvg-acc); border: 1px solid var(--cvg-acc); color: var(--cvg-acc-ink);
-  border-radius: 10px; padding: 10px 16px; font-size: 12.5px; font-weight: 700;
+  border-radius: 10px; padding: 11px 18px; font-size: 13px; font-weight: 700;
   cursor: pointer; font-family: inherit; white-space: nowrap;
 }
+.sp-query-row .btn:active { transform: translateY(1px) scale(.98); }
 
 .sp-last-line { font-size: 13px; color: var(--ink); }
 .sp-last-val { color: var(--ink-2); }
 /* the payoff number — biggest thing on the page, tap to copy just the digits */
 .sp-days {
-  display: flex; align-items: baseline; gap: 9px; margin: 10px 0 2px;
+  display: flex; align-items: baseline; gap: 10px; margin: 12px 0 2px;
   background: none; border: none; padding: 0; cursor: pointer;
   font-family: var(--cvg-mono); text-align: left;
   -webkit-user-select: none; user-select: none; touch-action: manipulation;
 }
 .sp-days-n {
-  font-size: 44px; font-weight: 800; line-height: 1; color: var(--cvg-gold);
-  letter-spacing: -1px;
+  font-size: 52px; font-weight: 800; line-height: 1; color: var(--cvg-gold);
+  letter-spacing: -1.5px;
 }
 .sp-days-l {
   font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
   color: var(--ink-3); font-weight: 800;
 }
+.sp-days:active { transform: scale(.985); }
 .sp-days:active .sp-days-n { opacity: .65; }
-.sp-count { color: var(--ink-2); font-size: 11.5px; margin-top: 6px; }
+.sp-count { color: var(--ink-2); font-size: 11.5px; margin-top: 8px; }
+
+/* keyboard focus rings on the tab's interactive controls */
+.sp-hit:focus-visible, .sp-days:focus-visible, .sp-search .btn:focus-visible,
+.sp-query-row .btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cvg-acc) 70%, transparent);
+  outline-offset: 2px; border-radius: 10px;
+}
+
+/* skeleton loading — mirrors head card + view rail + table shape */
+.sp-skel .sk {
+  background: var(--well-2); border-radius: 8px;
+  animation: sp-skel-pulse 1.2s ease-in-out infinite;
+}
+.sp-skel .sk-nm { height: 22px; width: 46%; margin-bottom: 9px; }
+.sp-skel .sk-meta { height: 12px; width: 30%; }
+.sp-skel .sk-rail { display: flex; gap: 7px; padding: 2px 2px 8px; overflow: hidden; }
+.sp-skel .sk-chip { height: 32px; width: 76px; border-radius: 999px; flex: 0 0 auto; }
+.sp-skel .sk-row { height: 15px; margin-bottom: 11px; }
+.sp-skel .sk-row:nth-child(1) { width: 92%; }
+.sp-skel .sk-row:nth-child(2) { width: 84%; }
+.sp-skel .sk-row:nth-child(3) { width: 88%; }
+.sp-skel .sk-row:nth-child(4) { width: 79%; margin-bottom: 2px; }
+@keyframes sp-skel-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* content entrance — one gentle fade-up when a player's data lands */
+.sp-in { animation: sp-in .24s cubic-bezier(.16, 1, .3, 1); }
+@keyframes sp-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-skel .sk { animation: none; opacity: .7; }
+  .sp-in { animation: none; }
+  .sp-search .btn:active, .sp-query-row .btn:active, .sp-days:active { transform: none; }
+}

@@ -54,7 +54,7 @@ export default function SplitsTab({active}){
   useEffect(()=>{
     if(!active||index)return;
     setErr('');
-    loadIndex().then(setIndex).catch(e=>setErr('Could not load the splits index — '+e.message));
+    loadIndex().then(setIndex).catch(e=>setErr('Could not load the splits index: '+e.message));
   },[active,index]);
 
   const names=useMemo(()=>index?Object.keys(index).sort((a,b)=>a.localeCompare(b)):[],[index]);
@@ -70,13 +70,13 @@ export default function SplitsTab({active}){
     setSel(name);setQ('');setPlayer(null);setErr('');setRan(null);setBusy('Loading '+name+'…');
     loadPlayer(meta.id)
       .then(p=>{setPlayer(p);setBusy('')})
-      .catch(e=>{setBusy('');setErr('Could not load '+name+' — '+e.message)});
+      .catch(e=>{setBusy('');setErr('Could not load '+name+': '+e.message)});
   };
 
   return(
     <div>
       <div className="panel">
-        <h3>Career splits — {index?`${names.length} players`:'loading index…'}</h3>
+        <h3>Career splits · {index?`${names.length} players`:'loading index…'}</h3>
         <div className="sp-search">
           <input type="text" value={q} placeholder="Search player…"
             onChange={e=>setQ(e.target.value)}
@@ -88,21 +88,21 @@ export default function SplitsTab({active}){
             {matches.map(n=>(
               <button key={n} className="sp-hit" onClick={()=>pick(n)}>
                 <span className="sp-hit-nm">{n}</span>
-                <span className="sp-hit-meta">{index[n].team} · {index[n].pos} · {index[n].games} G</span>
+                <span className="sp-hit-meta">{index[n].team} {index[n].pos} · {index[n].games} G</span>
               </button>
             ))}
           </div>
         )}
         {err&&<div className="err-banner" style={{marginTop:8}}>{err}</div>}
-        {busy&&<div className="muted" style={{marginTop:8,fontSize:12.5}}>{busy}</div>}
         {!sel&&!busy&&!err&&<div className="muted" style={{marginTop:8,fontSize:12.5}}>
-          Career game logs 2003–present. Splits by weekday, month, opponent, home/away
+          Career game logs 2003-present. Splits by weekday, month, opponent, home/away
           and season type, plus a threshold query with days-since spans.
         </div>}
       </div>
 
+      {busy&&!player&&<SplitsSkeleton/>}
       {player&&(
-        <>
+        <div className="sp-in" key={player.athlete_id}>
           <PlayerHead p={player}/>
           <div className="rail">
             {VIEWS.map(v=>(
@@ -119,21 +119,44 @@ export default function SplitsTab({active}){
                ran={ran} setRan={setRan}/>
             :<SplitTable player={player} kind={VIEWS.find(v=>v.id===view).kind}
                todayName={dn?.dayName} incPost={incPost}/>}
-        </>
+        </div>
       )}
     </div>
   );
 }
 
+/* identity card (redesign 2026-08-08): name block left, career-games stat
+   right — the games count is the head's one number, so it reads as a stat,
+   not a metadata afterthought. */
 function PlayerHead({p}){
   return(
     <div className="panel sp-head">
-      <div className="sp-head-nm">{p.name}</div>
-      <div className="sp-head-meta">
-        <span>{p.team}</span><span>{p.pos}</span>
-        <span className="mono">{p.games} career games</span>
+      <div className="sp-head-main">
+        <div className="sp-head-nm">{p.name}</div>
+        <div className="sp-head-meta">{p.team} {p.pos}</div>
+        <div className="sp-head-span">{p.first_game} → {p.last_game}</div>
       </div>
-      <div className="sp-head-span mono">{p.first_game} → {p.last_game}</div>
+      <div className="sp-head-g">
+        <div className="sp-head-g-n">{p.games}</div>
+        <div className="sp-head-g-l">career games</div>
+      </div>
+    </div>
+  );
+}
+
+/* skeleton mirroring the loaded layout (head card → view rail → table) so the
+   player switch doesn't flash a bare text line */
+function SplitsSkeleton(){
+  return(
+    <div className="sp-skel" aria-hidden="true">
+      <div className="panel"><div className="sk sk-nm"/><div className="sk sk-meta"/></div>
+      <div className="sk-rail">
+        {Array.from({length:6},(_,i)=><div key={i} className="sk sk-chip"/>)}
+      </div>
+      <div className="panel">
+        <div className="sk sk-row"/><div className="sk sk-row"/>
+        <div className="sk sk-row"/><div className="sk sk-row"/>
+      </div>
     </div>
   );
 }
@@ -147,7 +170,7 @@ function SplitTable({player,kind,todayName,incPost}){
   const splits=useMemo(()=>computeSplits(player,incPost),[player,incPost]);
   const rows=bucketRows(splits,kind);
   if(!rows.length)return <div className="panel muted">No {kind} splits for this player.</div>;
-  const avg=(n,g)=>g>0?(n/g).toFixed(1):'—';
+  const avg=(n,g)=>g>0?(n/g).toFixed(1):'-';
   return(
     <div className="panel">
       <h3>{kind==='homeaway'?'Home / Away':kind==='seasontype'?'Regular / Postseason':kind}
@@ -169,10 +192,10 @@ function SplitTable({player,kind,todayName,incPost}){
               return(
                 <tr key={r.key} className={isToday?'sp-today':undefined}>
                   <td className="w">{ROW_LABEL[r.key]||r.key}</td>
-                  <td>{r.g??'—'}</td>
-                  <td>{r.pts??'—'}</td>
+                  <td>{r.g??'-'}</td>
+                  <td>{r.pts??'-'}</td>
                   <td className="sp-avg">{avg(r.pts,r.g)}</td>
-                  {TABLE_STATS.filter(s=>s!=='pts').map(s=><td key={s}>{r[s]??'—'}</td>)}
+                  {TABLE_STATS.filter(s=>s!=='pts').map(s=><td key={s}>{r[s]??'-'}</td>)}
                 </tr>
               );
             })}
@@ -180,7 +203,7 @@ function SplitTable({player,kind,todayName,incPost}){
         </table>
       </div>
       {kind==='opponent'&&<div className="muted sp-foot">
-        Opponent codes come straight from the source logs — Connecticut shows under
+        Opponent codes come straight from the source logs. Connecticut shows under
         both CON and CONN. All-Star and exhibition games are excluded everywhere.
       </div>}
     </div>
@@ -218,7 +241,7 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
   return(
     <>
       <div className="panel">
-        <h3>Query — last N+ of a stat
+        <h3>Query: last N+ of a stat
           <span className="sp-today-tag"> · {incPost?'incl. playoffs':'regular season'}</span></h3>
         <div className="sp-query-row">
           <select value={stat} onChange={e=>setStat(e.target.value)} className="sp-select">
@@ -254,7 +277,7 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
           </div>
 
           <div className="panel">
-            <h3>All qualifying games — newest first</h3>
+            <h3>All qualifying games · newest first</h3>
             <div className="sp-scroll sp-list">
               <table className="vtable sp-table">
                 <thead><tr><th>DATE</th><th>OPP</th><th>{STAT_LABEL[ran.stat]}</th><th>DAYS AGO</th></tr></thead>
