@@ -77,8 +77,11 @@ export default function SplitsTab({active}){
       .catch(e=>{setBusy('');setErr('Could not load '+name+': '+e.message)});
   };
 
+  /* `tab-terminal` scopes the Splits-only visual language (overhaul direction
+     B): hairline grid instead of cards, mono-forward, sharp corners. Scoped so
+     the shared primitives the other four tabs use stay on direction A. */
   return(
-    <div>
+    <div className="tab-terminal">
       <div className="panel">
         <h3>Career splits · {index?`${names.length} players`:'loading index…'}</h3>
         <div className="sp-search">

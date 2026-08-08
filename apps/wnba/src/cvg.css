@@ -314,8 +314,10 @@ body {
   background: radial-gradient(closest-side, color-mix(in srgb, var(--cvg-acc) 14%, transparent), transparent);
   pointer-events: none;
 }
-.bcard .who { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; position: relative; }
-.bcard .who .nm { font-size: 18px; font-weight: 800; letter-spacing: -0.2px; }
+/* hero header (overhaul A): the name is the card's anchor, so it carries the
+   hero step and tight optical tracking instead of sitting a hair above body */
+.bcard .who { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; position: relative; flex-wrap: wrap; }
+.bcard .who .nm { font-size: var(--t-hero); font-weight: 800; letter-spacing: -0.7px; line-height: 1.05; }
 .bcard .who .jer {
   font-family: var(--cvg-mono); color: var(--ink-hi); font-size: 11px; font-weight: 700;
   border: 1px solid var(--sf-line); background: rgba(148, 158, 180, 0.1);
@@ -337,10 +339,20 @@ body {
 .ent-stats .ent.green .el { color: var(--cvg-green); }
 .ent-stats .ent .sl { color: var(--ink-4); }
 .ent-stats .ent-key { font-size: 9.5px; margin-left: auto; align-self: center; }
-/* running game total (top-of-card): gold-keyed today line under Entering */
+/* running game total (top-of-card): gold-keyed today line under Entering.
+   Overhaul A — rendered as stat TILES rather than an inline run, so the live
+   line reads at a glance instead of as another sentence of mono text. */
 .ent-stats.today-line { margin-top: -5px; margin-bottom: 9px;
   background: color-mix(in srgb, var(--cvg-gold) 7%, var(--well));
-  border: 1px solid color-mix(in srgb, var(--cvg-gold) 28%, transparent); }
+  border: 1px solid color-mix(in srgb, var(--cvg-gold) 28%, transparent);
+  display: flex; flex-wrap: wrap; gap: var(--sp-1); padding: var(--sp-2); }
+.ent-stats.today-line .ent {
+  flex-direction: column; align-items: flex-start; gap: 2px;
+  min-width: 46px; padding: 5px 8px; border-radius: var(--r-inset);
+  background: rgba(10, 12, 17, .35);
+}
+.ent-stats.today-line .ent .rungnum { font-size: var(--t-lead); font-weight: 800; letter-spacing: -.5px; }
+.ent-stats.today-line .ent-key { align-self: center; }
 .ent-stats.today-line .ent .el { color: var(--cvg-gold); }
 .today-refresh { background: none; border: none; color: var(--cvg-gold); cursor: pointer;
   font-size: 12px; padding: 0 1px; margin-left: 1px; opacity: .75; line-height: 1; }
@@ -348,9 +360,21 @@ body {
 .rung-rows { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; position: relative; }
 .rung {
   display: flex; align-items: baseline; gap: 7px; font-family: var(--cvg-mono); font-size: 12.5px;
-  padding: 4px 7px; border-radius: 7px;
+  padding: 5px 8px; border-radius: var(--r-inset);
 }
 .rung.hit { background: var(--well-gold); }
+/* heat hierarchy (overhaul A): every hit rendered identically meant a 1-source
+   rung looked exactly like a 4-source convergence. Depth now scales with the
+   evidence count — hot rungs get a gold edge and brighter ink, cool ones
+   recede. Set by .h1/.h2/.h3 from the row's hit count. */
+.rung.hit.h1 { background: var(--well); }
+.rung.hit.h2 { background: var(--well-gold); }
+.rung.hit.h3 {
+  background: color-mix(in srgb, var(--cvg-gold) 13%, var(--well));
+  box-shadow: inset 2px 0 0 var(--cvg-gold);
+}
+.rung.hit.h3 .st { color: var(--ink-hi); }
+.rung.hit.h3 .why { color: var(--ink-hi); }
 /* rung matches the active context chip — the "why did this player match" row */
 .rung.hit.flt { background: color-mix(in srgb, var(--cvg-blue) 10%, var(--well-2)); box-shadow: 0 0 0 1px var(--cvg-blue) inset; }
 /* pattern-tile selection — gold twin of .flt (blue = context chip) */
@@ -840,6 +864,14 @@ body {
 .sp-head-span { color: var(--ink-3); font-size: 11px; font-family: var(--cvg-mono); }
 .sp-head-stats { display: flex; gap: 18px; flex: 0 0 auto; }
 .sp-head-g { text-align: right; flex: 0 0 auto; }
+/* phone: two stat blocks left the name ~150px, which truncates most real
+   names ("Cecilia Zandalasini" needs 209px). Stack instead of ellipsis. */
+@media (max-width: 460px) {
+  .sp-head { flex-wrap: wrap; gap: var(--sp-3); }
+  .sp-head-main { flex: 1 1 100%; }
+  .sp-head-stats { flex: 1 1 100%; gap: var(--sp-5); }
+  .sp-head-g { text-align: left; }
+}
 .sp-head-g-n {
   font-size: 26px; font-weight: 800; line-height: 1; font-family: var(--cvg-mono);
   letter-spacing: -.5px;
@@ -952,3 +984,89 @@ body {
   .sp-in { animation: none; }
   .sp-search .btn:active, .sp-query-row .btn:active, .sp-days:active { transform: none; }
 }
+
+/* ================================================================
+   TERMINAL — Splits tab only (overhaul direction B, 2026-08-08)
+   Scoped to .tab-terminal so the other four tabs keep direction A.
+   Rules: no card containers, no shadows, no gradients, no rounding.
+   1px rules do the grouping, mono does the typesetting, and the accent
+   is reserved for live state (selection, today) — never decoration.
+================================================================ */
+.tab-terminal { font-family: var(--cvg-mono); }
+
+/* cards dissolve into ruled blocks */
+.tab-terminal .panel {
+  background: none; border: none; border-top: 1px solid var(--edge);
+  border-radius: 0; box-shadow: none;
+  padding: var(--sp-3) 0 var(--sp-4); margin-bottom: 0;
+}
+.tab-terminal > .panel:first-child { border-top: none; padding-top: var(--sp-1); }
+.tab-terminal .panel h3 {
+  font-family: var(--cvg-mono); font-size: var(--t-micro); letter-spacing: 1.8px;
+  color: var(--ink-4); font-weight: 700; margin-bottom: var(--sp-2);
+}
+.tab-terminal .sp-today-tag { color: var(--cvg-acc); }
+
+/* inputs: flat wells, square, mono */
+.tab-terminal input[type='text'], .tab-terminal .sp-select, .tab-terminal .sp-thr {
+  background: var(--well-2); border: 1px solid var(--edge); border-radius: 0;
+  font-family: var(--cvg-mono); font-size: var(--t-small);
+}
+.tab-terminal .sp-search .btn, .tab-terminal .sp-query-row .btn {
+  border-radius: 0; font-family: var(--cvg-mono); font-size: var(--t-small);
+  letter-spacing: .6px; text-transform: uppercase; font-weight: 700;
+}
+.tab-terminal .sp-query-row .btn { box-shadow: none; }
+.tab-terminal .sp-typeahead { border-radius: 0; border-color: var(--edge); }
+.tab-terminal .sp-hit { border-bottom-color: var(--edge); }
+.tab-terminal .sp-hit-nm { font-family: var(--cvg-mono); font-size: var(--t-small); font-weight: 600; }
+
+/* view rail: square tabs sharing one baseline rule, not floating pills */
+.tab-terminal .rail { gap: 0; padding: 0; border-bottom: 1px solid var(--edge); }
+.tab-terminal .rail .chip {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  border-radius: 0; box-shadow: none; padding: 8px 12px;
+  font-family: var(--cvg-mono); font-size: var(--t-fine); letter-spacing: .8px;
+  text-transform: uppercase; font-weight: 700; color: var(--ink-3);
+}
+.tab-terminal .rail .chip.on {
+  background: none; color: var(--cvg-acc); border-bottom-color: var(--cvg-acc);
+  box-shadow: none;
+}
+.tab-terminal .rail .chip.gold.on { color: var(--cvg-gold); border-bottom-color: var(--cvg-gold); }
+
+/* player head: a ruled readout, stats right */
+.tab-terminal .sp-head { padding-bottom: var(--sp-3); }
+.tab-terminal .sp-head-nm {
+  font-family: var(--cvg-mono); font-size: var(--t-title); font-weight: 700;
+  letter-spacing: -.4px; text-transform: uppercase;
+}
+.tab-terminal .sp-head-g-n { font-size: 22px; font-weight: 700; }
+.tab-terminal .sp-head-g-l { font-size: var(--t-micro); letter-spacing: 1.2px; color: var(--ink-4); }
+
+/* tables: the grid IS the design */
+.tab-terminal .sp-scroll { border: 1px solid var(--edge); }
+.tab-terminal .sp-table th {
+  background: var(--sf-4); color: var(--ink-4); font-size: var(--t-micro);
+  letter-spacing: 1px; font-weight: 700; padding: 6px 8px;
+  border-bottom: 1px solid var(--edge);
+}
+.tab-terminal .sp-table td {
+  border-top: none; border-bottom: 1px solid rgba(38, 45, 58, .5); padding: 6px 8px;
+  font-size: var(--t-small);
+}
+.tab-terminal .sp-table tbody tr:last-child td { border-bottom: none; }
+.tab-terminal .sp-table th:first-child, .tab-terminal .sp-table td:first-child {
+  box-shadow: 1px 0 0 var(--edge);
+}
+.tab-terminal .sp-table td.w { font-family: var(--cvg-mono); font-weight: 600; }
+
+/* the payoff number stays the one loud thing */
+.tab-terminal .sp-days-n { font-size: var(--t-mega); letter-spacing: -1.5px; }
+.tab-terminal .sp-days-l { font-size: var(--t-micro); letter-spacing: 1.6px; }
+.tab-terminal .sp-last-line { font-family: var(--cvg-mono); font-size: var(--t-small); }
+.tab-terminal .badge { border-radius: 0; }
+
+/* skeleton follows the same square language */
+.tab-terminal .sp-skel .sk { border-radius: 0; }
+.tab-terminal .sp-skel .sk-chip { border-radius: 0; height: 30px; }

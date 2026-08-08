@@ -62,6 +62,26 @@
   --card-grad: linear-gradient(180deg, #1a202b 0%, #151a23 100%);
   --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 20px rgba(0, 0, 0, 0.35);
 
+  /* ---- type scale (overhaul 2026-08-08, direction A) ----------------------
+     One ratio for the whole app instead of ~30 ad-hoc px values. Steps are
+     ~1.22x, floored at 9px (the badge/eyebrow tier) and topped at 34px (the
+     one number that matters). Use these, not raw px, in new rules. */
+  --t-micro: 9px;      /* badges, tags */
+  --t-eyebrow: 10px;   /* uppercase section labels */
+  --t-fine: 11px;      /* dim metadata */
+  --t-small: 12px;     /* secondary body, table cells */
+  --t-body: 13.5px;    /* default body */
+  --t-lead: 16px;      /* emphasised value inline */
+  --t-title: 19px;     /* card / panel titles */
+  --t-hero: 25px;      /* player name, stat headline */
+  --t-mega: 34px;      /* the payoff number */
+
+  /* ---- vertical rhythm: one beat, used everywhere ---- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+
+  /* ---- radius scale: pill for interactive, 12 for cards, 8 for insets ---- */
+  --r-inset: 8px; --r-card: 12px; --r-pill: 999px;
+
   /* motion */
   --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-short: 220ms;

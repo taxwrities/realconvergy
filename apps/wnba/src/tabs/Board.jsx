@@ -543,8 +543,11 @@ function PlayerCard({row}){
           const color=colorFor(r.n,r.hits.map(h=>h.cat));
           const greenlight=r.stat==='GP';
           const flt=contextFilter!=null&&r.n===contextFilter;
+          /* heat tier by evidence count — a 4-source convergence should not
+             look identical to a single loose landing (overhaul A) */
+          const heat=r.hits.length>=3?'h3':r.hits.length===2?'h2':'h1';
           return(
-            <div key={i} className={`rung hit${flt?' flt':''}`}>
+            <div key={i} className={`rung hit ${heat}${flt?' flt':''}`}>
               <span className="st">{r.scope} {r.stat}{greenlight?' ✓':''}</span>
               <RungNum stat={r.stat} value={r.cur} style={color?{color}:{color:'var(--cvg-green)'}}>{r.n}</RungNum>
               <span className="muted">({r.cur}{r.off>1?` +${r.off}`:' +1'})</span>
