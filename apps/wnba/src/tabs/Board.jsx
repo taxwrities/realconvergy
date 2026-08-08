@@ -30,19 +30,46 @@ function useHScroll(){
 
 /* Board tab — LAYOUT-SPEC §4 zones, WNBA rules (WNBA-REDESIGN-SPEC §2/§3). */
 export default function BoardTab(){
-  const {loading}=useApp();
+  const {loading,slate}=useApp();
+  /* first load has no slate to render behind the banner (the WNBA fetch pulls
+     career logs and runs 1-2 min), so show the board's shape instead of a bare
+     status line. A refresh over an existing slate keeps the real board up. */
+  const coldLoad=!!loading&&!slate;
   return(
     <div>
       <DateStrip/>
       <RefineBox/>
       {loading&&<div className="warn-banner">{loading}</div>}
       <FreshnessBanner/>
-      <NoGames/>
-      <GameRail/>
-      <ContextRail/>
-      <TeamToggle/>
-      <PlayerZone/>
-      <MatchupPanel/>
+      {coldLoad?<BoardSkeleton/>:(
+        <>
+          <NoGames/>
+          <GameRail/>
+          <ContextRail/>
+          <TeamToggle/>
+          <PlayerZone/>
+          <MatchupPanel/>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* skeleton mirroring the board's zones: game rail → team toggle → player
+   list + card. Shape only, so the layout doesn't jump when data lands. */
+function BoardSkeleton(){
+  return(
+    <div className="bd-skel" aria-hidden="true">
+      <div className="sk-rail">
+        {Array.from({length:4},(_,i)=><div key={i} className="sk sk-game"/>)}
+      </div>
+      <div className="sk sk-seg"/>
+      <div className="sk-zone">
+        <div>
+          {Array.from({length:6},(_,i)=><div key={i} className="sk sk-row"/>)}
+        </div>
+        <div className="sk sk-card"/>
+      </div>
     </div>
   );
 }
@@ -67,20 +94,27 @@ function DateStrip(){
     <div className="date-strip">
       <div className="panel">
         <h3>Season</h3>
-        <div className="big">{seasonDay?<>Day <FactNum value={seasonDay}>{seasonDay}</FactNum></>:'—'}</div>
+        <div className="big">{seasonDay?<>Day <FactNum value={seasonDay}>{seasonDay}</FactNum></>:'-'}</div>
         {game&&<div className="muted mono" style={{fontSize:11,marginTop:4}}>
-          season game #{game.gameNumber.away!=null?<FactNum value={game.gameNumber.away}>{game.gameNumber.away}</FactNum>:'–'}
-          /{game.gameNumber.home!=null?<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum>:'–'}
+          season game #{game.gameNumber.away!=null?<FactNum value={game.gameNumber.away}>{game.gameNumber.away}</FactNum>:'-'}
+          /{game.gameNumber.home!=null?<FactNum value={game.gameNumber.home}>{game.gameNumber.home}</FactNum>:'-'}
           {h2h&&<> · H2H #<FactNum value={h2h.gameNo}>{h2h.gameNo}</FactNum></>}</div>}
       </div>
       <div className="panel">
-        <h3>{date} · {dn.dayName} · {dn.ruler} · DOY {dn.doy} · {dn.left} left</h3>
+        {/* h3 carries the date identity; ruler / DOY / days-left drop to a
+            readable meta line rather than crowding the 10px header */}
+        <h3>{date} · {dn.dayName}</h3>
         <div className="dn-vals">
           {dateFigures(date).map((f,i)=>(
             <b key={i} className={f.top?'v-gold':'v-cyan'} title={f.calc}>
               <FactNum value={f.n}>{f.n}</FactNum>
             </b>
           ))}
+        </div>
+        <div className="dn-meta">
+          <span>{dn.ruler}</span>
+          <span>DOY <b><FactNum value={dn.doy}>{dn.doy}</FactNum></b></span>
+          <span><b><FactNum value={dn.left}>{dn.left}</FactNum></b> left</span>
         </div>
       </div>
     </div>
@@ -99,7 +133,10 @@ function RefineBox(){
   return(
     <div className="refine">
       <div className="refine-box">
-        <div className="refine-head" onClick={()=>setSettings({...settings,refineCollapsed:!collapsed})}>
+        {/* keyboard-reachable: it was a bare click-div with no role or key handler */}
+        <div className="refine-head" role="button" tabIndex={0} aria-expanded={!collapsed}
+          onClick={()=>setSettings({...settings,refineCollapsed:!collapsed})}
+          onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSettings({...settings,refineCollapsed:!collapsed})}}}>
           <b>Refine</b>
           <span className="sum">· {settings.lanesOn.join(' + ')} lanes{settings.includePlayoffs?' · REG+PST':''}</span>
           <span className="car">{collapsed?'▾':'▴'}</span>
@@ -254,7 +291,7 @@ function FounderBadge({fh}){
         <div className="founder-pop-scrim" onClick={e=>{e.stopPropagation();setPop(null);}}>
           <div className="founder-pop" style={pop} onClick={e=>e.stopPropagation()}>
             <div className="fp-head">
-              <span className="fp-title">FOUNDER — {fh.record.name}</span>
+              <span className="fp-title">FOUNDER · {fh.record.name}</span>
               <button className="fp-close" onClick={()=>setPop(null)} aria-label="close">✕</button>
             </div>
             <div className="fp-sub">founded {fh.record.founded}
@@ -293,7 +330,7 @@ function PlayerZone(){
   };
   const filtered=rows.filter(inFilter);
   const sel=rows.find(r=>r.id===batterId)||filtered[0]||rows[0];
-  if(!rows.length)return <div className="panel muted">No roster yet — it loads with the slate.</div>;
+  if(!rows.length)return <div className="panel muted">No roster yet. It loads with the slate.</div>;
   return(
     <div className="batter-zone">
       <div className="batter-list">
@@ -326,7 +363,8 @@ function PlayerZone(){
         })}
       </div>
       <div className="card-col">
-        {sel&&<PlayerCard row={sel}/>}
+        {/* keyed so switching players re-runs the entrance fade */}
+        {sel&&<div className="bd-in" key={sel.id}><PlayerCard row={sel}/></div>}
         <PatternHitsPanel/>
       </div>
     </div>
@@ -353,7 +391,7 @@ function PatternHitsPanel(){
   const jump=h=>{setSide(h.side);setBatterId(h.id)};
   return(
     <div className="panel pattern-hits">
-      <h3>Pattern hits — this game</h3>
+      <h3>Pattern hits · this game</h3>
       <div className="rail" style={{flexWrap:'wrap',overflowX:'visible'}}>
         {groups.map(({pt,hits})=>(
           <button key={pt.id}
@@ -455,7 +493,7 @@ function PlayerCard({row}){
           {fb.season&&<> · sFG+1 → <b className="mono">{fb.season.n}</b>
             {fb.season.arena&&<b className="v-gold"> ◉ ARENA</b>}
             {fb.season.hits.length>0&&!fb.season.arena&&<span className="muted"> ({fb.season.hits.length})</span>}</>}
-          {!fb.career?.hits.length&&!fb.season?.hits.length&&<span className="muted"> — no landings</span>}
+          {!fb.career?.hits.length&&!fb.season?.hits.length&&<span className="muted"> · no landings</span>}
         </div>
       )}
       {ev.kat&&(
@@ -515,7 +553,7 @@ function PlayerCard({row}){
             </div>
           );
         })}
-        {!hitRungs.length&&<div className="muted" style={{fontSize:12}}>no loaded rungs — light/skip</div>}
+        {!hitRungs.length&&<div className="muted" style={{fontSize:12}}>no loaded rungs · light/skip</div>}
       </div>
       <div className="mono" style={{fontSize:11.5}}>
         <span className="muted">thread </span>
@@ -649,9 +687,9 @@ function NumPopup({n,anchor,onClose}){
         <div className="rung-pop-body">
           <div className="fact-row">
             {prime
-              ?<><b className="v-gold mono">prime</b><span className="muted">— the {ord(pIdx)} prime</span></>
+              ?<><b className="v-gold mono">prime</b><span className="muted">the {ord(pIdx)} prime</span></>
               :cIdx>0
-                ?<><b className="mono">composite</b><span className="muted">— the {ord(cIdx)} composite</span></>
+                ?<><b className="mono">composite</b><span className="muted">the {ord(cIdx)} composite</span></>
                 :<span className="muted">neither prime nor composite</span>}
           </div>
           {n<=250&&nthPrime(n)>0&&(
@@ -704,13 +742,13 @@ const TOTALS_COLS=[
 const fmtPct=x=>x>=1?'1.000':'.'+Math.round(x*1000).toString().padStart(3,'0');
 
 function TotalsCell({col,line}){
-  if(col.na)return <td className="muted">–</td>;
+  if(col.na)return <td className="muted">-</td>;
   if(col.pct){
     const [a,b]=col.pct,av=line[a],bv=line[b];
-    return bv?<td className="mono pct">{fmtPct((av||0)/bv)}</td>:<td className="muted">–</td>;
+    return bv?<td className="mono pct">{fmtPct((av||0)/bv)}</td>:<td className="muted">-</td>;
   }
   const v=line[col.k];
-  if(v==null)return <td className="muted">–</td>;
+  if(v==null)return <td className="muted">-</td>;
   return <td className="mono num"><RungNum stat={col.stat} value={v}>{v}</RungNum></td>;
 }
 
@@ -760,17 +798,17 @@ function MatchupPanel(){
   const player=bat?.ev?.p;
   return(
     <div className="panel" style={{marginTop:10}}>
-      <h3>Totals — {player?player.fullName:'selected player'}</h3>
+      <h3>Totals · {player?player.fullName:'selected player'}</h3>
       {/* Basketball-Reference-style totals — tap any number for its rung ladder */}
       <TotalsTable players={[player]}/>
       {vsHand&&(
         <div className="mono muted" style={{fontSize:11.5,marginTop:8}}>
-          selected player venue split: {vsHand.FG??'–'} FG · {vsHand.PTS??'–'} PTS · {vsHand.REB??'–'} REB
+          venue split: {vsHand.FG??'-'} FG / {vsHand.PTS??'-'} PTS / {vsHand.REB??'-'} REB
         </div>
       )}
       {vsOpp&&(
         <div className="mono muted" style={{fontSize:11.5}}>
-          vs {oppTag} this season: {vsOpp.FG??'–'} FG · {vsOpp.PTS??'–'} PTS in {vsOpp.gamesPlayed} game{vsOpp.gamesPlayed>1?'s':''}
+          vs {oppTag} this season: {vsOpp.FG??'-'} FG / {vsOpp.PTS??'-'} PTS in {vsOpp.gamesPlayed} game{vsOpp.gamesPlayed>1?'s':''}
         </div>
       )}
       {stair.length>0&&(

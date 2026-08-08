@@ -212,17 +212,20 @@ body {
 /* batter zone */
 .batter-zone { display: grid; grid-template-columns: 118px 1fr; gap: 8px; align-items: start; }
 .card-col { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-.batter-list { position: sticky; top: 52px; max-height: calc(100vh - 230px); overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+/* dvh so the iOS address-bar collapse doesn't resize the list mid-scroll */
+.batter-list { position: sticky; top: 52px; max-height: calc(100vh - 230px); max-height: calc(100dvh - 230px); overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
 .batter-row {
   background: var(--card-grad); border: 1px solid var(--sf-line); border-radius: 11px;
   border-left: 3px solid transparent;
   padding: 7px 8px; cursor: pointer; text-align: left; color: var(--ink); font-family: inherit;
+  transition: border-color .14s ease, background-color .14s ease;
 }
 .batter-row.on {
   border-color: color-mix(in srgb, var(--cvg-acc) 55%, transparent);
   border-left-color: var(--cvg-acc);
   background: linear-gradient(180deg, color-mix(in srgb, var(--cvg-acc) 13%, var(--sf-2)), var(--sf-1));
 }
+.batter-row:active { transform: scale(.985); }
 .batter-row.skip { opacity: .4; }
 .batter-row .nm { font-size: 12px; font-weight: 700; display: block; line-height: 1.25; }
 .batter-row .ord {
@@ -417,14 +420,19 @@ body {
 .totals-wrap::-webkit-scrollbar { height: 6px; }
 .totals-wrap::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 3px; }
 .totals { border-collapse: collapse; font-family: var(--cvg-mono); font-size: 11.5px; white-space: nowrap; }
+/* explicit z ladder: header row (2) over frozen player column (1), corner
+   cell (3) over both — without it the sticky player column paints over the
+   header during a horizontal scroll. */
 .totals th {
-  position: sticky; top: 0; background: var(--sf-4); color: var(--ink-2); font-weight: 600;
+  position: sticky; top: 0; z-index: 2; background: var(--sf-4); color: var(--ink-2); font-weight: 600;
   text-align: right; padding: 5px 7px; border-bottom: 1px solid var(--edge); font-size: 10px; letter-spacing: .3px;
 }
 .totals td { text-align: right; padding: 4px 7px; border-bottom: 1px solid var(--sf-2); color: var(--ink); }
 .totals td.num .rungnum { border-bottom-color: var(--edge-hi); }
-.totals .pl { text-align: left; position: sticky; left: 0; background: var(--sf-3); z-index: 1; font-family: inherit; font-weight: 600; padding-right: 12px; }
-.totals th.pl { background: var(--sf-4); }
+.totals .pl { text-align: left; position: sticky; left: 0; background: var(--sf-3); z-index: 1; font-family: inherit; font-weight: 600; padding-right: 12px; box-shadow: 1px 0 0 var(--sf-2); }
+.totals th.pl { background: var(--sf-4); z-index: 3; }
+.totals tbody tr:hover td { background: color-mix(in srgb, var(--well) 55%, transparent); }
+.totals tbody tr:hover .pl { background: color-mix(in srgb, var(--well) 55%, var(--sf-3)); }
 .totals tr:last-child td { border-bottom: none; }
 /* SPLITS rows — dimmer label, faint zebra so they read as sub-rows of totals */
 .totals tr.split .pl { color: var(--ink-hi); font-weight: 500; font-size: 10.5px; }
@@ -718,6 +726,65 @@ body {
   .totals-wrap { scrollbar-width: thin; scrollbar-color: var(--edge-hi) transparent; }
   .totals-wrap::-webkit-scrollbar-thumb { background: var(--edge-hi); border-radius: 4px; }
   .totals-wrap::-webkit-scrollbar-track { background: transparent; }
+  /* board hover affordances — mouse only, so touch never gets stuck-on hover */
+  .batter-row:not(.on):hover { border-color: var(--edge-hi); background: var(--sf-2); }
+  .gchip:not(.on):hover { border-color: var(--edge-hi); }
+  .seg button:not(.on):hover { color: var(--ink); }
+  .refine-head:hover .car { color: var(--ink); }
+}
+
+/* ---------------- Board tab polish (design pass 2026-08-08) ----------------
+   Preserve-mode pass over the existing zones: no colour language, layout or
+   class names changed. Adds the interaction states the board never had
+   (hover / press / keyboard focus on the row + rail + segment controls), a
+   slate-load skeleton for the 1-2 minute WNBA fetch, and a readable meta tier
+   in the date panel. Density stays cockpit-tight. */
+
+/* keyboard focus — the board is tap-first, but every control is reachable */
+.batter-row:focus-visible, .gchip:focus-visible, .seg button:focus-visible,
+.warn-banner.fresh:focus-visible, .refine-head:focus-visible,
+.pat-who:focus-visible, .pat-more:focus-visible, .today-refresh:focus-visible,
+.rungnum:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cvg-acc) 70%, transparent);
+  outline-offset: 2px; border-radius: 8px;
+}
+.refine-head:focus-visible { outline-offset: 4px; }
+
+.gchip { transition: border-color .14s ease, transform .1s ease; }
+.gchip:active { transform: scale(.97); }
+.seg button { transition: color .14s ease; }
+
+/* date panel meta tier — ruler / DOY / days-left were crammed into the 10px
+   uppercase h3 with the date; they read at body size on their own line now. */
+.dn-meta {
+  display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 6px;
+  font-family: var(--cvg-mono); font-size: 11px; color: var(--ink-2);
+}
+.dn-meta b { color: var(--ink-hi); font-weight: 700; }
+
+/* slate-load skeleton — the WNBA slate pulls career logs and can take a
+   minute or two, so the wait gets the board's shape instead of a bare line. */
+.bd-skel .sk {
+  background: var(--well-2); border-radius: 9px;
+  animation: bd-skel-pulse 1.2s ease-in-out infinite;
+}
+.bd-skel .sk-rail { display: flex; gap: 7px; padding: 2px 2px 8px; overflow: hidden; }
+.bd-skel .sk-game { height: 54px; width: 96px; border-radius: 13px; flex: 0 0 auto; }
+.bd-skel .sk-seg { height: 38px; border-radius: 13px; margin-bottom: 8px; }
+.bd-skel .sk-zone { display: grid; grid-template-columns: 118px 1fr; gap: 8px; align-items: start; }
+.bd-skel .sk-row { height: 44px; border-radius: 11px; margin-bottom: 5px; }
+.bd-skel .sk-card { height: 260px; border-radius: 14px; }
+@media (max-width: 400px) { .bd-skel .sk-zone { grid-template-columns: 104px 1fr; } }
+@keyframes bd-skel-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* player card entrance — one gentle fade when the selection changes */
+.bd-in { animation: bd-in .2s cubic-bezier(.16, 1, .3, 1); }
+@keyframes bd-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bd-skel .sk { animation: none; opacity: .7; }
+  .bd-in { animation: none; }
+  .batter-row:active, .gchip:active { transform: none; }
 }
 
 /* ---------------- Splits tab (career game logs + splits) ----------------
