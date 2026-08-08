@@ -14,7 +14,7 @@
 import BIRTHDAYS from '../../../../data/birthdays.json';
 import {twoPM} from '../engine/rungs.js';
 import {isJesuit} from '../engine/jesuit.js';
-import {CUP_FINAL_DATES,excludedIdsFrom,keepStatRow} from './gamefilter.js';
+import {CUP_FINAL_DATES,classifyIdsFrom,keepStatRow} from './gamefilter.js';
 
 const PROXY='/.netlify/functions/bdl';
 
@@ -117,30 +117,34 @@ function addRow(a,s){
 }
 
 /* bbref Regular-Season parity (verified vs Gabby Williams / Azura Stevens
-   career rows 2026-07): totals must exclude playoffs, Cup finals, All-Star.
-   The playoff/cup game-id set is one games query per season, cached. */
+   career rows 2026-07): DEFAULT totals exclude playoffs, Cup finals, All-Star.
+   Playoffs are additionally summed into their own *Post lines (Tony
+   2026-08-08) so the store's include-playoffs toggle can merge them in;
+   Cup finals + All-Star are exhibition and NEVER count either way.
+   The per-season game classification is one games query, cached. */
 const REAL_TEAM_IDS=new Set(WNBA_TEAMS.map(t=>t.bdl));
-const _exclCache=new Map(); // season → Promise<Set<gameId>>
-function excludedGameIds(season){
-  if(!_exclCache.has(season))
-    _exclCache.set(season,
+const _classCache=new Map(); // season → Promise<{post:Set, cup:Set}>
+function classifiedGameIds(season){
+  if(!_classCache.has(season))
+    _classCache.set(season,
       pull('games',{'seasons[]':[season],per_page:100})
-        .then(rows=>excludedIdsFrom(rows,etDate))
-        .catch(()=>{_exclCache.delete(season);return new Set()}));
-  return _exclCache.get(season);
+        .then(rows=>classifyIdsFrom(rows,etDate))
+        .catch(()=>{_classCache.delete(season);return{post:new Set(),cup:new Set()}}));
+  return _classCache.get(season);
 }
-async function excludedForSeasons(seasons){
-  const sets=await Promise.all(seasons.map(excludedGameIds));
-  const merged=new Set();
-  sets.forEach(s=>s.forEach(id=>merged.add(id)));
-  return merged;
+async function classifiedForSeasons(seasons){
+  const sets=await Promise.all(seasons.map(classifiedGameIds));
+  const post=new Set(),cup=new Set();
+  sets.forEach(s=>{s.post.forEach(id=>post.add(id));s.cup.forEach(id=>cup.add(id))});
+  return{post,cup};
 }
 
-/* pull game logs for ids; returns {acc, rows, excluded}. acc counts only
-   bbref-regular rows; rows stay unfiltered (starters/minutes want real
-   last-game data), excluded is exported so callers can filter splits. */
+/* pull game logs for ids; returns {acc, accPost, rows, post, cup}. acc counts
+   bbref-regular rows, accPost counts playoff rows (Cup finals / All-Star are
+   in neither); rows stay unfiltered (starters/minutes want real last-game
+   data), post/cup are exported so callers can classify splits the same way. */
 async function logTotals(ids,season){
-  const acc={};ids.forEach(id=>acc[id]=zero());
+  const acc={},accPost={};ids.forEach(id=>{acc[id]=zero();accPost[id]=zero()});
   let rows=[];
   const params={per_page:100};if(season!=null)params['seasons[]']=[season];
   for(let i=0;i<ids.length;i+=25){
@@ -148,17 +152,17 @@ async function logTotals(ids,season){
     rows=rows.concat(chunk);
   }
   const seasons=[...new Set(rows.map(s=>s.game&&s.game.season).filter(x=>x!=null))];
-  const excluded=await excludedForSeasons(seasons);
+  const {post,cup}=await classifiedForSeasons(seasons);
   const seen=new Set(); // player|game dedupe — cursor pagination can repeat rows
   rows.forEach(s=>{
-    if(!keepStatRow(s,REAL_TEAM_IDS,excluded))return;
+    if(!keepStatRow(s,REAL_TEAM_IDS,cup))return; // exhibition always out
     const pid=s.player&&s.player.id;
     const key=pid+'|'+(s.game&&s.game.id);
     if(seen.has(key))return;
     seen.add(key);
-    const a=acc[pid];if(a)addRow(a,s);
+    const a=(post.has(s.game.id)?accPost:acc)[pid];if(a)addRow(a,s);
   });
-  return{acc,rows,excluded};
+  return{acc,accPost,rows,post,cup};
 }
 
 export async function fetchSeasonInfo(season){
@@ -229,39 +233,47 @@ export async function fetchSlate(dstr,onProgress){
     }
   }
 
-  // season + career totals from game logs
+  // season + career totals from game logs (REG default + playoff-only *Post
+  // lines the store's include-playoffs toggle merges in)
   const ids=Object.keys(people).map(Number);
   prog(`Season totals (${ids.length})…`);
-  const {acc:sea,rows:seaRows,excluded:seaExcl}=await logTotals(ids,season);
+  const {acc:sea,accPost:seaPost,rows:seaRows,post:seaPostIds,cup:seaCup}=await logTotals(ids,season);
   prog('Career totals…');
-  let car={};try{car=(await logTotals(ids,null)).acc}catch(e){}
+  let car={},carPost={};
+  try{const r=await logTotals(ids,null);car=r.acc;carPost=r.accPost}catch(e){}
   ids.forEach(id=>{
     const p=people[id];
     p.season=sea[id]&&sea[id].gp?statLine(sea[id]):null;
+    p.seasonPost=seaPost[id]&&seaPost[id].gp?statLine(seaPost[id]):null;
     p.career=car[id]&&car[id].gp?statLine(car[id]):null;
+    p.careerPost=carPost[id]&&carPost[id].gp?statLine(carPost[id]):null;
   });
 
-  // home/away venue splits + starters, from season rows + each game's home id
+  // home/away venue splits + starters, from season rows + each game's home id.
+  // REG rows land in season-{loc}; playoff rows in season-{loc}Post (merged
+  // by the store when the toggle is on). Exhibition rows in neither.
   const homeIdByGame={};
   games.forEach(g=>Object.values(g.seasonGames).flat().forEach(x=>{homeIdByGame[x.id]=x.home_team&&x.home_team.id}));
   const splitAcc={};
   seaRows.forEach(s=>{
-    if(!keepStatRow(s,REAL_TEAM_IDS,seaExcl))return; // bbref-regular splits only
+    if(!keepStatRow(s,REAL_TEAM_IDS,seaCup))return; // exhibition always out
     const pid=s.player&&s.player.id,gid=s.game&&s.game.id;
     if(!pid||!people[pid]||homeIdByGame[gid]===undefined)return;
     const loc=homeIdByGame[gid]===people[pid].teamId?'home':'away';
-    const k=pid+'|'+loc;
+    const k=pid+'|'+loc+(seaPostIds.has(gid)?'Post':'');
     addRow(splitAcc[k]=splitAcc[k]||zero(),s);
   });
   Object.entries(splitAcc).forEach(([k,a])=>{
-    const[pid,loc]=k.split('|');
-    if(a.gp)people[pid].split['season-'+loc]=statLine(a);
+    const[pid,locKey]=k.split('|');
+    if(a.gp)people[pid].split['season-'+locKey]=statLine(a);
   });
   // Last 5 / Last 10 form — summed from this season's game logs (already in
-  // memory, no extra fetch). bbref-regular rows only, deduped, most-recent N.
+  // memory, no extra fetch). Deduped, most-recent N. Two windows: bbref-regular
+  // (last5/last10, the default) and playoff-inclusive (last5All/last10All —
+  // a DIFFERENT most-recent-N window, not an additive merge, so both ship).
   const lnByPlayer={},lnSeen=new Set();
   seaRows.forEach(s=>{
-    if(!keepStatRow(s,REAL_TEAM_IDS,seaExcl))return;
+    if(!keepStatRow(s,REAL_TEAM_IDS,seaCup))return;
     const pid=s.player&&s.player.id,g=s.game;
     if(pid==null||!people[pid]||!g||g.id==null)return;
     const key=pid+'|'+g.id;if(lnSeen.has(key))return;lnSeen.add(key);
@@ -269,11 +281,13 @@ export async function fetchSlate(dstr,onProgress){
   });
   Object.entries(lnByPlayer).forEach(([pid,list])=>{
     list.sort((a,b)=>new Date(b.game.date)-new Date(a.game.date)); // most-recent first
+    const reg=list.filter(s=>!seaPostIds.has(s.game.id));
     [5,10].forEach(N=>{
-      const games=list.slice(0,N);
-      if(!games.length)return;
-      const a=zero();games.forEach(s=>addRow(a,s));
-      if(a.gp)people[pid].split['last'+N]=statLine(a);
+      const sum=rows=>{if(!rows.length)return null;const a=zero();rows.forEach(s=>addRow(a,s));return a.gp?statLine(a):null};
+      const r=sum(reg.slice(0,N));
+      if(r)people[pid].split['last'+N]=r;
+      const all=sum(list.slice(0,N));
+      if(all)people[pid].split['last'+N+'All']=all;
     });
   });
   // starters: top-5 minutes in the team's last completed game (inferred; manual overrides win in-store)
@@ -329,28 +343,80 @@ export async function fetchSlate(dstr,onProgress){
 export async function deepFetchGame(game,people,dstr,onProgress){
   const prog=onProgress||(()=>{});
   prog('Deep: season meetings…');
-  const meet=(game.seasonGames[game.home.id]||[]).filter(x=>{
+  const meetings=(game.seasonGames[game.home.id]||[]).filter(x=>{
     const a=x.home_team&&x.home_team.id,b=x.visitor_team&&x.visitor_team.id;
     return(a===game.home.id&&b===game.away.id)||(a===game.away.id&&b===game.home.id);
   }).filter(x=>String(x.status).toLowerCase()==='post')
-    /* bbref-regular meetings only (no playoffs / Cup final) */
-    .filter(x=>!x.postseason&&!CUP_FINAL_DATES.has(etDate(x.date)))
-    .map(x=>x.id);
+    /* Cup finals are exhibition — never counted. Playoff meetings sum into a
+       separate vsOppPost line (include-playoffs toggle merges it in). */
+    .filter(x=>!CUP_FINAL_DATES.has(etDate(x.date)));
+  const postIds=new Set(meetings.filter(x=>x.postseason).map(x=>x.id));
+  const meet=meetings.map(x=>x.id);
   if(meet.length){
     const rows=await pull('player_stats',{'game_ids[]':meet,per_page:100});
-    const acc={};
-    rows.forEach(s=>{const pid=s.player&&s.player.id;if(!pid||!people[pid])return;addRow(acc[pid]=acc[pid]||zero(),s)});
-    Object.entries(acc).forEach(([pid,a])=>{
-      if(!a.gp)return;
+    const acc={},accPost={};
+    rows.forEach(s=>{
+      const pid=s.player&&s.player.id;if(!pid||!people[pid])return;
+      const tgt=postIds.has(s.game&&s.game.id)?accPost:acc;
+      addRow(tgt[pid]=tgt[pid]||zero(),s);
+    });
+    const ids=new Set([...Object.keys(acc),...Object.keys(accPost)]);
+    ids.forEach(pid=>{
+      const a=acc[pid],ap=accPost[pid];
+      if(!(a&&a.gp)&&!(ap&&ap.gp))return;
       const p=people[pid];
       const isHome=game.homeIds.includes(+pid);
       p.deep=p.deep||{};
-      p.deep.vsOpp=statLine(a);
+      p.deep.vsOpp=a&&a.gp?statLine(a):null;
+      p.deep.vsOppPost=ap&&ap.gp?statLine(ap):null;
       p.deep.oppTag=(isHome?game.away:game.home).abbrev;
     });
   }
   game.deepDone=true;prog('');
   return meet.length;
+}
+
+/* ---------------- include-playoffs view (Tony 2026-08-08) ----------------
+   The slate always stores bbref-regular lines PLUS playoff-only *Post lines;
+   this derives the merged view the store swaps in when the toggle is on. All
+   statLine fields are additive counting sums, so a key-wise add is exact.
+   Slates cached before the *Post fields exist merge as regular-only (missing
+   post lines are just absent until the next slate refresh). */
+const addLines=(a,b)=>{
+  if(!b)return a;
+  if(!a)return b;
+  const out={...a};
+  Object.keys(b).forEach(k=>{if(typeof b[k]==='number')out[k]=(+a[k]||0)+b[k]});
+  return out;
+};
+export function withPlayoffs(slate){
+  if(!slate)return slate;
+  const people={};
+  Object.entries(slate.people).forEach(([id,p])=>{
+    const split={...p.split};
+    ['home','away'].forEach(loc=>{
+      const post=split['season-'+loc+'Post'];
+      if(post)split['season-'+loc]=addLines(split['season-'+loc],post);
+    });
+    /* last-N: the playoff-inclusive window is precomputed (different game
+       set, not an additive merge) */
+    if(split.last5All)split.last5=split.last5All;
+    if(split.last10All)split.last10=split.last10All;
+    const deep=p.deep?{...p.deep,vsOpp:addLines(p.deep.vsOpp,p.deep.vsOppPost)}:p.deep;
+    people[id]={...p,
+      season:addLines(p.season,p.seasonPost),
+      career:addLines(p.career,p.careerPost),
+      split,deep};
+  });
+  /* team staircases re-aggregate from the merged season lines */
+  const teamStats={};
+  (slate.games||[]).forEach(g=>['home','away'].forEach(side=>{
+    const agg={PTS:0,FG:0,REB:0,AST:0,'3PM':0,FT:0};
+    g[side+'Ids'].forEach(id=>{const s=people[id]&&people[id].season;if(!s)return;
+      agg.PTS+=s.PTS||0;agg.FG+=s.FG||0;agg.REB+=s.REB||0;agg.AST+=s.AST||0;agg['3PM']+=s['3PM']||0;agg.FT+=s.FT||0});
+    teamStats[g[side].id]=agg;
+  }));
+  return{...slate,people,teamStats};
 }
 
 /* ---------------- running game total (top-of-card, Tony 2026-07) ----------------

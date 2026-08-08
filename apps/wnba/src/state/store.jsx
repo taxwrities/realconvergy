@@ -17,7 +17,7 @@ import {teamFounderHits} from '../engine/founders.js';
 import {CORE_WORDS_WNBA,STATS,STAT_DEPTH,LANES,LANE_STAT,
   DEFAULT_LANES_ON,T_FAMILY,DEFAULT_COLOR_RULES,DEFAULT_SETTINGS} from '../data/defaults.js';
 import {load,save,loadDay,saveDay,exportConfig,importConfig,loadSlateCache,saveSlateCache} from '../data/storage.js';
-import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor,fetchGameTotals} from '../data/wnba.js';
+import {fetchSlate,fetchSeasonInfo,deepFetchGame,h2hFor,fetchGameTotals,withPlayoffs} from '../data/wnba.js';
 import {evalPattern,isDateDependent,SEED_PATTERNS} from '../engine/patterns.js';
 import {fetchScheduleRange,runForecast,gradeForecast,addDays} from '../engine/forecast.js';
 import {dateNumerology as dnFor} from '../engine/clocks.js';
@@ -114,7 +114,15 @@ export function AppStateProvider({children}){
   },[ciphers]);
 
   const dn=useMemo(()=>dateNumerology(date,ciphers),[date,ciphers]);
-  const game=useMemo(()=>slate?.games.find(g=>g.pk===gamePk)||null,[slate,gamePk]);
+  /* effective slate (Tony 2026-08-08): the raw slate always stores bbref-
+     regular lines + playoff-only *Post lines; every stat consumer below reads
+     THIS view, which merges playoffs in when settings.includePlayoffs is on.
+     The raw `slate` stays the fetch/cache/deep-mutation target — never merged,
+     so the cache can't be double-counted and toggling is instant + lossless. */
+  const slateEff=useMemo(
+    ()=>settings.includePlayoffs?withPlayoffs(slate):slate,
+    [slate,settings.includePlayoffs]);
+  const game=useMemo(()=>slateEff?.games.find(g=>g.pk===gamePk)||null,[slateEff,gamePk]);
   const h2h=useMemo(()=>game?h2hFor(game,date):null,[game,date]);
 
   /* running game total (top-of-card, Tony 2026-07): today's box line for the
@@ -241,7 +249,7 @@ export function AppStateProvider({children}){
     const nameVariants=t=>t?[...new Set([t.name,t.teamName,t.locationName].filter(Boolean))]:[];
     /* "SP" slot = opposing team's likely first-possession finisher (starting C) */
     const cId=g?(side==='home'?g.awaySP:g.homeSP):null;
-    const c=cId?slate?.people[cId]:null;
+    const c=cId?slateEff?.people[cId]:null;
     const ctxDate=dnUse===dn?date:dnUse._date;
     const bday=p.birthDate?clockFrom(p.birthDate,ctxDate):null;
     /* opposing starting center's birthday clock — the WNBA analog of the
@@ -255,7 +263,7 @@ export function AppStateProvider({children}){
       ciphers,templates,dn:dnUse,date:ctxDate,
       gameNumber:gameNumber??(g?g.gameNumber[side]:null),
       h2hGameNo:g&&h2h?h2h.gameNo:null,
-      teamStats:g?slate?.teamStats[side==='home'?g.home.id:g.away.id]:null,
+      teamStats:g?slateEff?.teamStats[side==='home'?g.home.id:g.away.id]:null,
       teamName,oppTeamName,teamNames:nameVariants(ownT),oppTeamNames:nameVariants(oppT),
       stadium:g?.venue||'',oppCenterClock,
       oppPitcherName:c?.fullName||'',oppPitcherVals:c?nameRun(c.fullName,ciphers):[],
@@ -270,7 +278,7 @@ export function AppStateProvider({children}){
           {n:bday.totalDays,label:`day ${bday.totalDays} alive`},{n:bday.weeks,label:`week ${bday.weeks}`},
         ].filter(x=>x.n>0):[]},
     };
-  },[ciphers,templates,slate,dn,date,registry,dayState,patternSources,h2h]);
+  },[ciphers,templates,slateEff,dn,date,registry,dayState,patternSources,h2h]);
 
   /* ---------- player evaluation ---------- */
   const evalBatter=useCallback(p=>{
@@ -360,14 +368,14 @@ export function AppStateProvider({children}){
 
   /* ---------- board: starters first (already ordered by the pipeline) ---------- */
   const board=useMemo(()=>{
-    if(!slate||!game)return{away:[],home:[]};
+    if(!slateEff||!game)return{away:[],home:[]};
     /* date-dependent patterns evaluate fine against today's dn — excluding
        them hid their hits from the Board cards (Tony 2026-07-20) */
     const daily=patterns.filter(pt=>pt.enabled);
     const out={};
     ['away','home'].forEach(s=>{
       out[s]=game[s+'Ids'].map((id,i)=>{
-        const p=slate.people[id];
+        const p=slateEff.people[id];
         if(!p)return null;
         const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g:game,dnUse:dn});
         const patternHits=daily.map(pt=>({pattern:pt,res:evalPattern(pt,ctx)}))
@@ -379,34 +387,34 @@ export function AppStateProvider({children}){
       }).filter(Boolean);
     });
     return out;
-  },[slate,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
+  },[slateEff,game,evalBatter,patterns,forecasts,date,dn,buildPatternCtx]);
 
   const previewPattern=useCallback((pattern,forceId)=>{
-    if(!slate||!game)return null;
+    if(!slateEff||!game)return null;
     const id=forceId??(batterId||board[side]?.[0]?.id);
-    const p=id?slate.people[id]:null;
+    const p=id?slateEff.people[id]:null;
     if(!p)return null;
     /* the picked preview batter (PATTERN-RECIPES §9) may live in another
        game on the slate — resolve their game/side, not just the open one */
     let g=game,s=game.homeIds.includes(id)?'home':game.awayIds.includes(id)?'away':null;
-    if(!s){g=slate.games.find(x=>x.homeIds.includes(id)||x.awayIds.includes(id))||game;
+    if(!s){g=slateEff.games.find(x=>x.homeIds.includes(id)||x.awayIds.includes(id))||game;
       s=g.homeIds.includes(id)?'home':'away';}
     const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
     return{who:p.fullName,res:evalPattern(pattern,ctx)};
-  },[slate,game,batterId,board,side,buildPatternCtx,dn]);
+  },[slateEff,game,batterId,board,side,buildPatternCtx,dn]);
 
   /* slate-wide pattern hits WITH identities (who/where), so the Patterns tab
      can name the hitters instead of a bare count (Tony 2026-07-20). Date-
      dependent patterns are included — they evaluate fine against today's dn;
      excluding them made their cards read '0 hits today' while hitting. */
   const patternHitsAll=useMemo(()=>{
-    if(!slate)return{hits:{},legs:{}};
+    if(!slateEff)return{hits:{},legs:{}};
     const hits={},legs={};
     const enabled=patterns.filter(pt=>pt.enabled);
-    if(enabled.length)slate.games.forEach(g=>{
+    if(enabled.length)slateEff.games.forEach(g=>{
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
-          const p=slate.people[id];
+          const p=slateEff.people[id];
           if(!p||(!p.career&&!p.season))return;
           const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
           enabled.forEach(pt=>{
@@ -423,7 +431,7 @@ export function AppStateProvider({children}){
       });
     });
     return{hits,legs};
-  },[slate,patterns,buildPatternCtx,dn]);
+  },[slateEff,patterns,buildPatternCtx,dn]);
   const patternCounts=useMemo(
     ()=>Object.fromEntries(Object.entries(patternHitsAll.hits).map(([k,v])=>[k,v.length])),
     [patternHitsAll]);
@@ -443,16 +451,16 @@ export function AppStateProvider({children}){
   /* ---------- forecast ---------- */
   const [forecastBusy,setForecastBusy]=useState('');
   const generateForecasts=useCallback(async()=>{
-    if(!slate?.games.length)return;
+    if(!slateEff?.games.length)return;
     setForecastBusy('Fetching schedule window…');
     try{
       const days=settings.forecastDays||10;
       const scheduleByTeam=await fetchScheduleRange(addDays(date,1),addDays(date,days));
       const roster=[];
-      slate.games.forEach(g=>{
+      slateEff.games.forEach(g=>{
         ['away','home'].forEach(s=>{
           g[s+'Ids'].forEach(id=>{
-            const p=slate.people[id];
+            const p=slateEff.people[id];
             if(p&&(p.career||p.season))roster.push({p,teamId:g[s].id,teamName:g[s].teamName,side:s,g});
           });
         });
@@ -474,7 +482,7 @@ export function AppStateProvider({children}){
       setForecasts(f=>[...f.filter(x=>x.date<=date),...cards]);
       setForecastBusy('');
     }catch(e){setForecastBusy('');setError('Forecast failed: '+e.message)}
-  },[slate,patterns,settings.forecastDays,date,ciphers,dayState,buildPatternCtx,patternSources]);
+  },[slateEff,patterns,settings.forecastDays,date,ciphers,dayState,buildPatternCtx,patternSources]);
 
   const grade=useCallback(async card=>{
     const g=await gradeForecast(card,date.slice(0,4));
@@ -490,13 +498,13 @@ export function AppStateProvider({children}){
   },[dayState,registry]);
 
   const exportDayLog=useCallback(()=>{
-    if(!slate)return;
+    if(!slateEff)return;
     const daily=patterns.filter(pt=>pt.enabled&&!isDateDependent(pt));
-    const gamesOut=slate.games.map(g=>({
+    const gamesOut=slateEff.games.map(g=>({
       pk:g.pk,label:`${g.away.teamName} @ ${g.home.teamName}`,status:g.status,
       frozen:g.status==='Preview',projected:g.projected,
       batters:['away','home'].flatMap(s=>g[s+'Ids'].map(id=>{
-        const p=slate.people[id];
+        const p=slateEff.people[id];
         if(!p||(!p.career&&!p.season))return null;
         const ev=evalBatter({...p,_side:s});
         const ctx=buildPatternCtx({p:{...p,_side:s},side:s,g,dnUse:dn});
@@ -528,7 +536,7 @@ export function AppStateProvider({children}){
       md.push('');
     });
     dl(`${date}.md`,md.join('\n'),'text/markdown');
-  },[slate,patterns,evalBatter,buildPatternCtx,dn,date,settings.lanesOn,dayState,registry,forecasts]);
+  },[slateEff,patterns,evalBatter,buildPatternCtx,dn,date,settings.lanesOn,dayState,registry,forecasts]);
 
   /* ---------- context rail: theme purple · thread/H2H blue · date gray ---------- */
   const contextChips=useMemo(()=>{
@@ -562,12 +570,12 @@ export function AppStateProvider({children}){
 
   /* ---------- matchup: opposing center + CROSS + team staircases ---------- */
   const matchup=useMemo(()=>{
-    if(!slate||!game||!batterId)return null;
+    if(!slateEff||!game||!batterId)return null;
     const bat=[...board.away,...board.home].find(r=>r.id===batterId);
     if(!bat)return null;
     const batSide=board.away.some(r=>r.id===batterId)?'away':'home';
     const cId=batSide==='away'?game.homeSP:game.awaySP;
-    const c=cId?slate.people[cId]:null;
+    const c=cId?slateEff.people[cId]:null;
     const cross=[];
     if(c){
       const cRun=nameRun(c.fullName,ciphers);
@@ -583,7 +591,7 @@ export function AppStateProvider({children}){
     }
     const stair=[];
     const teamId=batSide==='away'?game.away.id:game.home.id;
-    const ts=slate.teamStats[teamId];
+    const ts=slateEff.teamStats[teamId];
     if(ts){
       const batNext=new Set(bat.ev.rungs.filter(r=>r.off===1).map(r=>r.n));
       ['PTS','FG','REB','AST'].forEach(k=>{
@@ -603,7 +611,7 @@ export function AppStateProvider({children}){
     return{sp:c,spRun:c?nameRun(c.fullName,ciphers):[],spBday:cBday,cross,stair,bat,
       vsHand:bat.ev.p.split?.[batSide==='away'?'season-away':'season-home']||null,
       vsOpp:bat.ev.p.deep?.vsOpp||null,oppTag:bat.ev.p.deep?.oppTag||null};
-  },[slate,game,batterId,board,ciphers,loaded,date,h2h]);
+  },[slateEff,game,batterId,board,ciphers,loaded,date,h2h]);
 
   /* ---------- color rules ---------- */
   const colorFor=useCallback((n,cats=[])=>{
@@ -647,13 +655,13 @@ export function AppStateProvider({children}){
      detail reads the active game's loaded map, which universal search never
      consults), so evaluating off-board players here is correct. */
   const slateRoster=useMemo(()=>{
-    if(!slate?.games?.length)return[];
+    if(!slateEff?.games?.length)return[];
     const out=[];
-    slate.games.forEach(g=>{
+    slateEff.games.forEach(g=>{
       const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
-          const p=slate.people[id];
+          const p=slateEff.people[id];
           if(!p)return;
           const ev=evalBatter({...p,_side:s});
           if(ev)out.push({id,pk:g.pk,side:s,gameLabel,team:g[s].abbrev||g[s].teamName,ev});
@@ -661,7 +669,7 @@ export function AppStateProvider({children}){
       });
     });
     return out;
-  },[slate,evalBatter]);
+  },[slateEff,evalBatter]);
 
   /* ---------- universal search ---------- */
   const search=useCallback(q=>{
@@ -672,8 +680,8 @@ export function AppStateProvider({children}){
        branch), not just the active game. WNBA is college-heavy. Tony 2026-07-20. */
     if(/^jesuit$/i.test(q)){
       const seen=new Set(),players=[];
-      slate?.games.forEach(g=>['away','home'].forEach(s=>g[s+'Ids'].forEach(id=>{
-        const p=slate.people[id];
+      slateEff?.games.forEach(g=>['away','home'].forEach(s=>g[s+'Ids'].forEach(id=>{
+        const p=slateEff.people[id];
         if(!p||!p.jesuit||seen.has(id))return;
         seen.add(id);
         players.push({id,pk:g.pk,side:s,who:p.fullName,school:p.school,
@@ -708,7 +716,7 @@ export function AppStateProvider({children}){
         return roster.flatMap(r=>r.ev.run.filter(x=>x.n===n).map(x=>({who:r.ev.p.fullName,team:r.team,gameLabel:r.gameLabel,part:x.label,cipher:c,n})));
       }),
     };
-  },[slate,slateRoster,loaded,ciphers]);
+  },[slateEff,slateRoster,loaded,ciphers]);
 
   /* ---------- Phrase Variation Finder (Tony 2026-07-22) ----------
      the name×outcome×cipher sweep: for every player in every loaded game, every
@@ -720,7 +728,7 @@ export function AppStateProvider({children}){
      one row via the seen-key. Rows carry DN-spine / institutional badges. words
      are strings; parts/cipherKeys are key arrays. */
   const findPhrases=useCallback(({words,parts,cipherKeys,targets,tol=0,oppTeam=false})=>{
-    if(!slate?.games?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
+    if(!slateEff?.games?.length||!words?.length||!parts?.length||!cipherKeys?.length)return[];
     /* per-player target toggle (Tony 2026-07-23): a run needs at least one target
        source — the typed list OR the opponent-team ciphers. WNBA wires only the
        opponent-team variant (no "opposing pitcher" analogue). */
@@ -734,7 +742,7 @@ export function AppStateProvider({children}){
     const valsOf=s=>{let v=cache.get(s);if(!v){v=calcAll(s);cache.set(s,v)}return v};
     const seen=new Set();
     const out=[];
-    slate.games.forEach(g=>{
+    slateEff.games.forEach(g=>{
       const gameLabel=`${g.away.abbrev||g.away.teamName} @ ${g.home.abbrev||g.home.teamName}`;
       /* opponent-team gematria (Tony 2026-07-22): the OTHER side's own cipher
          grid (nickname / city / full name × the swept ciphers) rides with each
@@ -769,7 +777,7 @@ export function AppStateProvider({children}){
       });
       ['away','home'].forEach(s=>{
         g[s+'Ids'].forEach(id=>{
-          const p=slate.people[id];
+          const p=slateEff.people[id];
           if(!p)return;
           const nm=(p.fullName||'').trim();
           if(!nm)return;
@@ -815,7 +823,7 @@ export function AppStateProvider({children}){
       });
     });
     return out;
-  },[slate,date]);
+  },[slateEff,date]);
 
   const value={
     boot,profile,ciphers,setCiphers,vocab,setVocab,saveVocab,phrases,setPhrases,addPhrase,

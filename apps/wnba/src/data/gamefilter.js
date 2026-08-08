@@ -33,6 +33,19 @@ export function excludedIdsFrom(gameRows,etDate){
   return out;
 }
 
+/* games rows → {post, cup} id sets, SEPARATELY (Tony 2026-08-08: playoffs are
+   a real-games class the user can toggle INTO stat totals; Cup finals and
+   All-Star are exhibition and stay excluded unconditionally). excludedIdsFrom
+   above (= post ∪ cup) remains the bbref-regular default. */
+export function classifyIdsFrom(gameRows,etDate){
+  const post=new Set(),cup=new Set();
+  (gameRows||[]).forEach(g=>{
+    if(g.postseason)post.add(g.id);
+    else if(CUP_FINAL_DATES.has(etDate(g.date)))cup.add(g.id);
+  });
+  return{post,cup};
+}
+
 /* keep a player_stats row? realTeamIds = the 15 franchise bdl ids
    (drops All-Star rows), excluded = playoff/cup-final game ids. */
 export function keepStatRow(s,realTeamIds,excluded){

@@ -101,7 +101,7 @@ function RefineBox(){
       <div className="refine-box">
         <div className="refine-head" onClick={()=>setSettings({...settings,refineCollapsed:!collapsed})}>
           <b>Refine</b>
-          <span className="sum">· {settings.lanesOn.join(' + ')} lanes</span>
+          <span className="sum">· {settings.lanesOn.join(' + ')} lanes{settings.includePlayoffs?' · REG+PST':''}</span>
           <span className="car">{collapsed?'▾':'▴'}</span>
         </div>
         {!collapsed&&(
@@ -109,6 +109,15 @@ function RefineBox(){
             {LANES.map(L=>(
               <button key={L} className={`chip${on.has(L)?' on':''}`} onClick={()=>toggle(L)}>{L}</button>
             ))}
+            {/* include-playoffs toggle (Tony 2026-08-08) — global: flips EVERY
+               stat calculation (totals / rungs / splits / staircases / search)
+               between bbref-regular and regular+playoffs. Exhibition never
+               counts either way. */}
+            <button className={`chip gold${settings.includePlayoffs?' on':''}`}
+              title="Include playoff games in all stat calculations (All-Star / Cup finals stay excluded)"
+              onClick={()=>setSettings({...settings,includePlayoffs:!settings.includePlayoffs})}>
+              + Playoffs
+            </button>
           </div>
         )}
       </div>

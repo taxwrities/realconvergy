@@ -1,7 +1,7 @@
 import {useState,useEffect,useMemo,useRef} from 'react';
 import {useApp} from '../state/store.jsx';
 import {daysBetween} from '../engine/clocks.js';
-import {loadIndex,loadPlayer,bucketRows,qualifyingGames,
+import {loadIndex,loadPlayer,bucketRows,computeSplits,qualifyingGames,
   QUERY_STATS,TABLE_STATS} from '../data/splits.js';
 
 /* ================================================================
@@ -30,7 +30,12 @@ const STAT_LABEL={pts:'PTS',reb:'REB',ast:'AST',stl:'STL',blk:'BLK',
   '3pm':'3PM',fgm:'FGM',to:'TO',min:'MIN'};
 
 export default function SplitsTab({active}){
-  const {date,dn}=useApp();
+  const {date,dn,settings,setSettings}=useApp();
+  /* global include-playoffs toggle (Tony 2026-08-08) — the SAME setting the
+     Board's Refine chip flips; here it re-buckets every split table from the
+     shipped log and widens the Query sweep. Default off = bbref regular. */
+  const incPost=!!settings.includePlayoffs;
+  const togglePost=()=>setSettings({...settings,includePlayoffs:!incPost});
   const [index,setIndex]=useState(null);
   const [err,setErr]=useState('');
   const [q,setQ]=useState('');
@@ -104,13 +109,16 @@ export default function SplitsTab({active}){
               <button key={v.id} className={`chip${view===v.id?' on':''}`}
                 onClick={()=>setView(v.id)}>{v.label}</button>
             ))}
+            <button className={`chip gold${incPost?' on':''}`}
+              title="Include playoff games in the split tables and the Query sweep"
+              onClick={togglePost}>+ Playoffs</button>
           </div>
           {view==='query'
-            ?<QueryView player={player} today={date}
+            ?<QueryView player={player} today={date} incPost={incPost}
                stat={stat} setStat={setStat} thr={thr} setThr={setThr}
                ran={ran} setRan={setRan}/>
             :<SplitTable player={player} kind={VIEWS.find(v=>v.id===view).kind}
-               todayName={dn?.dayName}/>}
+               todayName={dn?.dayName} incPost={incPost}/>}
         </>
       )}
     </div>
@@ -133,16 +141,18 @@ function PlayerHead({p}){
 /* One splits bucket as a table. Sums are season-long totals; avg is sum/g.
    Only PTS carries an average column — the table is already 8 wide and the
    tab is mobile-first, so the rest stay totals (spec). */
-function SplitTable({player,kind,todayName}){
-  const rows=bucketRows(player.splits,kind);
+function SplitTable({player,kind,todayName,incPost}){
+  /* buckets recompute from the shipped log per the toggle (Tony 2026-08-08) —
+     the precomputed splits in the JSON are the bbref-regular default only */
+  const splits=useMemo(()=>computeSplits(player,incPost),[player,incPost]);
+  const rows=bucketRows(splits,kind);
   if(!rows.length)return <div className="panel muted">No {kind} splits for this player.</div>;
   const avg=(n,g)=>g>0?(n/g).toFixed(1):'—';
   return(
     <div className="panel">
       <h3>{kind==='homeaway'?'Home / Away':kind==='seasontype'?'Regular / Postseason':kind}
-        {/* dimensional splits are regular-season only (bbref parity, Tony
-            2026-08-08); the Reg/Pst view is the one place playoffs appear */}
-        {kind!=='seasontype'&&<span className="sp-today-tag"> · regular season</span>}
+        {/* scope tag: which game class feeds this table (Reg/Pst always both) */}
+        {kind!=='seasontype'&&<span className="sp-today-tag"> · {incPost?'incl. playoffs':'regular season'}</span>}
         {kind==='weekday'&&todayName&&<span className="sp-today-tag"> · today is {todayName}</span>}</h3>
       <div className="sp-scroll">
         <table className="vtable sp-table">
@@ -170,15 +180,15 @@ function SplitTable({player,kind,todayName}){
         </table>
       </div>
       {kind==='opponent'&&<div className="muted sp-foot">
-        Opponent codes come straight from the source logs — All-Star and exhibition
-        opponents appear alongside clubs, and Connecticut shows under both CON and CONN.
+        Opponent codes come straight from the source logs — Connecticut shows under
+        both CON and CONN. All-Star and exhibition games are excluded everywhere.
       </div>}
     </div>
   );
 }
 
 /* QUERY — "last N+ STAT" with the days-since span as the headline number. */
-function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
+function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
   const [copied,setCopied]=useState(false);
   const copyTimer=useRef(null);
   useEffect(()=>()=>{if(copyTimer.current)clearTimeout(copyTimer.current)},[]);
@@ -191,9 +201,9 @@ function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
 
   const games=useMemo(()=>{
     if(!ran)return null;
-    return qualifyingGames(player,ran.stat,ran.threshold)
+    return qualifyingGames(player,ran.stat,ran.threshold,incPost)
       .map(g=>({...g,daysAgo:daysBetween(g.date,today)}));
-  },[ran,player,today]);
+  },[ran,player,today,incPost]);
 
   const copy=n=>{
     try{
@@ -208,7 +218,8 @@ function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
   return(
     <>
       <div className="panel">
-        <h3>Query — last N+ of a stat</h3>
+        <h3>Query — last N+ of a stat
+          <span className="sp-today-tag"> · {incPost?'incl. playoffs':'regular season'}</span></h3>
         <div className="sp-query-row">
           <select value={stat} onChange={e=>setStat(e.target.value)} className="sp-select">
             {QUERY_STATS.map(s=><option key={s} value={s}>{STAT_LABEL[s]}</option>)}
@@ -222,7 +233,7 @@ function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
 
       {games&&(games.length===0
         ?<div className="panel muted">
-           No career game with {ran.threshold}+ {STAT_LABEL[ran.stat]}.
+           No {incPost?'':'regular-season '}game with {ran.threshold}+ {STAT_LABEL[ran.stat]}.{incPost?'':' (+ Playoffs widens the sweep.)'}
          </div>
         :<>
           <div className="panel sp-last">
@@ -230,6 +241,7 @@ function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
             <div className="sp-last-line mono">
               {last.date} {last.ha==='H'?'vs':'@'} {last.opp}
               <span className="sp-last-val"> ({last.value})</span>
+              {last.st===3&&<span className="badge purple" style={{marginLeft:6}}>PST</span>}
             </div>
             <button className="sp-days" onClick={()=>copy(last.daysAgo)}
               title="tap to copy the number">
@@ -249,7 +261,7 @@ function QueryView({player,today,stat,setStat,thr,setThr,ran,setRan}){
                 <tbody>
                   {games.map((g,i)=>(
                     <tr key={g.date+'|'+i}>
-                      <td>{g.date}</td>
+                      <td>{g.date}{g.st===3&&<span className="badge purple" style={{marginLeft:5}}>PST</span>}</td>
                       <td className="w">{g.ha==='H'?'vs':'@'} {g.opp}</td>
                       <td>{g.value}</td>
                       <td className="sp-avg">{g.daysAgo}</td>

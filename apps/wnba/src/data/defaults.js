@@ -66,4 +66,8 @@ export const DEFAULT_SETTINGS={
   lanesOn:DEFAULT_LANES_ON,
   refineCollapsed:true,
   forecastDays:10,
+  /* include playoff games in every stat calculation (Tony 2026-08-08).
+     Default OFF = bbref regular-season parity. All-Star / Cup finals are
+     exhibition and stay excluded regardless. */
+  includePlayoffs:false,
 };

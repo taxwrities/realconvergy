@@ -78,17 +78,53 @@ export function bucketRows(splits, kind) {
   return rows.sort((x, y) => (y.g || 0) - (x.g || 0));   // opponent
 }
 
-/* Every game where `stat` >= threshold, newest first. Returns the raw row plus
-   the decoded fields the QUERY view renders. */
-export function qualifyingGames(player, stat, threshold) {
+const WD_FROM_DATE = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MON_FROM_DATE = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/* Recompute every splits bucket from the shipped game log (Tony 2026-08-08:
+   REG/playoffs distinction with a toggle). st=2 regular, st=3 playoffs; the
+   builder already dropped All-Star/exhibition, so the log holds only real
+   games. includePost=false → bbref-regular buckets (the default the shipped
+   precomputed splits also hold); true → REG+PST. The seasontype bucket always
+   shows both rows. Feed the result to bucketRows() for display order. */
+export function computeSplits(player, includePost) {
   const ix = legendIndex(player.log_legend);
-  const si = ix[stat], di = ix.date, oi = ix.opp, hi = ix.ha;
+  const di = ix.date, oi = ix.opp, hi = ix.ha, sti = ix.st;
+  const splits = {};
+  const add = (dim, key, sv) => {
+    const d = splits[dim] || (splits[dim] = {});
+    const b = d[key] || (d[key] = { g: 0 });
+    b.g += 1;
+    for (const [k, v] of Object.entries(sv)) if (typeof v === 'number') b[k] = (b[k] || 0) + v;
+  };
+  for (const row of player.log || []) {
+    const st = row[sti];
+    const sv = {};
+    for (const k of TABLE_STATS) { const v = row[ix[k]]; if (typeof v === 'number') sv[k] = v; }
+    add('seasontype', st === 2 ? 'REG' : 'PST', sv);
+    if (st !== 2 && !includePost) continue;
+    const dt = new Date(row[di] + 'T12:00:00');
+    add('weekday', WD_FROM_DATE[dt.getDay()], sv);
+    add('month', MON_FROM_DATE[dt.getMonth()], sv);
+    add('homeaway', row[hi], sv);
+    add('opponent', row[oi], sv);
+  }
+  return splits;
+}
+
+/* Every game where `stat` >= threshold, newest first. Returns the raw row plus
+   the decoded fields the QUERY view renders. Regular season by default;
+   includePost=true adds playoff games (st carried so the UI can badge them). */
+export function qualifyingGames(player, stat, threshold, includePost) {
+  const ix = legendIndex(player.log_legend);
+  const si = ix[stat], di = ix.date, oi = ix.opp, hi = ix.ha, sti = ix.st;
   if (si == null) return [];
   const out = [];
   for (const row of player.log || []) {
+    if (!includePost && row[sti] !== 2) continue;
     const v = row[si];
     if (typeof v === 'number' && v >= threshold) {
-      out.push({ date: row[di], opp: row[oi], ha: row[hi], value: v });
+      out.push({ date: row[di], opp: row[oi], ha: row[hi], value: v, st: row[sti] });
     }
   }
   return out.reverse();            // log ships oldest->newest
