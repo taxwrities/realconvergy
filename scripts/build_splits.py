@@ -6,12 +6,30 @@ Reads wehoop player_box parquet files (2002-present), emits per-player JSON:
   - precomputed splits: day-of-week, month, home/away, opponent, season type
 Output: data/wnba-splits/{athlete_id}.json + index.json (name -> id lookup)
 
-Daily refresh: just re-download the current season parquet and re-run.
+bbref parity (Tony 2026-08-08): basketball-reference is the reference for what
+counts. Three row classes in the wehoop logs must be EXCLUDED to match it:
+  1. All-Star games — tagged season_type 2 (regular!) but played by synthetic
+     teams (Team Wilson / TEAM COLLIER / EAST / WEST / Team USA...). Filtered
+     by display-name pattern, not id blocklist, so future captain teams drop
+     out automatically.
+  2. Commissioner's Cup FINALS — regular Cup games count, the standalone final
+     does not; flagged postseason=false upstream, only the date knows. Same
+     date list apps/wnba/src/data/gamefilter.js locks for the live-slate side.
+  3. (Playoffs stay IN the log, tagged st=3 — the REG/PST split reads them.)
+Verified vs Jackie Young bbref career splits: REG G/PTS/TRB/AST match exactly
+once 1+2 are dropped.
+
+Freshness: the wehoop main-branch mirror can lag ~a week. After loading the
+parquets, any dates between the parquet max and yesterday are topped up
+directly from ESPN's scoreboard/summary API (wehoop's own upstream), so a
+rebuild is always current even when the mirror is behind.
+
+Daily refresh: re-download the current season parquet and re-run.
   curl -sL -o raw/player_box_2026.parquet \
     https://raw.githubusercontent.com/sportsdataverse/wehoop-wnba-data/main/wnba/player_box/parquet/player_box_2026.parquet
 """
-import pandas as pd, json, os, glob, sys
-from datetime import datetime
+import pandas as pd, json, os, glob, re, sys, urllib.request
+from datetime import datetime, timedelta, timezone
 
 RAW_DIR = "raw"
 OUT_DIR = "data/wnba-splits"
@@ -30,6 +48,126 @@ LOG_LEGEND = ["date","opp","ha","st"] + STAT_KEYS + ["min","start"]
 
 WEEKDAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
 
+# ---- bbref-parity exclusions ------------------------------------------------
+# All-Star sides are synthetic teams whose display name starts with "Team"
+# (Team Wilson, TEAM CLARK, Team WNBA, Team USA) or is the bare conference
+# (EAST / WEST). No franchise matches the pattern (Toronto Tempo != "Team ...").
+EXHIB_RE = re.compile(r"^team\b", re.I)
+EXHIB_EXACT = {"EAST", "WEST"}
+
+def _is_exhib_name(v):
+    v = "" if v is None else str(v)
+    return bool(EXHIB_RE.match(v)) or v in EXHIB_EXACT
+
+# Commissioner's Cup final dates (ET) — single standalone game per season, so a
+# date match is unambiguous. Mirror of CUP_FINAL_DATES in
+# apps/wnba/src/data/gamefilter.js; extend both each season.
+CUP_FINAL_DATES = {
+    "2021-08-12",  # SEA 79-57 CON
+    "2022-07-26",  # LV 93-83 CHI
+    "2023-08-15",  # NY 82-63 LV
+    "2024-06-25",  # MIN 94-89 NY
+    "2025-07-01",  # IND 74-59 MIN
+    "2026-06-30",  # NY 93-85 LV
+}
+
+# ---- ESPN top-up for dates newer than the parquet mirror --------------------
+ESPN_SB = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates={d}"
+ESPN_SUM = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/summary?event={e}"
+
+def _get_json(url):
+    # NB: ESPN's edge 403s requests carrying a non-browser User-Agent; urllib's
+    # default (no custom UA) goes through fine, so send no UA header at all.
+    with urllib.request.urlopen(url, timeout=30) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+def _num(s):
+    try: return float(s)
+    except (TypeError, ValueError): return None
+
+def _espn_rows_for_event(event_id, game_date, season, season_type):
+    """One completed ESPN event -> list of player_box-shaped dicts."""
+    s = _get_json(ESPN_SUM.format(e=event_id))
+    comps = (s.get("header", {}).get("competitions") or [{}])[0]
+    homeaway = {}   # team id -> 'home'/'away'
+    tinfo = {}      # team id -> {abbr, display}
+    for c in comps.get("competitors", []):
+        tid = str(c.get("team", {}).get("id"))
+        homeaway[tid] = c.get("homeAway")
+        tinfo[tid] = {"abbr": c.get("team", {}).get("abbreviation") or "",
+                      "display": c.get("team", {}).get("displayName") or ""}
+    tids = list(tinfo.keys())
+    rows = []
+    for tblock in s.get("boxscore", {}).get("players", []):
+        tid = str(tblock.get("team", {}).get("id"))
+        opp = next((x for x in tids if x != tid), None)
+        stat = (tblock.get("statistics") or [{}])[0]
+        keys = stat.get("keys") or []
+        for a in stat.get("athletes", []):
+            if a.get("didNotPlay"):
+                continue
+            vals = dict(zip(keys, a.get("stats") or []))
+            fg = (vals.get("fieldGoalsMade-fieldGoalsAttempted") or "-").split("-")
+            tp = (vals.get("threePointFieldGoalsMade-threePointFieldGoalsAttempted") or "-").split("-")
+            ft = (vals.get("freeThrowsMade-freeThrowsAttempted") or "-").split("-")
+            ath = a.get("athlete", {})
+            if _num(vals.get("points")) is None:
+                continue
+            rows.append({
+                "game_id": int(event_id), "season": season, "season_type": season_type,
+                "game_date": game_date,
+                "athlete_id": int(ath.get("id")),
+                "athlete_display_name": ath.get("displayName") or "",
+                "athlete_position_abbreviation": (ath.get("position") or {}).get("abbreviation") or "",
+                "team_abbreviation": tinfo.get(tid, {}).get("abbr", ""),
+                "team_display_name": tinfo.get(tid, {}).get("display", ""),
+                "opponent_team_abbreviation": tinfo.get(opp, {}).get("abbr", ""),
+                "opponent_team_display_name": tinfo.get(opp, {}).get("display", ""),
+                "home_away": homeaway.get(tid) or "",
+                "starter": bool(a.get("starter")),
+                "did_not_play": False,
+                "minutes": _num(vals.get("minutes")),
+                "points": _num(vals.get("points")),
+                "rebounds": _num(vals.get("totalRebounds") if "totalRebounds" in vals else vals.get("rebounds")),
+                "assists": _num(vals.get("assists")),
+                "steals": _num(vals.get("steals")),
+                "blocks": _num(vals.get("blocks")),
+                "turnovers": _num(vals.get("turnovers")),
+                "fouls": _num(vals.get("fouls")),
+                "offensive_rebounds": _num(vals.get("offensiveRebounds")),
+                "defensive_rebounds": _num(vals.get("defensiveRebounds")),
+                "field_goals_made": _num(fg[0]), "field_goals_attempted": _num(fg[-1]),
+                "three_point_field_goals_made": _num(tp[0]), "three_point_field_goals_attempted": _num(tp[-1]),
+                "free_throws_made": _num(ft[0]), "free_throws_attempted": _num(ft[-1]),
+            })
+    return rows
+
+def espn_topup(after_date):
+    """Fetch completed games for dates (after_date, yesterday] from ESPN."""
+    start = datetime.strptime(after_date, "%Y-%m-%d") + timedelta(days=1)
+    end = datetime.now(timezone.utc) - timedelta(hours=8)   # rough ET "today"
+    end = datetime(end.year, end.month, end.day) - timedelta(days=0)
+    rows, d = [], start
+    while d <= end:
+        ds = d.strftime("%Y%m%d")
+        try:
+            sb = _get_json(ESPN_SB.format(d=ds))
+        except Exception as e:
+            print(f"  espn scoreboard {ds}: {e}", file=sys.stderr)
+            d += timedelta(days=1); continue
+        for ev in sb.get("events", []):
+            st = (((ev.get("status") or {}).get("type")) or {})
+            if not st.get("completed"):
+                continue
+            season_type = (ev.get("season") or {}).get("type") or 2
+            season = (ev.get("season") or {}).get("year") or d.year
+            try:
+                rows.extend(_espn_rows_for_event(ev["id"], d.strftime("%Y-%m-%d"), season, season_type))
+            except Exception as e:
+                print(f"  espn event {ev.get('id')}: {e}", file=sys.stderr)
+        d += timedelta(days=1)
+    return pd.DataFrame(rows)
+
 def load_all():
     frames = []
     for f in sorted(glob.glob(os.path.join(RAW_DIR, "player_box_*.parquet"))):
@@ -43,6 +181,20 @@ def load_all():
         df = df[df["did_not_play"] != True]
     df = df[df["points"].notna()]
     df["game_date"] = pd.to_datetime(df["game_date"]).dt.strftime("%Y-%m-%d")
+    # ESPN top-up: the mirror can lag; fill (max parquet date, yesterday]
+    mx = df["game_date"].max()
+    top = espn_topup(mx)
+    if len(top):
+        print(f"espn top-up: {len(top)} rows after {mx} ({top['game_date'].min()} -> {top['game_date'].max()})")
+        df = pd.concat([df, top], ignore_index=True)
+        df = df.drop_duplicates(subset=["game_id", "athlete_id"], keep="first")
+    # bbref parity: drop All-Star / exhibition rows (synthetic teams) and
+    # Commissioner's Cup finals. Playoffs stay (st=3, REG/PST split).
+    exhib = (df["team_display_name"].map(_is_exhib_name)
+             | df["opponent_team_display_name"].map(_is_exhib_name))
+    cup = df["game_date"].isin(CUP_FINAL_DATES)
+    print(f"excluding {int(exhib.sum())} all-star/exhibition rows, {int(cup.sum())} cup-final rows")
+    df = df[~exhib & ~cup]
     return df
 
 def compact_row(r):
