@@ -140,6 +140,9 @@ function SplitTable({player,kind,todayName}){
   return(
     <div className="panel">
       <h3>{kind==='homeaway'?'Home / Away':kind==='seasontype'?'Regular / Postseason':kind}
+        {/* dimensional splits are regular-season only (bbref parity, Tony
+            2026-08-08); the Reg/Pst view is the one place playoffs appear */}
+        {kind!=='seasontype'&&<span className="sp-today-tag"> · regular season</span>}
         {kind==='weekday'&&todayName&&<span className="sp-today-tag"> · today is {todayName}</span>}</h3>
       <div className="sp-scroll">
         <table className="vtable sp-table">

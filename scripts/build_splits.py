@@ -237,10 +237,16 @@ def build():
             log.append(row)
             dt = datetime.strptime(r["game_date"], "%Y-%m-%d")
             sv = dict(zip(STAT_KEYS, row[4:4+len(STAT_KEYS)]))
-            add_bucket(splits, "weekday", WEEKDAYS[dt.weekday()], sv)
-            add_bucket(splits, "month", dt.strftime("%b"), sv)
-            add_bucket(splits, "homeaway", row[2], sv)
-            add_bucket(splits, "opponent", row[1], sv)
+            # bbref parity (Tony 2026-08-08): the dimensional splits are
+            # REGULAR SEASON ONLY — bbref's splits tables exclude playoffs
+            # (Caitlin Clark road PTS: 636 reg, not 672 with the 2024 playoff
+            # games mixed in). Playoff games still ship in the log (st=3) and
+            # in the REG/PST split below.
+            if row[3] == 2:
+                add_bucket(splits, "weekday", WEEKDAYS[dt.weekday()], sv)
+                add_bucket(splits, "month", dt.strftime("%b"), sv)
+                add_bucket(splits, "homeaway", row[2], sv)
+                add_bucket(splits, "opponent", row[1], sv)
             add_bucket(splits, "seasontype", "REG" if row[3] == 2 else "PST", sv)
         out = {
             "athlete_id": int(aid), "name": name, "team": team, "pos": pos,
