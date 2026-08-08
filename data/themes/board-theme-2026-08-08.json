@@ -1,0 +1,94 @@
+{
+  "date": "2026-08-08",
+  "numbers": [
+    8,
+    220,
+    172,
+    145,
+    110,
+    71,
+    35,
+    46,
+    15,
+    19,
+    36,
+    26,
+    62,
+    6,
+    24,
+    42,
+    37,
+    328,
+    269,
+    96,
+    55,
+    310,
+    311,
+    17,
+    44,
+    53,
+    80,
+    89,
+    98,
+    107,
+    109,
+    28,
+    93,
+    21,
+    69,
+    136,
+    137,
+    77,
+    92,
+    85
+  ],
+  "notes": "Zach 8/8 — 8/8 date numerology, 8 flagged as possibly BIG today. 8 = 3rd composite. 220 = day of year (220 is the 172nd composite). 145 = days left in the year (145 is the 110th composite). Catholic = 71 / 35 / 145 / 46 — Zach notes 'some 35s on the board today'. The 8th: 15 = 8th composite, 19 = 8th prime, 36 = 8th triangular. Date numerology 8 / 26 / 62; lesser 6 / 24 / 42. Pope: 37 days before bday (Chicago = 37), 328 days after. Superior General: 269 days after bday (269 = 57th prime), 96 days to next. Trump: 55 days after bday, 310 days before next — Zach's note '311 is the 64th prime' is carried from 8/7, when the span was 311; today's span is 310, both kept. Jersey/stat ladder (+9 off 8): 8, 17, 26, 35, 44, 53, 62, 71, 80, 89, 98, 107. Saturday = 109 / 28 / 107 / 53. Saturn = 93 / 21 / 69 / 42. MLB (15 games): 136 days after the season began = 137th day (Mar 25); 77 days before the World Series (Oct 23). WNBA (3 games): 92 days after the season began = 93rd day (May 8); 85 = the Fever's 8-5 / Knicks 85 ritual (Jun 13); season opened on the one-year anniversary of Pope Leo XIV's reign. Truman-Masonic thread dropped (expired 8/7). Hiroshima 81st + 509th carried to Nagasaki 8/9; per the 8/7 carryover note, Fat Man 55/19/35 reloads on 8/9 — note 55, 19 and 35 are all independently live in today's field.",
+  "entity_threads": [
+    {
+      "label": "Hiroshima 81st",
+      "values": [
+        81,
+        86,
+        100,
+        143,
+        39,
+        60,
+        35,
+        37,
+        80,
+        124,
+        212,
+        218,
+        32
+      ],
+      "provenance": {
+        "81": "81st anniversary",
+        "86": "Robert Oppenheimer RR; 8/6 date stamp",
+        "100": "Hiroshima Ord; Thursday RevOrd",
+        "39": "Little Boy Red; Pope Leo",
+        "60": "Atomic Bomb RR; top date num",
+        "35/37/80": "Enola Gay = Triple (O/R/RR twins)",
+        "124": "Oppenheimer Ord",
+        "212": "J Robert Oppenheimer Ord",
+        "218": "Destroyer of Worlds RevOrd; day-of-year",
+        "32": "Bomb Ord"
+      },
+      "hook": "date-anniversary",
+      "expiry": "2026-08-09",
+      "carryover_note": "Fat Man 55/19/35 + 509/97 reload for Nagasaki 8/9"
+    },
+    {
+      "label": "509th Composite Group",
+      "values": [
+        509,
+        97
+      ],
+      "provenance": {
+        "509": "bomb delivery unit",
+        "97": "509 = 97th prime; Athletics Ord"
+      },
+      "hook": "unit designation",
+      "expiry": "2026-08-09"
+    }
+  ]
+}
