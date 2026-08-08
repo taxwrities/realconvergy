@@ -1,6 +1,12 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # Explicit change detection (2026-08-08): the default monorepo ignore was
+  # cancelling every build ("no content") — including splits-data refreshes,
+  # which live OUTSIDE the base dir at repo-root data/wnba-splits (copy-splits
+  # mirrors them in at build time). Build whenever the app, the splits data, or
+  # the shared packages change. git diff --quiet exits 1 on changes → build.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../../data/wnba-splits ../../packages"
 
 [functions]
   directory = "functions"
