@@ -54,12 +54,14 @@ export function legendIndex(legend) {
   return m;
 }
 
-/* Stats the QUERY view can threshold on, in the order Tony listed them. */
-export const QUERY_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', '3pm', 'fgm', 'to', 'min'];
+/* Stats the QUERY view can threshold on, in the order Tony listed them
+   (+ FT/attempts, Tony 2026-08-08). */
+export const QUERY_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', '3pm', 'fgm', 'ftm', 'fga', '3pa', 'fta', 'to', 'min'];
 
 /* Columns the split tables show. `g` is the bucket's game count; the rest are
-   season-long sums, so an average is sum/g. */
-export const TABLE_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', '3pm'];
+   season-long sums, so an average is sum/g. FG/3P/FT makes+attempts in bbref
+   column order (Tony 2026-08-08); the table scrolls inside .sp-scroll. */
+export const TABLE_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', 'fgm', 'fga', '3pm', '3pa', 'ftm', 'fta'];
 
 /* Fixed display orders — object key order in the JSON is insertion order from
    the build script, which is neither chronological nor stable. */

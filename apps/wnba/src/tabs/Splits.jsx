@@ -27,7 +27,7 @@ const VIEWS=[
 ];
 const ROW_LABEL={H:'Home',A:'Away',REG:'Regular season',PST:'Playoffs'};
 const STAT_LABEL={pts:'PTS',reb:'REB',ast:'AST',stl:'STL',blk:'BLK',
-  '3pm':'3PM',fgm:'FGM',to:'TO',min:'MIN'};
+  '3pm':'3PM','3pa':'3PA',fgm:'FGM',fga:'FGA',ftm:'FTM',fta:'FTA',to:'TO',min:'MIN'};
 
 export default function SplitsTab({active}){
   const {date,dn,settings,setSettings}=useApp();
