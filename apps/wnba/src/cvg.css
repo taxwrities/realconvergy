@@ -838,6 +838,7 @@ body {
 }
 .sp-head-meta { color: var(--ink-2); font-size: 12px; font-family: var(--cvg-mono); }
 .sp-head-span { color: var(--ink-3); font-size: 11px; font-family: var(--cvg-mono); }
+.sp-head-stats { display: flex; gap: 18px; flex: 0 0 auto; }
 .sp-head-g { text-align: right; flex: 0 0 auto; }
 .sp-head-g-n {
   font-size: 26px; font-weight: 800; line-height: 1; font-family: var(--cvg-mono);

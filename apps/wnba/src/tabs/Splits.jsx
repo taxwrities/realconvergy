@@ -2,7 +2,7 @@ import {useState,useEffect,useMemo,useRef} from 'react';
 import {useApp} from '../state/store.jsx';
 import {daysBetween} from '../engine/clocks.js';
 import {loadIndex,loadPlayer,bucketRows,computeSplits,qualifyingGames,
-  QUERY_STATS,TABLE_STATS} from '../data/splits.js';
+  QUERY_STATS,TABLE_STATS,FLAG_STATS} from '../data/splits.js';
 
 /* ================================================================
    Splits tab — career game logs + precomputed splits for the 262
@@ -27,7 +27,11 @@ const VIEWS=[
 ];
 const ROW_LABEL={H:'Home',A:'Away',REG:'Regular season',PST:'Playoffs'};
 const STAT_LABEL={pts:'PTS',reb:'REB',ast:'AST',stl:'STL',blk:'BLK',
-  '3pm':'3PM','3pa':'3PA',fgm:'FGM',fga:'FGA',ftm:'FTM',fta:'FTA',to:'TO',min:'MIN'};
+  '3pm':'3PM','3pa':'3PA',fgm:'FGM',fga:'FGA',ftm:'FTM',fta:'FTA',to:'TO',min:'MIN',
+  fb:'FB',fp:'FP'};
+/* long forms for the flag stats — "FB" is fine as a column head, but the Query
+   headline and empty state need to say what it actually means */
+const STAT_LONG={fb:'first basket',fp:'first point'};
 
 export default function SplitsTab({active}){
   const {date,dn,settings,setSettings}=useApp();
@@ -136,9 +140,17 @@ function PlayerHead({p}){
         <div className="sp-head-meta">{p.team} {p.pos}</div>
         <div className="sp-head-span">{p.first_game} → {p.last_game}</div>
       </div>
-      <div className="sp-head-g">
-        <div className="sp-head-g-n">{p.games}</div>
-        <div className="sp-head-g-l">career games</div>
+      <div className="sp-head-stats">
+        <div className="sp-head-g">
+          <div className="sp-head-g-n">{p.games}</div>
+          <div className="sp-head-g-l">career games</div>
+        </div>
+        {p.fb!=null&&(
+          <div className="sp-head-g">
+            <div className="sp-head-g-n v-gold">{p.fb}</div>
+            <div className="sp-head-g-l">first baskets</div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -216,16 +228,26 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
   const copyTimer=useRef(null);
   useEffect(()=>()=>{if(copyTimer.current)clearTimeout(copyTimer.current)},[]);
 
+  /* fb/fp are yes-no per game: the threshold is meaningless, so it locks to 1
+     and the copy switches from "N+ of a stat" to "games they got it" */
+  const isFlag=FLAG_STATS.has(stat);
   const run=()=>{
+    if(isFlag){setRan({stat,threshold:1});return}
     const n=parseInt(thr,10);
     if(!Number.isFinite(n))return;
     setRan({stat,threshold:n});
   };
+  /* label for whatever the committed query was (not the current dropdown) */
+  const ranFlag=ran&&FLAG_STATS.has(ran.stat);
+  const ranLabel=ran?(ranFlag?STAT_LONG[ran.stat]:`${ran.threshold}+ ${STAT_LABEL[ran.stat]}`):'';
 
   const games=useMemo(()=>{
     if(!ran)return null;
-    return qualifyingGames(player,ran.stat,ran.threshold,incPost)
-      .map(g=>({...g,daysAgo:daysBetween(g.date,today)}));
+    const raw=qualifyingGames(player,ran.stat,ran.threshold,incPost);
+    /* .map() would drop the played/rate properties the helper attaches */
+    const out=raw.map(g=>({...g,daysAgo:daysBetween(g.date,today)}));
+    out.played=raw.played;out.rate=raw.rate;
+    return out;
   },[ran,player,today,incPost]);
 
   const copy=n=>{
@@ -241,29 +263,37 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
   return(
     <>
       <div className="panel">
-        <h3>Query: last N+ of a stat
+        <h3>Query: {isFlag?'first basket / first point':'last N+ of a stat'}
           <span className="sp-today-tag"> · {incPost?'incl. playoffs':'regular season'}</span></h3>
         <div className="sp-query-row">
           <select value={stat} onChange={e=>setStat(e.target.value)} className="sp-select">
-            {QUERY_STATS.map(s=><option key={s} value={s}>{STAT_LABEL[s]}</option>)}
+            {QUERY_STATS.map(s=><option key={s} value={s}>{STAT_LONG[s]||STAT_LABEL[s]}</option>)}
           </select>
-          <input type="number" inputMode="numeric" value={thr} min="0"
-            onChange={e=>setThr(e.target.value)}
-            onKeyDown={e=>{if(e.key==='Enter')run()}} className="sp-thr"/>
+          {!isFlag&&(
+            <input type="number" inputMode="numeric" value={thr} min="0"
+              onChange={e=>setThr(e.target.value)}
+              onKeyDown={e=>{if(e.key==='Enter')run()}} className="sp-thr"/>
+          )}
           <button className="btn acc" onClick={run}>Run</button>
         </div>
+        {isFlag&&<div className="muted" style={{marginTop:7,fontSize:11.5}}>
+          {stat==='fb'
+            ?'First made field goal of the game. Free throws are skipped, matching the sportsbook convention.'
+            :'First points of the game, free throws included.'}
+        </div>}
       </div>
 
       {games&&(games.length===0
         ?<div className="panel muted">
-           No {incPost?'':'regular-season '}game with {ran.threshold}+ {STAT_LABEL[ran.stat]}.{incPost?'':' (+ Playoffs widens the sweep.)'}
+           No {incPost?'':'regular-season '}game with {ranLabel}.{incPost?'':' (+ Playoffs widens the sweep.)'}
          </div>
         :<>
           <div className="panel sp-last">
-            <h3>Last {ran.threshold}+ {STAT_LABEL[ran.stat]}</h3>
+            <h3>Last {ranLabel}</h3>
             <div className="sp-last-line mono">
               {last.date} {last.ha==='H'?'vs':'@'} {last.opp}
-              <span className="sp-last-val"> ({last.value})</span>
+              {!ranFlag&&<span className="sp-last-val"> ({last.value})</span>}
+              {ranFlag&&<span className="sp-last-val"> ({last.pts} pts)</span>}
               {last.st===3&&<span className="badge purple" style={{marginLeft:6}}>PST</span>}
             </div>
             <button className="sp-days" onClick={()=>copy(last.daysAgo)}
@@ -272,7 +302,8 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
               <span className="sp-days-l">{copied?'copied':'days ago'}</span>
             </button>
             <div className="sp-count mono">
-              {games.length} career game{games.length===1?'':'s'} with {ran.threshold}+ {STAT_LABEL[ran.stat]}
+              {games.length} career game{games.length===1?'':'s'} with {ranLabel}
+              {ranFlag&&games.rate!=null&&<> · {games.rate}% of {games.played} played</>}
             </div>
           </div>
 
@@ -280,13 +311,13 @@ function QueryView({player,today,incPost,stat,setStat,thr,setThr,ran,setRan}){
             <h3>All qualifying games · newest first</h3>
             <div className="sp-scroll sp-list">
               <table className="vtable sp-table">
-                <thead><tr><th>DATE</th><th>OPP</th><th>{STAT_LABEL[ran.stat]}</th><th>DAYS AGO</th></tr></thead>
+                <thead><tr><th>DATE</th><th>OPP</th><th>{ranFlag?'PTS':STAT_LABEL[ran.stat]}</th><th>DAYS AGO</th></tr></thead>
                 <tbody>
                   {games.map((g,i)=>(
                     <tr key={g.date+'|'+i}>
                       <td>{g.date}{g.st===3&&<span className="badge purple" style={{marginLeft:5}}>PST</span>}</td>
                       <td className="w">{g.ha==='H'?'vs':'@'} {g.opp}</td>
-                      <td>{g.value}</td>
+                      <td>{ranFlag?g.pts:g.value}</td>
                       <td className="sp-avg">{g.daysAgo}</td>
                     </tr>
                   ))}

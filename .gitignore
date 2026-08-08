@@ -8,3 +8,7 @@ __pycache__/
 
 # staged from data/wnba-splits by apps/wnba/scripts/copy-splits.mjs (pre dev/build)
 apps/wnba/public/data/wnba-splits/
+
+# wehoop source parquets for scripts/build_splits.py — re-downloadable, ~70MB
+# (player_box 2002-2026 + pbp 2002-2026). Build inputs, not source.
+raw/

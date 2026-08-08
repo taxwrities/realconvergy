@@ -55,13 +55,19 @@ export function legendIndex(legend) {
 }
 
 /* Stats the QUERY view can threshold on, in the order Tony listed them
-   (+ FT/attempts, Tony 2026-08-08). */
-export const QUERY_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', '3pm', 'fgm', 'ftm', 'fga', '3pa', 'fta', 'to', 'min'];
+   (+ FT/attempts, + first basket / first point, Tony 2026-08-08).
+   fb/fp are 1/0 per game, so a "1+" query reads as "games they got it". */
+export const QUERY_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', '3pm', 'fgm', 'ftm', 'fga', '3pa', 'fta', 'to', 'min', 'fb', 'fp'];
+
+/* Stats that are a yes/no per game rather than a count — the Query view labels
+   and defaults them differently (threshold locked to 1, "games they got it"). */
+export const FLAG_STATS = new Set(['fb', 'fp']);
 
 /* Columns the split tables show. `g` is the bucket's game count; the rest are
    season-long sums, so an average is sum/g. FG/3P/FT makes+attempts in bbref
-   column order (Tony 2026-08-08); the table scrolls inside .sp-scroll. */
-export const TABLE_STATS = ['pts', 'reb', 'ast', 'stl', 'blk', 'fgm', 'fga', '3pm', '3pa', 'ftm', 'fta'];
+   column order (Tony 2026-08-08); the table scrolls inside .sp-scroll.
+   FB/FP lead — first basket is the app's flagship lane. */
+export const TABLE_STATS = ['fb', 'fp', 'pts', 'reb', 'ast', 'stl', 'blk', 'fgm', 'fga', '3pm', '3pa', 'ftm', 'fta'];
 
 /* Fixed display orders — object key order in the JSON is insertion order from
    the build script, which is neither chronological nor stable. */
@@ -116,18 +122,28 @@ export function computeSplits(player, includePost) {
 
 /* Every game where `stat` >= threshold, newest first. Returns the raw row plus
    the decoded fields the QUERY view renders. Regular season by default;
-   includePost=true adds playoff games (st carried so the UI can badge them). */
+   includePost=true adds playoff games (st carried so the UI can badge them).
+   `pts` rides along so flag queries (first basket / first point, where the
+   value is always 1) can show the game's actual box line instead. The result
+   also carries .played and .rate — how many games were in scope and what
+   percentage qualified, which is the number that matters for first basket. */
 export function qualifyingGames(player, stat, threshold, includePost) {
   const ix = legendIndex(player.log_legend);
-  const si = ix[stat], di = ix.date, oi = ix.opp, hi = ix.ha, sti = ix.st;
+  const si = ix[stat], di = ix.date, oi = ix.opp, hi = ix.ha, sti = ix.st, pi = ix.pts;
   if (si == null) return [];
   const out = [];
+  let played = 0;
   for (const row of player.log || []) {
     if (!includePost && row[sti] !== 2) continue;
+    played++;
     const v = row[si];
     if (typeof v === 'number' && v >= threshold) {
-      out.push({ date: row[di], opp: row[oi], ha: row[hi], value: v, st: row[sti] });
+      out.push({ date: row[di], opp: row[oi], ha: row[hi], value: v,
+                 st: row[sti], pts: row[pi] });
     }
   }
-  return out.reverse();            // log ships oldest->newest
+  out.reverse();                   // log ships oldest->newest
+  out.played = played;
+  out.rate = played ? Math.round((out.length / played) * 1000) / 10 : null;
+  return out;
 }

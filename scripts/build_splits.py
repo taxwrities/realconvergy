@@ -24,9 +24,21 @@ parquets, any dates between the parquet max and yesterday are topped up
 directly from ESPN's scoreboard/summary API (wehoop's own upstream), so a
 rebuild is always current even when the mirror is behind.
 
-Daily refresh: re-download the current season parquet and re-run.
-  curl -sL -o raw/player_box_2026.parquet \
-    https://raw.githubusercontent.com/sportsdataverse/wehoop-wnba-data/main/wnba/player_box/parquet/player_box_2026.parquet
+First basket / first point (Tony 2026-08-08): derived from the play-by-play
+mirror, not the box scores — a box row has no within-game ordering. Needs
+raw/pbp_YYYY.parquet alongside the box files. Verified 100% game coverage for
+every season 2002-2026, and every 2026 first-basket scorer joins cleanly to
+that game's player_box row.
+
+Daily refresh: re-download the current season parquets and re-run.
+  B=https://raw.githubusercontent.com/sportsdataverse/wehoop-wnba-data/main/wnba
+  curl -sL -o raw/player_box_2026.parquet $B/player_box/parquet/player_box_2026.parquet
+  curl -sL -o raw/pbp_2026.parquet        $B/pbp/parquet/play_by_play_2026.parquet
+
+First backfill (all seasons, ~70MB, gitignored):
+  for y in $(seq 2002 2026); do
+    curl -sL -o raw/pbp_$y.parquet $B/pbp/parquet/play_by_play_$y.parquet
+  done
 """
 import pandas as pd, json, os, glob, re, sys, urllib.request
 from datetime import datetime, timedelta, timezone
@@ -43,8 +55,13 @@ STATS = ["points","rebounds","assists","steals","blocks",
          "turnovers","offensive_rebounds","defensive_rebounds","fouls"]
 STAT_KEYS = ["pts","reb","ast","stl","blk","fgm","fga","3pm","3pa","ftm","fta","to","oreb","dreb","pf"]
 
-# game log row legend (order matters)
-LOG_LEGEND = ["date","opp","ha","st"] + STAT_KEYS + ["min","start"]
+# game log row legend (order matters; fb/fp appended so existing indices hold)
+#   fb = this player scored the game's FIRST FIELD GOAL (free throws skipped)
+#   fp = this player scored the game's FIRST POINTS (free throws count)
+# Both are 1/0 per player-game, so they thread through the existing threshold
+# query ("1+ fb" = games they got the first basket) and the splits buckets
+# (fb by weekday / opponent / home-away) with no special-casing.
+LOG_LEGEND = ["date","opp","ha","st"] + STAT_KEYS + ["min","start","fb","fp"]
 
 WEEKDAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
 
@@ -147,7 +164,7 @@ def espn_topup(after_date):
     start = datetime.strptime(after_date, "%Y-%m-%d") + timedelta(days=1)
     end = datetime.now(timezone.utc) - timedelta(hours=8)   # rough ET "today"
     end = datetime(end.year, end.month, end.day) - timedelta(days=0)
-    rows, d = [], start
+    rows, ids, d = [], [], start
     while d <= end:
         ds = d.strftime("%Y%m%d")
         try:
@@ -163,10 +180,74 @@ def espn_topup(after_date):
             season = (ev.get("season") or {}).get("year") or d.year
             try:
                 rows.extend(_espn_rows_for_event(ev["id"], d.strftime("%Y-%m-%d"), season, season_type))
+                ids.append(ev["id"])
             except Exception as e:
                 print(f"  espn event {ev.get('id')}: {e}", file=sys.stderr)
         d += timedelta(days=1)
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), ids
+
+# ---- first basket / first point (Tony 2026-08-08) ---------------------------
+# Derived from wehoop's play-by-play mirror (wnba/pbp/parquet), which carries
+# scoring_play + score_value + athlete_id_1 + sequence_number. Verified 100%
+# game coverage 2002-2026, and every 2026 first-basket scorer joins cleanly to
+# that game's player_box row. FIRST BASKET skips free throws (the sportsbook
+# convention); FIRST POINT does not, because a FT can open the scoring — it did
+# in 14 of 219 games in 2026, so the two answers genuinely differ.
+FT_RE = re.compile(r"free\s*throw", re.I)
+
+def _first_scorers(plays):
+    """[(game_id, seq, type_text, athlete_id)] -> {game_id: {'fb':aid,'fp':aid}}"""
+    plays.sort(key=lambda r: (r[0], r[1]))
+    out = {}
+    for gid, _seq, tt, aid in plays:
+        e = out.setdefault(gid, {})
+        if "fp" not in e:
+            e["fp"] = aid
+        if "fb" not in e and not FT_RE.search(tt or ""):
+            e["fb"] = aid
+    return out
+
+def load_pbp():
+    import pyarrow.parquet as pq
+    plays = []
+    for f in sorted(glob.glob(os.path.join(RAW_DIR, "pbp_*.parquet"))):
+        if os.path.getsize(f) < 1000:
+            continue
+        d = pq.read_table(f, columns=["game_id", "sequence_number", "type_text",
+                                      "scoring_play", "score_value", "athlete_id_1"]).to_pydict()
+        for i in range(len(d["game_id"])):
+            if not d["scoring_play"][i] or (d["score_value"][i] or 0) <= 0:
+                continue
+            aid = d["athlete_id_1"][i]
+            if aid is None:
+                continue
+            plays.append((str(d["game_id"][i]), int(d["sequence_number"][i] or 0),
+                          d["type_text"][i] or "", str(aid)))
+    m = _first_scorers(plays)
+    print(f"pbp: first scorers for {len(m)} games")
+    return m
+
+def espn_first_scorers(event_ids):
+    """Same map for games newer than the pbp mirror, off the summary endpoint."""
+    out = {}
+    for eid in event_ids:
+        try:
+            s = _get_json(ESPN_SUM.format(e=eid))
+        except Exception as e:
+            print(f"  espn plays {eid}: {e}", file=sys.stderr); continue
+        plays = []
+        for p in (s.get("plays") or []):
+            if not p.get("scoringPlay") or (p.get("scoreValue") or 0) <= 0:
+                continue
+            parts = p.get("participants") or []
+            aid = ((parts[0].get("athlete") or {}).get("id") if parts else None) \
+                  or ((p.get("athlete") or {}).get("id"))
+            if not aid:
+                continue
+            plays.append((str(eid), int(p.get("sequenceNumber") or 0),
+                          (p.get("type") or {}).get("text") or "", str(aid)))
+        out.update(_first_scorers(plays))
+    return out
 
 def load_all():
     frames = []
@@ -183,7 +264,8 @@ def load_all():
     df["game_date"] = pd.to_datetime(df["game_date"]).dt.strftime("%Y-%m-%d")
     # ESPN top-up: the mirror can lag; fill (max parquet date, yesterday]
     mx = df["game_date"].max()
-    top = espn_topup(mx)
+    top, top_ids = espn_topup(mx)
+    load_all.topup_event_ids = top_ids
     if len(top):
         print(f"espn top-up: {len(top)} rows after {mx} ({top['game_date'].min()} -> {top['game_date'].max()})")
         df = pd.concat([df, top], ignore_index=True)
@@ -197,7 +279,7 @@ def load_all():
     df = df[~exhib & ~cup]
     return df
 
-def compact_row(r):
+def compact_row(r, firsts=None):
     dt = datetime.strptime(r["game_date"], "%Y-%m-%d")
     row = [r["game_date"],
            r.get("opponent_team_abbreviation") or "",
@@ -210,6 +292,11 @@ def compact_row(r):
     try: row.append(int(float(m)) if pd.notna(m) else None)
     except: row.append(None)
     row.append(1 if r.get("starter") else 0)
+    # first basket / first point flags for THIS player in THIS game
+    e = (firsts or {}).get(str(r.get("game_id"))) or {}
+    aid = str(r.get("athlete_id"))
+    row.append(1 if e.get("fb") == aid else 0)
+    row.append(1 if e.get("fp") == aid else 0)
     return row
 
 def add_bucket(splits, dim, key, stats_vals):
@@ -222,6 +309,11 @@ def add_bucket(splits, dim, key, stats_vals):
 def build():
     df = load_all()
     print(f"loaded {len(df)} player-game rows, {df['game_date'].min()} -> {df['game_date'].max()}")
+    firsts = load_pbp()
+    extra = espn_first_scorers(getattr(load_all, "topup_event_ids", []) or [])
+    if extra:
+        print(f"pbp: +{len(extra)} games from the ESPN top-up window")
+        firsts.update(extra)
     active_ids = set(df[df["season"].isin(ACTIVE_SEASONS)]["athlete_id"].unique())
     print(f"{len(active_ids)} players active in {sorted(ACTIVE_SEASONS)}")
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -232,11 +324,16 @@ def build():
         team = g.iloc[-1]["team_abbreviation"]
         pos = g.iloc[-1].get("athlete_position_abbreviation") or ""
         log, splits = [], {}
+        fb_n = fp_n = 0
         for _, r in g.iterrows():
-            row = compact_row(r)
+            row = compact_row(r, firsts)
             log.append(row)
+            fb_n += row[-2]; fp_n += row[-1]
             dt = datetime.strptime(r["game_date"], "%Y-%m-%d")
             sv = dict(zip(STAT_KEYS, row[4:4+len(STAT_KEYS)]))
+            # fb/fp ride the buckets too, so "first baskets by weekday /
+            # opponent / home-away" comes free from the existing split machinery
+            sv["fb"] = row[-2]; sv["fp"] = row[-1]
             # bbref parity (Tony 2026-08-08): the dimensional splits are
             # REGULAR SEASON ONLY — bbref's splits tables exclude playoffs
             # (Caitlin Clark road PTS: 636 reg, not 672 with the 2024 playoff
@@ -251,6 +348,7 @@ def build():
         out = {
             "athlete_id": int(aid), "name": name, "team": team, "pos": pos,
             "games": len(log),
+            "fb": fb_n, "fp": fp_n,   # career first-basket / first-point counts
             "first_game": log[0][0], "last_game": log[-1][0],
             "log_legend": LOG_LEGEND,
             "log": log,          # oldest -> newest
@@ -260,7 +358,8 @@ def build():
         fn = os.path.join(OUT_DIR, f"{int(aid)}.json")
         with open(fn, "w") as f:
             json.dump(out, f, separators=(",", ":"))
-        index[name] = {"id": int(aid), "team": team, "pos": pos, "games": len(log)}
+        index[name] = {"id": int(aid), "team": team, "pos": pos, "games": len(log),
+                       "fb": fb_n, "fp": fp_n}
     with open(os.path.join(OUT_DIR, "index.json"), "w") as f:
         json.dump(index, f, separators=(",", ":"), sort_keys=True)
     print(f"wrote {len(index)} player files -> {OUT_DIR}/")
